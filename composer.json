@@ -1,0 +1,73 @@
+{
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": ">=7.0.0",
+        "barryvdh/laravel-cors": "^0.11.4",
+        "barryvdh/laravel-dompdf": "^0.8.6",
+        "fideloper/proxy": "~3.3",
+        "htmlmin/htmlmin": "^7.0",
+        "karlmonson/laravel-ping": "^1.0",
+        "laravel/framework": "5.5.*",
+        "laravel/tinker": "~1.0",
+        "laravelcollective/html": "^5.5",
+        "maddhatter/laravel-fullcalendar": "^1.3",
+        "phpoffice/phpspreadsheet": "^1.8",
+        "renatomarinho/laravel-page-speed": "^1.8",
+        "tecnickcom/tcpdf": "^6.3",
+        "tedivm/jshrink": "~1.0",
+        "tymon/jwt-auth": "^1.0.0-rc.4.1",
+        "wnasich/php_zklib": "^1.3",
+        "yajra/laravel-datatables": "^1.5"
+    },
+    "require-dev": {
+        "filp/whoops": "~2.0",
+        "fzaninotto/faker": "~1.4",
+        "mockery/mockery": "~1.0",
+        "phpunit/phpunit": "~6.0",
+        "symfony/thanks": "^1.0"
+    },
+    "autoload": {
+        "classmap": [
+            "database/seeds",
+            "database/factories"
+        ],
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        },
+        "files": [                         
+          "app/Helpers/MenuHelpers.php" 
+        ]      
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+            ]
+        }
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}
