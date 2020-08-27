@@ -120,7 +120,6 @@ class LaporanController
                 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
                 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
                 $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    //            $pdf->SetFont('helvetica', '', 7);
                 $pdf->setFontSubsetting(false);
                 $pdf->SetFont('dejavusans', '', 8);
                 foreach($ret['msg'] as $var)
@@ -276,8 +275,103 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $pdf = PDF::loadView('admin.laporan.komulatif.preview', ['var' => $ret['msg'], 'periode' => $ret['periode'], 'printDate' => Carbon::now()])->setPaper('a4', 'landscape');
-            return $pdf->stream('Laporan Absen Detail '.Carbon::now()->format('d-m-Y').'.pdf');
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(3, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('dejavusans', '', 8);
+            
+            $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
+            $pdf->AddPage();
+            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 8, 'Divisi' => 15, 'Nama' => 40);
+            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7);
+            
+            foreach($headTbl1 as $kH => $vH)
+            {
+                $pdf->Cell($vH, 4, $kH, 1, 0, 'C');
+            }
+
+            foreach($ret['periode'] as $per)
+            {
+                $pdf->Cell(5, 4, $per->format('d'), 1, 0, 'C');
+            }
+
+            foreach($headTbl2 as $kH => $vH)
+            {
+                $pdf->Cell($vH, 4, $kH, 1, 0, 'C');
+            }
+            $pdf->Ln();
+            
+            $line = 'LRB';
+            foreach($ret['msg'] as $kRet => $rRet)
+            {
+                $tLembur = 0;
+                $s3 = 0;
+                $jGp = 0;
+                $jJk = 0;
+                
+                $pdf->Cell($headTbl1['No'], 4, $kRet+1, $line, 0, 'C');
+                $pdf->Cell($headTbl1['PIN'], 4, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['TMK'], 4, isset($rRet['karyawan']->tanggal_masuk)?$rRet['karyawan']->tanggal_masuk:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['SEX'], 4, isset($rRet['karyawan']->jeniskelamin->nama)?$rRet['karyawan']->jeniskelamin->nama:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['Kode'], 4, isset($rRet['karyawan']->divisi->kode)?$rRet['karyawan']->divisi->kode:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['Divisi'], 4, isset($rRet['karyawan']->divisi->deskripsi)?$rRet['karyawan']->divisi->deskripsi:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['Nama'], 4, isset($rRet['karyawan']->nama)?$rRet['karyawan']->nama:'', $line, 0, 'C');
+                
+                foreach($rRet['absen'] as $tgl => $vabs)
+                {
+                    
+                    $lbl = '';
+                        
+                    if(isset($vabs->inout))
+                    {
+                        $lbl = $vabs->inout;
+                    }
+                    else if(isset($vabs->mangkir))
+                    {
+                        $lbl = 'M';
+                    }
+                    else if(isset($vabs->ta))
+                    {
+                        $lbl = 'TA';
+                    }
+                    else if(isset($vabs->gp))
+                    {
+                        $lbl = 'GP';
+                        $jGp+=$vabs->gp;
+                        $jJk += $vabs->jumlah_jam_kerja;
+                    }
+                    else if(isset($vabs->libur))
+                    {
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = '0';
+                        }
+                    }
+                    else if(isset($vabs->total_lembur))
+                    {
+                        $lbl = $vabs->total_lembur;
+                        $tLembur += $vabs->total_lembur;
+                    }
+                    else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                    {
+                        $lbl = '0';
+                    }
+                    
+                    $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
+                }
+                $pdf->Cell($headTbl2['Lbr'], 4, $tLembur, 1, 0, 'C');
+                $pdf->Cell($headTbl2['S3'], 4, $s3, 1, 0, 'C');
+                $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
+                $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
+                $pdf->Ln();
+            }
+            $pdf->Output('Laporan Absen Komulatif.pdf', 'I');
         }
         else
         {
