@@ -23,7 +23,14 @@ use TCPDF;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Pdf;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Borders;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Calculation\LookupRef;
 
 use Illuminate\Support\Facades\Storage;
 
@@ -372,6 +379,214 @@ class LaporanController
                 $pdf->Ln();
             }
             $pdf->Output('Laporan Absen Komulatif.pdf', 'I');
+        }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan Absen Komulatif')
+                ->setSubject('Laporan Absen Komulatif')
+                ->setDescription('Laporan Absen Komulatif')
+                ->setKeywords('laporan indahjaya karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Komulatif');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan Kehadiran Karyawan Komulatif');
+            $ss->getActiveSheet()->setCellValue('A2', "Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
+            $mergeHead = 11 + count($ret['periode']);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
+            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            foreach($ret['periode'] as $per)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $per->format('d'));
+            }
+            foreach($headTbl2 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+            foreach($ret['msg'] as $kRet => $rRet)
+            {
+                $colStat = 1;
+                $tLembur = 0;
+                $s3 = 0;
+                $jGp = 0;
+                $jJk = 0;
+                
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->tanggal_masuk)?$rRet['karyawan']->tanggal_masuk:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->jeniskelamin->nama)?$rRet['karyawan']->jeniskelamin->nama:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->divisi->kode)?$rRet['karyawan']->divisi->kode:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->divisi->deskripsi)?$rRet['karyawan']->divisi->deskripsi:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->nama)?$rRet['karyawan']->nama:'');
+                
+                
+                foreach($rRet['absen'] as $tgl => $vabs)
+                {
+                    
+                    $lbl = '';
+                        
+                    if(isset($vabs->inout))
+                    {
+                        $lbl = $vabs->inout;
+                    }
+                    else if(isset($vabs->mangkir))
+                    {
+                        $lbl = 'M';
+                    }
+                    else if(isset($vabs->ta))
+                    {
+                        $lbl = 'TA';
+                    }
+                    else if(isset($vabs->gp))
+                    {
+                        $lbl = 'GP';
+                        $jGp+=$vabs->gp;
+                        $jJk += $vabs->jumlah_jam_kerja;
+                    }
+                    else if(isset($vabs->libur))
+                    {
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = '0';
+                        }
+                    }
+                    else if(isset($vabs->total_lembur))
+                    {
+                        $lbl = $vabs->total_lembur;
+                        $tLembur += $vabs->total_lembur;
+                    }
+                    else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                    {
+                        $lbl = '0';
+                    }
+                    
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $lbl);
+                }
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $tLembur);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $s3);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jGp/60);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jJk);
+                
+                $rowStart++;
+                
+            }
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="komulatif.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
         }
         else
         {
@@ -733,13 +948,26 @@ class LaporanController
             }
             else if(isset($req['divisi']))
             {
-                $karyawanId = Karyawan::where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                if(isset($req['perusahaan']))
+                {
+                    $karyawanId = Karyawan::where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                }
+                else
+                {
+                    $karyawanId = Karyawan::where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                }
             }
             else
             {
-                $karyawanId = Karyawan::orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
-            }
-            
+                if(isset($req['perusahaan']))
+                {
+                    $karyawanId = Karyawan::orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                }
+                else
+                {
+                    $karyawanId = Karyawan::orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
+                }
+            }            
             
             foreach ($karyawanId as $kId)
             {
