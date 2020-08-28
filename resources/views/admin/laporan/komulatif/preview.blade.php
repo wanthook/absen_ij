@@ -33,7 +33,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         }
         page[size="A4"][layout="landscape"] {
             width: 29.7cm;
-            height: 21cm;  
+            height: auto;  
         }
         page[size="A3"] {
             width: 29.7cm;

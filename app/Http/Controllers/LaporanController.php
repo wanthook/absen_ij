@@ -129,131 +129,135 @@ class LaporanController
                 $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
                 $pdf->setFontSubsetting(false);
                 $pdf->SetFont('dejavusans', '', 8);
-                foreach($ret['msg'] as $var)
+                if(count($ret['msg']))
                 {
-                    $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan","Periode : ".$var['periodeStart']." s/d ".$var['periodeEnd']);
-                    $pdf->AddPage();
-                    $infoWidth = array(25,3,300);
-                    $pdf->Cell($infoWidth[0], 3, "PIN / Nama");
-                    $pdf->Cell($infoWidth[1], 3, ":");
-                    $pdf->Cell($infoWidth[2], 3, $var['karyawan']->pin.' - '.$var['karyawan']->nama);
-                    $pdf->Ln();
-                    $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
-                    $pdf->Cell($infoWidth[1], 3, ":");
-                    $pdf->Cell($infoWidth[2], 3, $var['karyawan']->divisi->kode.' - '.$var['karyawan']->divisi->deskripsi);
-                    $pdf->Ln();
-                    $pdf->Cell($infoWidth[0], 3, "NIK");
-                    $pdf->Cell($infoWidth[1], 3, ":");
-                    $pdf->Cell($infoWidth[2], 3, $var['karyawan']->nik);
-                    $pdf->Ln();
-                    
-                    $Width = array(25,30,30,20,20,50,15,15,15,15,15,15);
-                    $Width2 = array(25,15,15,15,15,10,10,10,10,50,15,15,15,15,15,15);
-                    $headTbl1 = array('Tanggal','Jadwal Kerja','Jam Kerja','Masuk','Pulang','Keterangan',"Lembur","Hitung","Shift","Lembur","Hitung","Total");
-                    $headTbl2 = array('','M','K','M','K','C','T','C','T','',"Aktual","Lembur","Malam","Libur Nas","Libur Nas","Lembur");
-                    foreach($headTbl1 as $kH => $vH)
+                    foreach($ret['msg'] as $var)
                     {
-                        $border = 1;
-                        switch($kH)
-                        {
-                            case 0:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                            case 10:
-                            case 11:
-                            $border = 'LRT';
-                        }
-                         $pdf->Cell($Width[$kH], 4, $vH, $border, 0, 'C');
-                    }
-                    $pdf->Ln();
-                    foreach($headTbl2 as $kH => $vH)
-                    {
-                        $border = 1;
-                        switch($kH)
-                        {
-                            case 0:
-                            case 9:
-                            case 10:
-                            case 11:
-                            case 12:
-                            case 13:
-                            case 14:
-                            case 15:
-                            $border = 'LRB';
-                        }
-                        $pdf->Cell($Width2[$kH], 4, $vH, $border, 0, 'C');
-                    }
-                    $pdf->Ln();
-                    $lemburAktual = 0;
-                    $hitLembur = 0;
-                    $hitNas = 0;
-                    $sMalam = 0;
-                    $lemburLn = 0;
-                    $totLem = 0;
-                    foreach($var['absen'] as $tgl => $vabs)
-                    {
-                                                
-                        $pdf->Cell($Width2[0], 4.5, $tgl, '1', 0, 'C');
-                        if($vabs)
-                        {
-                            $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
-                        
-                        
-                            $lemburAktual += $vabs->lembur_aktual;
-                            $hitLembur += $vabs->hitung_lembur;
-                            $sMalam += $vabs->shift3;
-                            $lemburLn += $vabs->lembur_ln;
-                            $hitNas += $vabs->hitung_lembur_ln;
+                        $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan","Periode : ".$var['periodeStart']." s/d ".$var['periodeEnd']);
+                        $pdf->AddPage();
+                        $infoWidth = array(25,3,300);
+                        $pdf->Cell($infoWidth[0], 3, "PIN / Nama");
+                        $pdf->Cell($infoWidth[1], 3, ":");
+                        $pdf->Cell($infoWidth[2], 3, $var['karyawan']->pin.' - '.$var['karyawan']->nama);
+                        $pdf->Ln();
+                        $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
+                        $pdf->Cell($infoWidth[1], 3, ":");
+                        $pdf->Cell($infoWidth[2], 3, $var['karyawan']->divisi->kode.' - '.$var['karyawan']->divisi->deskripsi);
+                        $pdf->Ln();
+                        $pdf->Cell($infoWidth[0], 3, "NIK");
+                        $pdf->Cell($infoWidth[1], 3, ":");
+                        $pdf->Cell($infoWidth[2], 3, $var['karyawan']->nik);
+                        $pdf->Ln();
 
-                            $totLem += $tLembur;
-                            
-                            $pdf->Cell($Width2[1], 4.5, substr($vabs->jadwal_jam_masuk,0,5), '1', 0, 'C');
-                            $pdf->Cell($Width2[2], 4.5, substr($vabs->jadwal_jam_keluar,0,5), '1', 0, 'C');
-                            $pdf->Cell($Width2[3], 4.5, substr($vabs->jam_masuk,0,5), '1', 0, 'C');
-                            $pdf->Cell($Width2[4], 4.5, substr($vabs->jam_keluar,0,5), '1', 0, 'C');
-                            $pdf->Cell($Width2[5], 4.5, ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                            $pdf->Cell($Width2[6], 4.5, ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                            $pdf->Cell($Width2[7], 4.5, ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                            $pdf->Cell($Width2[8], 4.5, ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                            $pdf->Cell($Width2[9], 4.5, $vabs->keterangan, '1', 0, 'C');
-                            $pdf->Cell($Width2[10], 4.5, $vabs->lembur_aktual, '1', 0, 'C');
-                            $pdf->Cell($Width2[11], 4.5, $vabs->hitung_lembur, '1', 0, 'C');
-                            $pdf->Cell($Width2[12], 4.5, $vabs->shift3, '1', 0, 'C');
-                            $pdf->Cell($Width2[13], 4.5, $vabs->lembur_ln, '1', 0, 'C');
-                            $pdf->Cell($Width2[14], 4.5, $vabs->hitung_lembur_ln, '1', 0, 'C');
-                            $pdf->Cell($Width2[15], 4.5, ($tLembur)?$tLembur:'', '1', 0, 'C');
-                        }
-                        else
+                        $Width = array(25,30,30,20,20,50,15,15,15,15,15,15);
+                        $Width2 = array(25,15,15,15,15,10,10,10,10,50,15,15,15,15,15,15);
+                        $headTbl1 = array('Tanggal','Jadwal Kerja','Jam Kerja','Masuk','Pulang','Keterangan',"Lembur","Hitung","Shift","Lembur","Hitung","Total");
+                        $headTbl2 = array('','M','K','M','K','C','T','C','T','',"Aktual","Lembur","Malam","Libur Nas","Libur Nas","Lembur");
+                        foreach($headTbl1 as $kH => $vH)
                         {
-                            $pdf->Cell($Width2[1], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[2], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[3], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[4], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[7], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[8], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[9], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[10], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[11], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[12], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[13], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[14], 4.5, '', '1', 0, 'C');
-                            $pdf->Cell($Width2[15], 4.5, '', '1', 0, 'C');
+                            $border = 1;
+                            switch($kH)
+                            {
+                                case 0:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                case 9:
+                                case 10:
+                                case 11:
+                                $border = 'LRT';
+                            }
+                             $pdf->Cell($Width[$kH], 4, $vH, $border, 0, 'C');
                         }
                         $pdf->Ln();
-                        
+                        foreach($headTbl2 as $kH => $vH)
+                        {
+                            $border = 1;
+                            switch($kH)
+                            {
+                                case 0:
+                                case 9:
+                                case 10:
+                                case 11:
+                                case 12:
+                                case 13:
+                                case 14:
+                                case 15:
+                                $border = 'LRB';
+                            }
+                            $pdf->Cell($Width2[$kH], 4, $vH, $border, 0, 'C');
+                        }
+                        $pdf->Ln();
+                        $lemburAktual = 0;
+                        $hitLembur = 0;
+                        $hitNas = 0;
+                        $sMalam = 0;
+                        $lemburLn = 0;
+                        $totLem = 0;
+
+                        foreach($var['absen'] as $tgl => $vabs)
+                        {
+
+                            $pdf->Cell($Width2[0], 4.5, $tgl, '1', 0, 'C');
+                            if($vabs)
+                            {
+                                $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+
+
+                                $lemburAktual += $vabs->lembur_aktual;
+                                $hitLembur += $vabs->hitung_lembur;
+                                $sMalam += $vabs->shift3;
+                                $lemburLn += $vabs->lembur_ln;
+                                $hitNas += $vabs->hitung_lembur_ln;
+
+                                $totLem += $tLembur;
+
+                                $pdf->Cell($Width2[1], 4.5, substr($vabs->jadwal_jam_masuk,0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[2], 4.5, substr($vabs->jadwal_jam_keluar,0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[3], 4.5, substr($vabs->jam_masuk,0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[4], 4.5, substr($vabs->jam_keluar,0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[5], 4.5, ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
+                                $pdf->Cell($Width2[6], 4.5, ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
+                                $pdf->Cell($Width2[7], 4.5, ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
+                                $pdf->Cell($Width2[8], 4.5, ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
+                                $pdf->Cell($Width2[9], 4.5, $vabs->keterangan, '1', 0, 'C');
+                                $pdf->Cell($Width2[10], 4.5, $vabs->lembur_aktual, '1', 0, 'C');
+                                $pdf->Cell($Width2[11], 4.5, $vabs->hitung_lembur, '1', 0, 'C');
+                                $pdf->Cell($Width2[12], 4.5, $vabs->shift3, '1', 0, 'C');
+                                $pdf->Cell($Width2[13], 4.5, $vabs->lembur_ln, '1', 0, 'C');
+                                $pdf->Cell($Width2[14], 4.5, $vabs->hitung_lembur_ln, '1', 0, 'C');
+                                $pdf->Cell($Width2[15], 4.5, ($tLembur)?$tLembur:'', '1', 0, 'C');
+                            }
+                            else
+                            {
+                                $pdf->Cell($Width2[1], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[2], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[3], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[4], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[7], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[8], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[9], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[10], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[11], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[12], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[13], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[14], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[15], 4.5, '', '1', 0, 'C');
+                            }
+                            $pdf->Ln();
+
+                        }
+                        $pdf->Cell((25+30+30+20+20+50), 4.5, "Jumlah", '1', 0, 'C');
+                        $pdf->Cell($Width2[10], 4.5, $lemburAktual, '1', 0, 'C');
+                        $pdf->Cell($Width2[11], 4.5, $hitLembur, '1', 0, 'C');
+                        $pdf->Cell($Width2[12], 4.5, $sMalam, '1', 0, 'C');
+                        $pdf->Cell($Width2[13], 4.5, $lemburLn, '1', 0, 'C');
+                        $pdf->Cell($Width2[14], 4.5, $hitNas, '1', 0, 'C');
+                        $pdf->Cell($Width2[15], 4.5, $totLem, '1', 0, 'C');
                     }
-                    $pdf->Cell((25+30+30+20+20+50), 4.5, "Jumlah", '1', 0, 'C');
-                    $pdf->Cell($Width2[10], 4.5, $lemburAktual, '1', 0, 'C');
-                    $pdf->Cell($Width2[11], 4.5, $hitLembur, '1', 0, 'C');
-                    $pdf->Cell($Width2[12], 4.5, $sMalam, '1', 0, 'C');
-                    $pdf->Cell($Width2[13], 4.5, $lemburLn, '1', 0, 'C');
-                    $pdf->Cell($Width2[14], 4.5, $hitNas, '1', 0, 'C');
-                    $pdf->Cell($Width2[15], 4.5, $totLem, '1', 0, 'C');
                 }
                 $pdf->Output('Laporan Absen Detail.pdf', 'I');
             }
@@ -287,7 +291,7 @@ class LaporanController
             $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
             $pdf->SetMargins(3, 23, 5);
             $pdf->setFontSubsetting(false);
-            $pdf->SetFont('dejavusans', '', 8);
+            $pdf->SetFont('helvetica', '', 8);
             
             $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
@@ -326,57 +330,61 @@ class LaporanController
                 $pdf->Cell($headTbl1['Divisi'], 4, isset($rRet['karyawan']->divisi->deskripsi)?$rRet['karyawan']->divisi->deskripsi:'', $line, 0, 'C');
                 $pdf->Cell($headTbl1['Nama'], 4, isset($rRet['karyawan']->nama)?$rRet['karyawan']->nama:'', $line, 0, 'C');
                 
-                foreach($rRet['absen'] as $tgl => $vabs)
+                if(count($rRet['absen']))
                 {
-                    
-                    $lbl = '';
-                        
-                    if(isset($vabs->inout))
+                    foreach($rRet['absen'] as $tgl => $vabs)
                     {
-                        $lbl = $vabs->inout;
-                    }
-                    else if(isset($vabs->mangkir))
-                    {
-                        $lbl = 'M';
-                    }
-                    else if(isset($vabs->ta))
-                    {
-                        $lbl = 'TA';
-                    }
-                    else if(isset($vabs->gp))
-                    {
-                        $lbl = 'GP';
-                        $jGp+=$vabs->gp;
-                        $jJk += $vabs->jumlah_jam_kerja;
-                    }
-                    else if(isset($vabs->libur))
-                    {
-                        if(isset($vabs->alasan))
+
+                        $lbl = '';
+
+                        if(isset($vabs->inout))
                         {
-                            $lbl = $vabs->alasan[0]->kode;
+                            $lbl = $vabs->inout;
                         }
-                        else
+                        else if(isset($vabs->mangkir))
+                        {
+                            $lbl = 'M';
+                        }
+                        else if(isset($vabs->ta))
+                        {
+                            $lbl = 'TA';
+                        }
+                        else if(isset($vabs->gp))
+                        {
+                            $lbl = 'GP';
+                            $jGp+=$vabs->gp;
+                            $jJk += $vabs->jumlah_jam_kerja;
+                        }
+                        else if(isset($vabs->libur))
+                        {
+                            if(isset($vabs->alasan))
+                            {
+                                $lbl = $vabs->alasan[0]->kode;
+                            }
+                            else
+                            {
+                                $lbl = '0';
+                            }
+                        }
+                        else if(isset($vabs->total_lembur))
+                        {
+                            $lbl = $vabs->total_lembur;
+                            $tLembur += $vabs->total_lembur;
+                        }
+                        else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                         {
                             $lbl = '0';
                         }
+
+                        $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
                     }
-                    else if(isset($vabs->total_lembur))
-                    {
-                        $lbl = $vabs->total_lembur;
-                        $tLembur += $vabs->total_lembur;
-                    }
-                    else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                    {
-                        $lbl = '0';
-                    }
-                    
-                    $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
+                    $pdf->Cell($headTbl2['Lbr'], 4, $tLembur, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['S3'], 4, $s3, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
+                    $pdf->Ln();
                 }
-                $pdf->Cell($headTbl2['Lbr'], 4, $tLembur, 1, 0, 'C');
-                $pdf->Cell($headTbl2['S3'], 4, $s3, 1, 0, 'C');
-                $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
-                $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
-                $pdf->Ln();
+                
             }
             $pdf->Output('Laporan Absen Komulatif.pdf', 'I');
         }
@@ -654,8 +662,6 @@ class LaporanController
                            'jadwal' =>((isset($jadwal[0]))?$jadwal[0]->kode.' - '.$jadwal[0]->tipe:'') ];
         }
         
-//        dd($karyawan);
-        
         if($req['btnSubmit'] == "preview")
         {
             return view('admin.laporan.karyawan_aktif.preview', ['var' => $karyawan, 
@@ -664,11 +670,46 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $view = (string)View::make('admin.laporan.karyawan_aktif.preview', ['var' => $karyawan, 'periode' => $tanggal, 'printDate' => Carbon::now()]);
-//            dd($view);
-            $pdf = PDF::loadHTML($view);
-//            $pdf = PDF::loadView('admin.laporan.karyawan_aktif.preview', ['var' => $karyawan, 'periode' => $tanggal, 'printDate' => Carbon::now()])->setPaper('a4', 'landscape');
-            return $pdf->stream('Laporan Karyawan Aktif '.Carbon::now()->format('d-m-Y').'.pdf');
+            $pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(3, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
+            $pdf->AddPage();
+            $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
+            $headW = array(10,15,50,10,30,15,13,40,20);
+            $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
+            
+            foreach($headTbl1 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+            }
+            $pdf->Ln();
+            foreach($headTbl2 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+            }
+            $pdf->Ln();
+            if(count($karyawan))
+            {
+                foreach($karyawan as $kKar => $vKar)
+                {
+                    $pdf->Cell($headW[0], 4, $kKar+1, 'LRB', 0, 'C');
+                    $pdf->Cell($headW[1], 4, $vKar['pin'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[2], 4, $vKar['nama'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[3], 4, $vKar['kode_jabatan'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[4], 4, $vKar['nama_jabatan'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[5], 4, $vKar['tmk'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[6], 4, $vKar['kode_divisi'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[7], 4, substr($vKar['nama_divisi'],0,20), 'LRB', 0, 'C');
+                    $pdf->Cell($headW[8], 4, $vKar['jadwal'], 'LRB', 0, 'C');
+                    $pdf->Ln();
+                }
+            }
+            $pdf->Output('Laporan Karyawan Aktif.pdf', 'I');
         }
         else
         {
@@ -743,7 +784,6 @@ class LaporanController
                 'jam_kerja' => (!empty($absenRow->jam_masuk)?substr($absenRow->jam_masuk,0,5):'00:00').' - '.(!empty($absenRow->jam_keluar)?substr($absenRow->jam_keluar,0,5):'00:00'),
                 'keterangan' => $ket
             ];
-//            dd($karRet);
         }
         
         ///////
@@ -755,11 +795,48 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $view = (string)View::make('admin.laporan.karyawan_mangkir_ta.preview', ['var' => $karRet, 'periode' => $req['tanggal'], 'printDate' => Carbon::now()]);
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(10, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
             
-            $pdf = PDF::loadHTML($view);
+            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$req['tanggal']);
+            $pdf->AddPage();
+            $headTbl1 = array('No','PIN', 'Nama', 'Tanggal', 'Kode', 'Nama',  'Tanggal','Jadwal', 'Jam', 'Keterangan');
+            $headTbl2 = array('','', 'Karyawan','Masuk', 'Divisi', 'Divisi', 'Tidak Absen', 'Kerja', 'Kerja', '');
+            $headW = array(10,15,60,20,20,35,20,30,30,40);
             
-            return $pdf->stream('Laporan Karyawan Mangkir Ta '.Carbon::now()->format('d-m-Y').'.pdf');
+            foreach($headTbl1 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+            }
+            $pdf->Ln();
+            foreach($headTbl2 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+            }
+            $pdf->Ln();
+            if(count($karRet))
+            {
+                foreach($karRet as $kKar => $vKar)
+                {
+                    $pdf->Cell($headW[0], 4, $kKar+1, 1, 0, 'C');
+                    $pdf->Cell($headW[1], 4, $vKar['pin'], 1, 0, 'C');
+                    $pdf->Cell($headW[2], 4, $vKar['nama_karyawan'], 1, 0, 'C');
+                    $pdf->Cell($headW[3], 4, $vKar['tanggal_masuk'], 1, 0, 'C');
+                    $pdf->Cell($headW[4], 4, $vKar['kode_divisi'], 1, 0, 'C');
+                    $pdf->Cell($headW[5], 4, $vKar['nama_divisi'], 1, 0, 'C');
+                    $pdf->Cell($headW[6], 4, $vKar['tanggal'], 1, 0, 'C');
+                    $pdf->Cell($headW[7], 4, $vKar['jadwal_kerja'], 1, 0, 'C');
+                    $pdf->Cell($headW[8], 4, $vKar['jam_kerja'], 1, 0, 'C');
+                    $pdf->Cell($headW[9], 4, $vKar['keterangan'], 1, 0, 'C');
+                    $pdf->Ln();
+                }
+            }
+            
+            $pdf->Output('Laporan Karyawan Mangkir/TA.pdf', 'I');
         }
         else
         {
@@ -797,20 +874,23 @@ class LaporanController
         
         $kar->orderBy('pin', 'asc');
         
-        foreach($kar->get() as $kRow)
+        if(count($kar))
         {
-            
-            $karRet[] = [
-                'pin' => $kRow->pin,
-                'nama_karyawan' => $kRow->nama,
-                'tanggal_masuk' => $kRow->tanggal_masuk,
-                'kode_divisi' => $kRow->divisi->kode,
-                'nama_divisi' => $kRow->divisi->deskripsi,
-                'kode_jabatan' => $kRow->jabatan->kode,
-                'nama_jabatan' => $kRow->jabatan->deskripsi,
-                'tanggal' => $kRow->tanggal_kontrak
-            ];
-//            dd($karRet);
+            foreach($kar->get() as $kRow)
+            {
+
+                $karRet[] = [
+                    'pin' => $kRow->pin,
+                    'nama_karyawan' => $kRow->nama,
+                    'tanggal_masuk' => $kRow->tanggal_masuk,
+                    'kode_divisi' => $kRow->divisi->kode,
+                    'nama_divisi' => $kRow->divisi->deskripsi,
+                    'kode_jabatan' => $kRow->jabatan->kode,
+                    'nama_jabatan' => $kRow->jabatan->deskripsi,
+                    'tanggal' => $kRow->tanggal_kontrak
+                ];
+    //            dd($karRet);
+            }
         }
         
         ///////
@@ -822,11 +902,47 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $view = (string)View::make('admin.laporan.karyawan_habis_kontrak.preview', ['var' => $karRet, 'periode' => $req['tanggal'], 'printDate' => Carbon::now()]);
-//            dd($view);
-            $pdf = PDF::loadHTML($view);
-//            $pdf = PDF::loadView('admin.laporan.karyawan_aktif.preview', ['var' => $karyawan, 'periode' => $tanggal, 'printDate' => Carbon::now()])->setPaper('a4', 'landscape');
-            return $pdf->stream('Laporan Karyawan Mangkir Ta '.Carbon::now()->format('d-m-Y').'.pdf');
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(10, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$req['tanggal']);
+            $pdf->AddPage();
+            $headTbl1 = array('No','PIN', 'Nama', 'Kode', 'Nama',  'Tanggal', 'Kode','Nama', 'Tanggal');
+            $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Habis Kontrak');
+            $headW = array(10,15,60,20,40,20,30,60,20);
+            
+            foreach($headTbl1 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+            }
+            $pdf->Ln();
+            foreach($headTbl2 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+            }
+            $pdf->Ln();
+            if(count($karRet))
+            {
+                foreach($karRet as $kKar => $vKar)
+                {
+                    $pdf->Cell($headW[0], 4, $kKar+1, 1, 0, 'C');
+                    $pdf->Cell($headW[1], 4, $vKar['pin'], 1, 0, 'C');
+                    $pdf->Cell($headW[2], 4, substr($vKar['nama_karyawan'],0,30), 1, 0, 'C');
+                    $pdf->Cell($headW[3], 4, $vKar['kode_jabatan'], 1, 0, 'C');
+                    $pdf->Cell($headW[4], 4, $vKar['nama_jabatan'], 1, 0, 'C');
+                    $pdf->Cell($headW[5], 4, $vKar['tanggal_masuk'], 1, 0, 'C');
+                    $pdf->Cell($headW[6], 4, $vKar['kode_divisi'], 1, 0, 'C');
+                    $pdf->Cell($headW[7], 4, $vKar['nama_divisi'], 1, 0, 'C');
+                    $pdf->Cell($headW[8], 4, $vKar['tanggal'], 1, 0, 'C');
+                    $pdf->Ln();
+                }
+            }
+            
+            $pdf->Output('Laporan Karyawan Habis Kontrak.pdf', 'I');
         }
         else
         {
@@ -874,15 +990,15 @@ class LaporanController
                     $kar[] = [
                         'tanggal_masuk' => $rKar->tanggal_masuk,
                         'pin' => $rKar->pin,
-                        'jenkel' => $rKar->jeniskelamin->nama,
+                        'jenkel' => (isset($rKar->jeniskelamin)?$rKar->jeniskelamin->nama:''),
                         'jadwal' => $jadwals['kode'],
                         'nama' => $rKar->nama
                     ];
                 }
                 
                 $ret[] = [
-                    'periode_awal' => reset($periode)->toDateString(),
-                    'periode_akhir' => end($periode)->toDateString(),
+                    'periode_awal' => reset($periode)->format('d-m-Y'),
+                    'periode_akhir' => end($periode)->format('d-m-Y'),
                     'periode' => $periode,
                     'kode_bagian' => $rowDiv->kode,
                     'nama_bagian' => $rowDiv->deskripsi,
@@ -893,26 +1009,101 @@ class LaporanController
         
         if($req['btnSubmit'] == "preview")
         {
-            $view = (string)View::make('admin.laporan.karyawan_daftar_hadir.preview', ['var' => $ret, 'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
-//            dd($view);
-            $storage = Storage::put('others/daftarhadirkaryawan.tpk',$view);
-            dd($storage);
-            
-//            $html = IOFactory::createReader('Html');
-//            $cnt = $html->load(storage_path().'/others/daftarhadirkaryawan.tpk');
-            
-//            dd($cnt);
-            
-//            return view('admin.laporan.karyawan_daftar_hadir.preview', ['var' => $ret,
-//                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
+            return view('admin.laporan.karyawan_daftar_hadir.preview', ['var' => $ret, 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
+            );
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $view = (string)View::make('admin.laporan.karyawan_habis_kontrak.preview', ['var' => $karRet, 'periode' => $req['tanggal'], 'printDate' => Carbon::now()]);
-//            dd($view);
-            $pdf = PDF::loadHTML($view);
-//            $pdf = PDF::loadView('admin.laporan.karyawan_aktif.preview', ['var' => $karyawan, 'periode' => $tanggal, 'printDate' => Carbon::now()])->setPaper('a4', 'landscape');
-            return $pdf->stream('Laporan Karyawan Mangkir Ta '.Carbon::now()->format('d-m-Y').'.pdf');
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(6, 25, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            if(count($ret))
+            {
+                foreach($ret as $kRet => $vRet)
+                {
+                    $pdf->setHeaderData('ij.jpg', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']."\n"."Unit Kerja : ".$vRet['kode_bagian'].' - '.$vRet['nama_bagian']);
+                    $pdf->AddPage();
+                    
+                    $headTbl1 = array('No', 'Nama Karyawan', 'Tanggal', 'L/P',  'PIN', 'Kd Jad','Tanggal', 'Keterangan');
+                    $headTbl2 = array('','', 'Masuk','', '', '','','');
+                    $headW = array(7,60,15,5,10,20,4.5,30);
+
+                    foreach($headTbl1 as $kH => $vH)
+                    {
+                        if($kH == 6)
+                        {
+                            $pdf->Cell(($headW[$kH] * count($vRet['periode'])), 4, $vH, 'LRT', 0, 'C');
+                        }
+                        else
+                        {
+                            $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+                        }
+                    }
+                    $pdf->Ln();
+                    foreach($headTbl2 as $kH => $vH)
+                    {
+                        if($kH == 6)
+                        {
+                            foreach($vRet['periode'] as $per)
+                            {
+                                $pdf->Cell($headW[$kH], 4, $per->format('d'), 'LRTB', 0, 'C');
+                            }
+                        }
+                        else
+                        {
+                            $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+                        }
+                    }
+                    $pdf->Ln();
+                    foreach($vRet['karyawan'] as $k => $v)
+                    {
+                        $pdf->Cell($headW[0], 5, $k+1, 1, 0, 'C');
+                        $pdf->Cell($headW[1], 5, $v['nama'], 1, 0, 'C');
+                        $pdf->Cell($headW[2], 5, $v['tanggal_masuk'], 1, 0, 'C');
+                        $pdf->Cell($headW[3], 5, $v['jenkel'], 1, 0, 'C');
+                        $pdf->Cell($headW[4], 5, $v['pin'], 1, 0, 'C');
+                        $pdf->Cell($headW[5], 5, $v['jadwal'], 1, 0, 'C');
+                        foreach($vRet['periode'] as $per)
+                        {
+                            $pdf->Cell($headW[6], 5, '', 'LRTB', 0, 'C');
+                        }
+                        $pdf->Cell($headW[7], 5, '', 'LRTB', 0, 'C');
+                        $pdf->Ln();
+                    }
+                    $pdf->Ln();
+                    $pdf->Cell(10, 5, "Keterangan");
+                    $pdf->Ln();
+                    $pdf->Cell(5, 5, 'K', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Masuk Kerja', 1, 0);
+                    $pdf->Cell(5, 5);
+                    $pdf->Cell(5, 5, 'C', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Tahunan', 1, 0);
+                    $pdf->Ln();
+                    $pdf->Cell(5, 5, 'M', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Tanpa Ijin', 1, 0);
+                    $pdf->Cell(5, 5);
+                    $pdf->Cell(5, 5, 'D', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Dispensi', 1, 0);
+                    $pdf->Ln();
+                    $pdf->Cell(5, 5, 'P1', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Ijin', 1, 0);
+                    $pdf->Cell(5, 5);
+                    $pdf->Cell(5, 5, 'H1', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Haid', 1, 0);
+                    $pdf->Ln();
+                    $pdf->Cell(5, 5, 'SD', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Surat Dokter', 1, 0);
+                    $pdf->Cell(5, 5);
+                    $pdf->Cell(5, 5, 'H2', 1, 0, 'C');
+                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Hamil', 1, 0);
+                }
+            }
+            $pdf->Output('Laporan Kehadiran Karyawan.pdf', 'I');
         }
         else
         {
