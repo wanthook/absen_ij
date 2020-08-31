@@ -1472,7 +1472,7 @@ class KaryawanController extends Controller
     {
         $req    = $request->all();
         
-        $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan', 'status', 'jadwal','createdBy']);  
+        $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan', 'status', 'jadwal','createdBy'])->author();  
         
         if(!empty($req['sPin']))
         {
@@ -1590,7 +1590,7 @@ class KaryawanController extends Controller
                         
         $datas = Karyawan::with(['jadwals' => function($q){
             $q->orderBy('tanggal', 'desc');
-        },'divisi'])->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        },'divisi'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
         
         if(isset($req['sKar']))
         {
@@ -1640,7 +1640,7 @@ class KaryawanController extends Controller
         $tags = null;
         
         $term = trim($request->input('q'));
-        $tags = Karyawan::where(function($q) use($term)
+        $tags = Karyawan::author()->where(function($q) use($term)
         {
             $q->where('pin','like','%'.$term.'%')
               ->orWhere('nik','like','%'.$term.'%')

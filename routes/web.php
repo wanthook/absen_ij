@@ -212,6 +212,8 @@ Route::group(['middleware' => 'auth'],function()
         {
             $response = Response::make(File::get($path), 200);
             $response->header("Content-Type", File::mimeType($path));
+            $response->header('Content-Disposition','attachment');
+            $response->header('filename','template.xlsx');
             return $response;
         }
         else 

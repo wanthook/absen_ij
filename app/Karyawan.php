@@ -3,8 +3,10 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Karyawan extends Model
 {
@@ -189,6 +191,18 @@ class Karyawan extends Model
 
     public function scopeKaryawanAktif($query)
     {
-        return $query->where('active_status', 1);
+        $query->where('active_status', 1);
+        
+        return $query;
+    }
+
+    public function scopeAuthor($query)
+    {
+        if(Auth::user()->type->nama == 'REKANAN')
+        {
+            $query->where('perusahaan_id', Auth::user()->perusahaan->id);
+        }
+        
+        return $query;
     }
 }
