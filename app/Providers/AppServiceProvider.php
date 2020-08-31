@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
             $menu = "";
             if(Auth::user())
             {
-                $menu = $this->parentMenu();
+                $menu = $this->buildMenu();
             }
 
             //...with this variable
@@ -42,60 +42,53 @@ class AppServiceProvider extends ServiceProvider
         //
     }
     
-    private function parentMenu($moduleParent=0)
+    private function buildMenu()
     {
-        $moduls = Module::whereHas('users',function($q)
+        $mod = Module::whereHas('users',function($q)
         {
             $q->where('users.id',Auth::user()->id);
         })
-        ->where('module.parent',$moduleParent)
-        ->orderBy('order','ASC')
-        ->get();
+        ->orderBy('id','ASC')
+        ->get()->toTree();
         
-        $ret = '';
-        
-        foreach($moduls as $modul)
+        $trans = function($params) use (&$trans)
         {
-            $child  = $this->parentMenu($modul->id);
-            
-            $actFlag = "";
-            
-//            if($modul->selected == $selected)
-//            {
-//                $actFlag = " active";
-//            }
-            
-            if($child!="")
+            $ret = '';
+            foreach($params as $par)
             {
-                $ret .= '<li class="nav-item has-treeview">';
-                $ret .= '<a href="#" class="nav-link'.$actFlag.'"><i class="nav-icon '.$modul->icon.'"></i> <p>'.$modul->nama.'<i class="right fas fa-angle-left"></i></p></a>';
-                $ret .= '<ul class="nav nav-treeview">';
-                $ret .= $child;
-                $ret .= '</ul></li>';
-            }
-            else
-            {
-                $route = "";
-                if(!empty($modul->param))
+                $re = '';
+                if(empty($par->parent))
                 {
-                    $route = route($modul->route,explode('.',$modul->param));
-//                    $route ="";
+                    $ret .= '<li class="nav-item has-treeview">';
+                    $ret .= '<a href="#" class="nav-link"><i class="nav-icon '.$par->icon.'"></i> <p>'.$par->nama.'<i class="right fas fa-angle-left"></i></p></a>';
+                    $ret .= '<ul class="nav nav-treeview">';
+                    $ret .= $trans($par->children);
+                    $ret .= '</ul></li>';
                 }
-                else
+                else 
                 {
-                    if($modul->route != '#')
+                    $route = "";
+                    if(!empty($par->param))
                     {
-                        $route = route($modul->route);
+                        $route = route($par->route,explode('.',$par->param));
                     }
                     else
                     {
-                        $route = "";                    
+                        if($par->route != '#')
+                        {
+                            $route = route($par->route);
+                        }
+                        else
+                        {
+                            $route = "";                    
+                        }
                     }
+                    $ret .= '<li class="nav-item"><a href="'.$route.'" class="nav-link active"><i class="'.$par->icon.' nav-icon"></i><p>'.$par->nama.'</p></a></li>';
                 }
-                $ret .= '<li class="nav-item"><a href="'.$route.'" class="nav-link active'.$actFlag.'"><i class="'.$modul->icon.' nav-icon"></i><p>'.$modul->nama.'</p></a></li>';
             }
+            return $ret;
             
-        }
-        return $ret;
+        };
+        return $trans($mod);
     }
 }

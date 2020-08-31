@@ -21,11 +21,12 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'photo',
         'username',
+        'password',
         'name', 
         'email', 
-        'password',
-        'type',
-        'hapus',
+        'ttd_img',
+        'type_id',
+        'deleted_at',
         'perusahaan_id',
         'created_by',
         'updated_by'
@@ -42,7 +43,17 @@ class User extends Authenticatable implements JWTSubject
 
     public function modules()
     {
-        return $this->belongsToMany('App\Module')->withTimestamps();
+        return $this->belongsToMany('App\Module');
+    }
+    
+    public function type()
+    {
+        return $this->belongsTo('App\MasterOption', 'type_id');
+    }
+    
+    public function perusahaan()
+    {
+        return $this->belongsTo('App\Perusahaan');
     }
 
     public function getJWTIdentifier()

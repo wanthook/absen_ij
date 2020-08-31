@@ -60,6 +60,13 @@ Route::group(['middleware' => 'auth'],function()
         Route::get('laporan-karyawan-mangkir-ta', ['as' => 'lkaryawanmangkirta', 'uses' => 'LaporanController@indexKaryawanMangkirTa']);
         Route::get('laporan-karyawan-habis-kontrak', ['as' => 'lkaryawanhabiskontrak', 'uses' => 'LaporanController@indexKaryawanHabisKontrak']);
         Route::get('laporan-karyawan-daftar-hadir', ['as' => 'lkaryawandaftarhadir', 'uses' => 'LaporanController@indexKaryawanDaftarHadir']);
+        Route::get('laporan-karyawan-rekap-absen', ['as' => 'lkaryawanrekapabsen', 'uses' => 'LaporanController@indexKaryawanRekapAbsen']);
+    });
+    
+    Route::group(['prefix' => 'administrator'], function()
+    {
+        Route::get('module', ['as' => 'admmodule', 'uses' => 'ModuleController@index']);
+        Route::get('users', ['as' => 'admuser', 'uses' => 'Auth\RegisterController@index']);
     });
     
     Route::group(['prefix' => 'api'], function()
@@ -150,12 +157,25 @@ Route::group(['middleware' => 'auth'],function()
         Route::post('laporankaryawanmangkirta', ['as' => 'karyawanmangkirtalaporan', 'uses' => 'LaporanController@laporanKaryawanMangkirTa']);
         Route::post('laporankaryawanhabiskontrak', ['as' => 'karyawanhabiskontraklaporan', 'uses' => 'LaporanController@laporanKaryawanHabisKontrak']);
         Route::post('laporankaryawandaftarhadir', ['as' => 'karyawandaftarhadirlaporan', 'uses' => 'LaporanController@laporanKaryawanDaftarHadir']);
+        Route::post('laporankaryawanrekapabsen', ['as' => 'karyawanrekapabsenlaporan', 'uses' => 'LaporanController@laporanKaryawanRekapAbsen']);
         
         Route::post('absenmanualsave', ['as' => 'saveabsenmanual', 'uses' => 'ActivityManualController@store']);
         Route::post('absenmanualuploadsave', ['as' => 'saveabsenmanualupload', 'uses' => 'ActivityManualController@storeUploadAbsenManual']);
         Route::post('absenmanualdelete', ['as' => 'deleteabsenmanual', 'uses' => 'ActivityManualController@destroy']);
         Route::post('absenmanualdt', ['as' => 'dttabsenmanual', 'uses' => 'ActivityManualController@dt']);
+        
+        Route::post('adminmoduledt', ['as' => 'dtadminmodule', 'uses' => 'ModuleController@dt']);        
+        Route::post('adminmodulesave', ['as' => 'saveadminmodule', 'uses' => 'ModuleController@store']);
+        Route::post('adminmoduledelete', ['as' => 'deleteadminmodule', 'uses' => 'ModuleController@destroy']);
+        Route::post('adminmoduleparentselect', ['as' => 'seladminmoduleparent', 'uses' => 'ModuleController@select2parent']);
+        Route::post('adminmoduletreeselect', ['as' => 'seladminmoduletree', 'uses' => 'ModuleController@select2tree']);
+        
+        Route::post('adminuserdt', ['as' => 'dtadminuser', 'uses' => 'Auth\RegisterController@dt']);        
+        Route::post('adminusersave', ['as' => 'saveadminuser', 'uses' => 'Auth\RegisterController@store']);
+        Route::post('adminuserdelete', ['as' => 'deleteadminuser', 'uses' => 'Auth\RegisterController@destroy']);
+        Route::post('adminuserparentselect', ['as' => 'seladminuserparent', 'uses' => 'MasterOptionController@select2tipeuser']);
     });
+    
     
     Route::get('files/{kode}',      ['as' => 'app.files', function ($kode)
     {
