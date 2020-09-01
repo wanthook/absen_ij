@@ -45,6 +45,8 @@ use App\ExceptionLog;
 use App\Alasan;
 use App\Divisi;
 
+use DB;
+
 
 class LaporanController 
 {
@@ -116,6 +118,16 @@ class LaporanController
     public function indexKaryawanRekapAbsen()
     {
         return view('admin.laporan.karyawan_rekap_absen.index');
+    }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexTransaksiAlasan()
+    {
+        return view('admin.laporan.transaksi_alasan.index');
     }
     
     public function laporanDetail(Request $request)
@@ -1275,6 +1287,102 @@ class LaporanController
                 }
             }
             $pdf->Output('Laporan Rekap Absen Karyawan.pdf', 'I');
+        }
+        else
+        {
+            return abort(404,'Not Found');
+        }
+        
+    }
+    
+    
+    
+    public function laporanTransaksiAlasan(Request $request)
+    {
+        $req = $request->all();
+        
+        $ret = [];
+        
+        $datas = DB::table('alasan_karyawan')
+                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.hitung_lembur as hitung_lembur')
+                  ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
+                  ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
+                  ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
+                  ->leftJoin('prosesabsens', function($join)
+                  {
+                      $join->on('prosesabsens.karyawan_id', '=', 'karyawans.id')
+                           ->where('prosesabsens.tanggal', '=', 'alasan_karyawan.tanggal');
+                  });
+        $tgl = [];
+        if(isset($req['tanggal']))
+        {
+            $tgl = explode(" - ", $req['tanggal']);
+            $datas->whereBetween('alasan_karyawan.tanggal',$tgl);
+        }
+        
+        $datas->orderBy('alasan_karyawan.created_at', 'desc');
+        $kar = [];
+        foreach($datas->get() as $rowKar)
+        {
+            $rowKar->tanggal = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal)->format('d-m-Y');
+            $kar[] = $rowKar;
+        }
+        
+        $ret[] = [
+            'tgl_awal' => Carbon::createFromFormat('Y-m-d',reset($tgl))->format('d-m-Y'),
+            'tgl_akhir' => Carbon::createFromFormat('Y-m-d',end($tgl))->format('d-m-Y'),
+            'data' => $kar
+        ];
+        
+        if($req['btnSubmit'] == "preview")
+        {
+            return view('admin.laporan.transaksi_alasan.preview', ['var' => $ret, 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
+            );
+        }
+        else if($req['btnSubmit'] == "pdf")
+        {
+            $pdf = new TCPDF('L', PDF_UNIT, 'F4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(6, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            if(count($ret))
+            {
+                foreach($ret as $kRet => $vRet)
+                {
+                    $pdf->setHeaderData();
+                    $pdf->setHeaderData('ij.jpg', 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
+                    $pdf->AddPage();
+                                        
+                    $headTbl1 = array('No', 'Tanggal', 'PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kode Alasan','Nama Alasan', 'Waktu', 'Hitung');
+                    $headW = array(10,20,20,60,20,60,20,60,20,20);
+
+                    foreach($headTbl1 as $kH => $vH)
+                    {
+                        $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                    }
+                    $pdf->Ln();
+                    foreach($vRet['data'] as $k => $v)
+                    {
+                        $sizeCell = 4;
+                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
+                        $pdf->Cell($headW[1], $sizeCell, $v->tanggal, 1, 0, 'C');
+                        $pdf->Cell($headW[2], $sizeCell, $v->pin, 1, 0, 'C');
+                        $pdf->Cell($headW[3], $sizeCell, $v->nama, 1, 0, 'C');
+                        $pdf->Cell($headW[4], $sizeCell, $v->divisi_kode, 1, 0, 'C');
+                        $pdf->Cell($headW[5], $sizeCell, $v->divisi_deskripsi, 1, 0, 'C');
+                        $pdf->Cell($headW[6], $sizeCell, $v->alasan_kode, 1, 0, 'C');
+                        $pdf->cell($headW[7], $sizeCell, $v->alasan_deskripsi, 1, 0, 'C');
+                        $pdf->Cell($headW[8], $sizeCell, $v->waktu, 1, 0, 'C');
+                        $pdf->Cell($headW[8], $sizeCell, $v->hitung_lembur, 1, 0, 'C');
+                        $pdf->Ln();
+                    }
+                }
+            }
+            $pdf->Output('Laporan Transaksi Alasan.pdf', 'I');
         }
         else
         {
