@@ -70,7 +70,12 @@
             $('#sTanggal').on('change', function(e)
             {
                 dTableKar.ajax.reload();
-            });            
+            });    
+            
+            $('#perusahaan').on('select2:select', function(e)
+            {
+                dTableKar.ajax.reload();
+            }); 
             
             $('#cmdUpload').on('click', function(e)
             {
@@ -216,6 +221,7 @@
                     data: function (d) 
                     {
                         d.sTanggal   = $('#sTanggal').val();
+                        d.perusahaan   = $('#perusahaan').val();
                     }
                 },        
                 select: 
@@ -342,79 +348,34 @@
                 }
             });
             
-            // Add event listener for opening and closing details
-//            $('#dTableKar tbody').on('click', 'td.details-control', function () 
-//            {
-//                var tr = $(this).closest('tr');
-//                var row = dTableKar.row( tr );
-//
-//                if ( row.child.isShown() ) 
-//                {
-//                    // This row is already open - close it
-//                    row.child.hide();
-//                    tr.removeClass('shown');
-//                }
-//                else 
-//                {
-//                    // Open this row
-//                    var dts = row.data();
-//                    row.child(detFormat(dts)).show();
-//                    tr.addClass('shown');
-//                }
-//                
-//                $('.btnSet').on('click',function(e)
-//                    {
-//                        if(confirm('Apakah anda yakin menghapus alasan ini?'))
-//                        {
-//                            let _this	= $(this);
-//                            let datas = row.data();
-////                            console.log(datas.id);
-//                            $.ajax(
-//                            {
-//                                url         : '{{route("delalasankaryawan")}}',
-//                                dataType    : 'JSON',
-//                                type        : 'POST',
-//                                data        : {sTanggal : $('#sTanggal').val(), sKar : datas.id, sAlasan: _this.val()} ,
-//                                beforeSend  : function(xhr)
-//                                {
-//            //                        $('#loadingDialog').modal('show');
-//                                    toastOverlay.fire({
-//                                        type: 'warning',
-//                                        title: 'Sedang memproses data'
-//                                    });
-//                                },
-//                                success(result,status,xhr)
-//                                {
-//                                    if(result.status == 1)
-//                                    {
-//                                        Toast.fire({
-//                                            type: 'success',
-//                                            title: result.msg
-//                                        });
-//                                    }
-//                                    else
-//                                    {
-//                                        if(Array.isArray(result.msg))
-//                                        {
-//                                            var str = "";
-//                                            for(var i = 0 ; i < result.msg.length ; i++ )
-//                                            {
-//                                                str += result.msg[i]+"<br>";
-//                                            }
-//                                            Toast.fire({
-//                                                type: 'error',
-//                                                title: str
-//                                            });
-//                                            $('#tipe_exim').attr('disabled','disabled');
-//                                        }
-//
-//                                    }
-//                                    dTableKar.ajax.reload();
-//                                }
-//                            });
-//                        }
-//                    });
-//            } );
+            
+            $('#perusahaan').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selperusahaan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
             
             $('#sKar').select2({
                 // placeholder: 'Silakan Pilih',
@@ -595,6 +556,14 @@
                                         </div>
                                     </div>
                                 </div>
+                                @if(Auth::user()->type->nama != 'REKANAN')
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        {{ Form::label('perusahaan', 'Perusahaan') }}
+                                        {{ Form::select('perusahaan', [], null, ['id' => 'perusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    </div>
+                                </div>
+                                @endif
                                 <div class="col-1">
                                     <div class="form-group">
                                         <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i><br>Upload</button>

@@ -1540,12 +1540,12 @@ class KaryawanController extends Controller
             $datas->where('active_status_date', $req['sTanggal']);
         }
         
-        if(Auth::user()->type == "ADMIN_USER")
-        {
-            $datas->where('perusahaan_id', Auth::user()->perusahaan_id);
-        }
+//        if(Auth::user()->type == "ADMIN_USER")
+//        {
+//            $datas->where('perusahaan_id', Auth::user()->perusahaan_id);
+//        }
         
-        $datas->where('active_status', 2);
+        $datas->where('active_status', 2)->author();
         
         $datas->orderBy('id','desc');
         
@@ -1576,6 +1576,16 @@ class KaryawanController extends Controller
         if(isset($req['sTanggal']))
         {
             $datas->where('alasan_karyawan.tanggal',$req['sTanggal']);
+        }
+        
+        if(Auth::user()->type->nama == 'REKANAN')
+        {
+            $datas->where('karyawans.perusahaan_id', Auth::user()->perusahaan_id);
+        }
+        
+        if(isset($req['perusahaan']))
+        {
+            $datas->where('karyawans.perusahaan_id', $req['perusahaan']);
         }
         
         $datas->orderBy('alasan_karyawan.created_at', 'desc');        
