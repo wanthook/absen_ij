@@ -210,11 +210,8 @@ Route::group(['middleware' => 'auth'],function()
         
         if($path)
         {
-            $response = Response::make(File::get($path), 200);
-            $response->header("Content-Type", File::mimeType($path));
-            $response->header('Content-Disposition','attachment');
-            $response->header('filename','template.xlsx');
-            return $response;
+            $header = ['Content-Type' => File::mimeType($path)];
+            return Response::download($path,'template.xlsx', $header);
         }
         else 
         {
