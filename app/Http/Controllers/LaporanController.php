@@ -1384,6 +1384,151 @@ class LaporanController
             }
             $pdf->Output('Laporan Transaksi Alasan.pdf', 'I');
         }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan Absen Komulatif')
+                ->setSubject('Laporan Transaksi Alasan')
+                ->setDescription('Laporan Transaksi Alasan')
+                ->setKeywords('laporan indahjaya karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Transaksi Alasan');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan Transaksi Alasan');
+            $ss->getActiveSheet()->setCellValue('A2', "Periode : ".$ret[0]['tgl_awal']." s/d ".$ret[0]['tgl_akhir']);
+            $mergeHead = 10;
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('No','Tanggal', 'PIN','Nama Karyawan', 'Kode Divisi', 'Nama Divisi', 'Kode Alasan', 'Nama Alasan', 'Waktu', 'Hitung');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+            foreach($ret[0]['data'] as $kRet => $rRet)
+            {
+                $colStat = 1;
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->tanggal)?$rRet->tanggal:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->pin)?$rRet->pin:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->nama)?$rRet->nama:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->divisi_kode)?$rRet->divisi_kode:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->divisi_deskripsi)?$rRet->divisi_deskripsi:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->alasan_kode)?$rRet->alasan_kode:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->alasan_deskripsi)?$rRet->alasan_deskripsi:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->waktu)?$rRet->waktu:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->hitung_lembur)?$rRet->hitung_lembur:'');
+                                
+                $rowStart++;
+                
+            }
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="Transaksi Alasan.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
+        }
         else
         {
             return abort(404,'Not Found');

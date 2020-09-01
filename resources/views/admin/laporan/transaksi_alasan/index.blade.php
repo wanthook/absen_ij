@@ -96,6 +96,7 @@
             <div class="card-footer">
                 <button class="btn btn-success btn-submit" name="btnSubmit" value="preview"><i class="fa fa-search"></i>Preview</button>
                 <button class="btn btn-success btn-submit" name="btnSubmit" value="pdf"><i class="fa fa-file-pdf"></i>PDF</button>
+                <button class="btn btn-success btn-submit" name="btnSubmit" value="excel"><i class="fa fa-file-excel"></i>Excel</button>
             </div>
         </div>
     </div>
