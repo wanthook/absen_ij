@@ -96,6 +96,19 @@ class ProsesabsenController extends Controller
                 {
                     $karyawan = Karyawan::find($rowId);
                     
+                    $tmk = null;
+                    $active = null;
+
+                    if($karyawan->tanggal_masuk)
+                    {
+                        $tmk = Carbon::createFromFormat('Y-m-d', $karyawan->tanggal_masuk);
+                    }
+
+                    if($karyawan->active_status_date)
+                    {
+                        $active = Carbon::createFromFormat('Y-m-d', $karyawan->active_status_date);
+                    }
+                    
 //                    $jadwal = $karyawan->jadwals->wherePivot;  
                     $jadwal = $this->jadwals($tanggal, $karyawan);
                     
@@ -122,8 +135,25 @@ class ProsesabsenController extends Controller
                     if($jadwalArr)
                     {
                         foreach($jadwalArr as $key => $val)
-                        {                        
+                        {        
+                            
                             $alasanId = null;
+                            
+                            if($tmk)
+                            {
+                                if($tmk->diffInDays($per, false) < 0)
+                                {
+                                    $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                                }
+                            }
+
+                            if($active)
+                            {
+                                if($active->diffInDays($per, false)>=0)
+                                {
+                                    $alasanId[] = Alasan::where('kode','OUT')->first()->id;
+                                }
+                            }
                             
                             $pendek = null;
                             if(isset($val->pendek))
@@ -391,13 +421,13 @@ class ProsesabsenController extends Controller
                                 
                                     $jumlahJamKerja = $out->diffInHours($in);
                                     
-                                    $actIn = Activity::where('pin', $karyawan->pin)
+                                    $actIn = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'ASC')
                                             ->first();
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     
-                                    $actOut = Activity::where('pin', $karyawan->pin)
+                                    $actOut = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
                                                 $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()])
                                             ->orderBy('tanggal', 'DESC')
@@ -410,7 +440,7 @@ class ProsesabsenController extends Controller
                                         {
                                             if(!$shift3)
                                             {
-                                                $actOut = Activity::where('pin', $karyawan->pin)
+                                                $actOut = Activity::where('pin', $karyawan->key)
                                                         ->whereDate('tanggal', $out->copy()->toDateString())
                                                         ->orderBy('tanggal', 'DESC')
                                                         ->first();
@@ -421,7 +451,7 @@ class ProsesabsenController extends Controller
                                             }
                                             else
                                             {
-                                                $actOut = Activity::where('pin', $karyawan->pin)
+                                                $actOut = Activity::where('pin', $karyawan->key)
                                                         ->whereBetween('tanggal', [$out->copy()->toDateString().' 00:00:00', $out->copy()->addDay()->toDateString().' 09:00:00'])
                                                         ->orderBy('tanggal', 'DESC')
                                                         ->first();
@@ -438,7 +468,7 @@ class ProsesabsenController extends Controller
                                         {
                                             if(!$shift3)
                                             {
-                                                $actIn = Activity::where('pin', $karyawan->pin)
+                                                $actIn = Activity::where('pin', $karyawan->key)
                                                         ->whereDate('tanggal', $in->copy()->toDateString())
                                                         ->orderBy('tanggal', 'ASC')
                                                         ->first();
@@ -449,7 +479,7 @@ class ProsesabsenController extends Controller
                                             }
                                             else
                                             {
-                                                $actIn = Activity::where('pin', $karyawan->pin)
+                                                $actIn = Activity::where('pin', $karyawan->key)
                                                         ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
                                                         ->orderBy('tanggal', 'ASC')
                                                         ->first();
@@ -491,7 +521,7 @@ class ProsesabsenController extends Controller
 
                                 if($inBefore->greaterThan($outBefore))
                                 {
-                                    $tmpAct = Activity::where('pin', $karyawan->pin)
+                                    $tmpAct = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'ASC')
                                             ->first();
@@ -501,7 +531,7 @@ class ProsesabsenController extends Controller
                                     if($tmpAct)
                                     {
                                         $actIn = $tmpAct;
-                                        $actOut = Activity::where('pin', $karyawan->pin)
+                                        $actOut = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'DESC')
                                             ->first();
@@ -511,12 +541,12 @@ class ProsesabsenController extends Controller
                                     }
                                     else
                                     {
-                                        $actIn = Activity::where('pin', $karyawan->pin)
+                                        $actIn = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'ASC')
                                             ->first();
     //                                    dd($actIn);
-                                        $actOut = Activity::where('pin', $karyawan->pin)
+                                        $actOut = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'DESC')
                                             ->first();
@@ -529,7 +559,7 @@ class ProsesabsenController extends Controller
                                 }
                                 else
                                 {
-                                    $tmpAct = Activity::where('pin', $karyawan->pin)
+                                    $tmpAct = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'ASC')
                                             ->first();
@@ -540,7 +570,7 @@ class ProsesabsenController extends Controller
                                     {
                                         $actIn = $tmpAct;
 
-                                        $actOut = Activity::where('pin', $karyawan->pin)
+                                        $actOut = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'DESC')
                                             ->first();
@@ -550,7 +580,7 @@ class ProsesabsenController extends Controller
                                     }
                                     else
                                     {
-                                        $actIn = Activity::where('pin', $karyawan->pin)
+                                        $actIn = Activity::where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                             ->orderBy('tanggal', 'DESC')
                                             ->first();
@@ -558,7 +588,7 @@ class ProsesabsenController extends Controller
                                         if($actIn)
                                         {
 
-                                            $actOut = Activity::where('pin', $karyawan->pin)
+                                            $actOut = Activity::where('pin', $karyawan->key)
                                                 ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'DESC')
                                                 ->first();
@@ -568,12 +598,12 @@ class ProsesabsenController extends Controller
                                         }
                                         else
                                         {
-                                            $actIn = Activity::where('pin', $karyawan->pin)
+                                            $actIn = Activity::where('pin', $karyawan->key)
                                                 ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'DESC')
                                                 ->first();
 
-                                            $actOut = Activity::where('pin', $karyawan->pin)
+                                            $actOut = Activity::where('pin', $karyawan->key)
                                                 ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'DESC')
                                                 ->first();
@@ -806,14 +836,6 @@ class ProsesabsenController extends Controller
                             {
                                 $keterangan = implode(', ', $keterangan);
                             }
-//                            if(is_array($alasanId))
-//                            {
-//                                $alasanId = implode(',', $alasanId);
-//                            }
-                            if($alasanId)
-                            {
-                                $alasanId = json_encode($alasanId);
-                            }
                             
                             if($jumlahActivityKerja>(5*60))
                             {
@@ -840,6 +862,7 @@ class ProsesabsenController extends Controller
                                 if(!$isLibur)
                                 {
                                     $isMangkir = 1;
+                                    $alasanId[] = Alasan::where('kode', 'M')->first()->id;
                                 }
                             }
                             else if(!$jMasuk || !$jKeluar)
@@ -847,6 +870,7 @@ class ProsesabsenController extends Controller
                                 if(!$isLibur)
                                 {
                                     $isTa = 1;
+                                    $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
                                 }
                             }
                             
@@ -861,6 +885,13 @@ class ProsesabsenController extends Controller
                                 {                                
                                     $jumlahJamKerja = $jumlahJamKerja - ($nilaiGp/60);
                                 }
+                                $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
+                            }
+                            
+                            
+                            if($alasanId)
+                            {
+                                $alasanId = json_encode($alasanId);
                             }
                             
                             $arrProses = array(

@@ -9,6 +9,10 @@ class Prosesabsen extends Model
 {
     protected $table = 'prosesabsens';
     
+//    protected $casts = [
+//        'alasan_id' => 'array',
+//    ];
+    
     protected $fillable = [
         'karyawan_id',
         'alasan_id',
@@ -46,5 +50,10 @@ class Prosesabsen extends Model
     public function karyawan()
     {
         return $this->belongsTo("App\Karyawan", "karyawan_id")->with('divisi');
+    }
+    
+    public function getAlasanIdAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }

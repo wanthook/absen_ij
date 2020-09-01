@@ -119,50 +119,48 @@
 @if(isset($var))
 @foreach($var as $rVar)
 <page size="A4" layout="landscape">
-    <div class="j1">Daftar Kehadiran Karyawan</div>
+    <div class="j1">Rekap Absen Karyawan</div>
     <table class="info">
         <tr>
             <td>Periode</td>
             <td>:</td>
-            <td>{{$rVar['periode_awal'].' S/D '.$rVar['periode_akhir']}}</td>
-        </tr>
-        <tr>
-            <td>Unit Kerja</td>
-            <td>:</td>
-            <td>{{$rVar['kode_bagian'].' - '.$rVar['nama_bagian']}}</td>
+            <td>{{$rVar['tgl_awal'].' S/D '.$rVar['tgl_akhir']}}</td>
         </tr>
     </table>
     <table class="detail">
         <thead>
             <tr>
                 <th rowspan="2">No</th>
-                <th rowspan="2">Nama Karyawan</th>
-                <th rowspan="2">Tanggal<br>Masuk</th>
-                <th rowspan="2">L/P</th>
+                <th rowspan="2">Kode<br>Divisi</th>
+                <th rowspan="2">Nama<br>Divisi</th>
                 <th rowspan="2">PIN</th>
-                <th rowspan="2">Kd Jad</th>
-                <th colspan="{{count($rVar['periode'])}}">Tanggal</th>               
-                <th rowspan="2">Keterangan</th>
+                <th rowspan="2">TMK</th>
+                <th rowspan="2">Nama<br>Karyawan</th>
+                <th colspan="15">Absensi</th>
             </tr>
             <tr>
-                @foreach($rVar['periode'] as $per)
-                    <th>{{$per->format('d')}}</th>
-                @endforeach
+                @php
+                $lbl = ['C','D1','D2','D3','SD','SK','I','M','H1','H2','TA','GP','IN','OUT','OFF'];
+                foreach($lbl as $vLbl)
+                {
+                    echo '<th>'.$vLbl.'</th>';
+                }
+                @endphp
+                
             </tr>
         </thead>
         <tbody>
-            @foreach($rVar['karyawan'] as $kKar => $rKar)
+            @foreach($rVar['data'] as $kData => $vData)
             <tr style="line-height: 9px;">
-                <td>{{$kKar+1}}</td>
-                <td>{{substr($rKar['nama'],0,15)}}</td>
-                <td>{{$rKar['tanggal_masuk']}}</td>
-                <td>{{$rKar['jenkel']}}</td>
-                <td>{{$rKar['pin']}}</td>
-                <td>{{$rKar['jadwal']}}</td>
-                @foreach($rVar['periode'] as $per)
-                    <td></td>
+                <td>{{$kData+1}}</td>
+                <td>{{$vData['karyawan']->divisi->kode}}</td>
+                <td>{{$vData['karyawan']->divisi->deskripsi}}</td>
+                <td>{{$vData['karyawan']->pin}}</td>
+                <td>{{$vData['karyawan']->tanggal_masuk}}</td>
+                <td>{{$vData['karyawan']->nama}}</td>
+                @foreach($vData['absensi'] as $vAbsen)
+                    <td>{{$vAbsen}}</td>
                 @endforeach
-                <td></td>
             </tr>
             @endforeach
         </tbody>

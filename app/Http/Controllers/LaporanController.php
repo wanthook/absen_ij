@@ -616,8 +616,8 @@ class LaporanController
     {
         $req = $request->all();
         
-        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',1);
-        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2);
+        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',1)->author();
+        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author();
         
         $tanggal = Carbon::now()->toDateString();
         
@@ -759,7 +759,15 @@ class LaporanController
             {
                 $q->where('perusahaan_id', $req['perusahaan']);
             });
-        }        
+        }  
+        
+        if(Auth::user()->type->nama != 'REKANAN')
+        {
+            $absen->whereHas('karyawan', function($q) use($req)
+            {
+                $q->where('perusahaan_id', Auth::user()->perusahaan->id);
+            });
+        }
         
         $absen->orderBy('karyawan_id', 'asc');
         
@@ -966,7 +974,20 @@ class LaporanController
         
         $ret = [];
         
-        $div = Divisi::with('karyawan');
+        $div = Divisi::with(['karyawan' => function($query) use ($req)
+        {
+            if(Auth::user()->type->nama == 'REKANAN')
+            {
+                $query->where('perusahaan_id', Auth::user()->perusahaan_id);
+            }
+            else
+            {
+                if(isset($req['perusahaan']))
+                {
+                    $query->where('perusahaan_id', $req['perusahaan']);
+                }
+            }
+        }]);
         
         if(isset($req['divisi']))
         {
@@ -982,11 +1003,7 @@ class LaporanController
             
         }
         
-        $perusahaan = null;
-        if(isset($req['perusahaan']))
-        {
-            $perusahaan = $req['perusahaan'];
-        }
+        
         
         foreach($div->get() as $rowDiv)
         {
@@ -1137,7 +1154,7 @@ class LaporanController
         
         $ret = [];
         
-        $kar = Karyawan::with('divisi', 'prosesabsen');
+        $kar = Karyawan::with('divisi', 'prosesabsen')->karyawanAktif()->author();
         
         if(isset($req['divisi']))
         {
@@ -1157,138 +1174,107 @@ class LaporanController
         }
         
 //        $perusahaan = null;
-        
+        $karyawan = [];
         foreach($kar->get() as $rowKar)
         {
-            
+            $abs = [
+                    'C' => 0, 'D1' => 0, 'D2' => 0, 'D3' => 0, 'SD' => 0, 'SK' => 0,
+                    'I' => 0, 'M' => 0, 'H1' => 0, 'H2' => 0, 'TA' => 0, 'GP' => 0,
+                    'IN' => 0, 'OUT' => 0, 'OFF' => 0
+                ];
+            $tmk = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal_masuk);
             if($rowKar->prosesabsen->count() > 0)
             {
                 //$rowKar->prosesabsen()->whereBetween('tanggal', $tgl);
-                $abs = [
-                    'c' => 0, 'd1' => 0, 'd2',
-                ];
+                
                 foreach($rowKar->prosesabsen()->whereBetween('tanggal', $tgl)->get() as $proses)
                 {
-                    
+                    if($proses->alasan_id != null)
+                    {
+//                        dd($proses->alasan_id);
+                        $als = Alasan::whereIn('id', $proses->alasan_id)->get();
+                        foreach($als as $vAls)
+                        {
+                            $abs[$vAls->kode] += 1;
+                        }
+                        
+                    }
                 }
-                
-                $ret[] = [
-                    'periode_awal' => reset($periode)->format('d-m-Y'),
-                    'periode_akhir' => end($periode)->format('d-m-Y'),
-                    'periode' => $periode,
-                    'kode_bagian' => $rowDiv->kode,
-                    'nama_bagian' => $rowDiv->deskripsi,
-                    'karyawan' => $kar
-                ];
             }
+            
+            $karyawan[] = [
+                'karyawan' => $rowKar,
+                'absensi' => $abs
+            ];
         }
+        $ret[] = [
+            'tgl_awal' => Carbon::createFromFormat('Y-m-d',reset($tgl))->format('d-m-Y'),
+            'tgl_akhir' => Carbon::createFromFormat('Y-m-d',end($tgl))->format('d-m-Y'),
+            'data' => $karyawan
+        ];
         
         if($req['btnSubmit'] == "preview")
         {
-            return view('admin.laporan.karyawan_daftar_hadir.preview', ['var' => $ret, 
+            return view('admin.laporan.karyawan_rekap_absen.preview', ['var' => $ret, 
                 'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
             );
         }
         else if($req['btnSubmit'] == "pdf")
         {
-//            $pdf = new TCPDF('L', PDF_UNIT, 'F4', true, 'UTF-8', true);
-//            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-//            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-//            $pdf->SetMargins(6, 23, 5);
-//            $pdf->setFontSubsetting(false);
-//            $pdf->SetFont('helvetica', '', 8);
-//            
-//            if(count($ret))
-//            {
-//                foreach($ret as $kRet => $vRet)
-//                {
-//                    $pdf->setHeaderData();
-//                    $pdf->setHeaderData('ij.jpg', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
-//                    $pdf->AddPage();
-//                    
-//                    $infoWidth = array(25,3,300);
-//                    $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
-//                    $pdf->Cell($infoWidth[1], 3, ":");
-//                    $pdf->Cell($infoWidth[2], 3, $vRet['kode_bagian'].' - '.$vRet['nama_bagian']);
-//                    $pdf->Ln();
-//                    $pdf->Ln();
-//                    
-//                    $headTbl1 = array('No', 'Nama Karyawan', 'Tanggal', 'L/P',  'PIN', 'Kd Jad','Tanggal', 'Keterangan');
-//                    $headTbl2 = array('','', 'Masuk','', '', '','','');
-//                    $headW = array(7,60,17,5,10,20,5.5,30);
-//
-//                    foreach($headTbl1 as $kH => $vH)
-//                    {
-//                        if($kH == 6)
-//                        {
-//                            $pdf->Cell(($headW[$kH] * count($vRet['periode'])), 4, $vH, 'LRT', 0, 'C');
-//                        }
-//                        else
-//                        {
-//                            $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
-//                        }
-//                    }
-//                    $pdf->Ln();
-//                    foreach($headTbl2 as $kH => $vH)
-//                    {
-//                        if($kH == 6)
-//                        {
-//                            foreach($vRet['periode'] as $per)
-//                            {
-//                                $pdf->Cell($headW[$kH], 4, $per->format('d'), 'LRTB', 0, 'C');
-//                            }
-//                        }
-//                        else
-//                        {
-//                            $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
-//                        }
-//                    }
-//                    $pdf->Ln();
-//                    foreach($vRet['karyawan'] as $k => $v)
-//                    {
-//                        $sizeCell = 6;
-//                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
-//                        $pdf->Cell($headW[1], $sizeCell, $v['nama'], 1, 0, 'C');
-//                        $pdf->Cell($headW[2], $sizeCell, $v['tanggal_masuk'], 1, 0, 'C');
-//                        $pdf->Cell($headW[3], $sizeCell, $v['jenkel'], 1, 0, 'C');
-//                        $pdf->Cell($headW[4], $sizeCell, $v['pin'], 1, 0, 'C');
-//                        $pdf->Cell($headW[5], $sizeCell, $v['jadwal'], 1, 0, 'C');
-//                        foreach($vRet['periode'] as $per)
-//                        {
-//                            $pdf->Cell($headW[6], $sizeCell, '', 'LRTB', 0, 'C');
-//                        }
-//                        $pdf->Cell($headW[7], $sizeCell, '', 'LRTB', 0, 'C');
-//                        $pdf->Ln();
-//                    }
-//                    $pdf->Ln();
-//                    $pdf->Cell(10, 5, "Keterangan");
-//                    $pdf->Ln();
-//                    $pdf->Cell(5, 5, 'K', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Masuk Kerja', 1, 0);
-//                    $pdf->Cell(5, 5);
-//                    $pdf->Cell(5, 5, 'C', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Tahunan', 1, 0);
-//                    $pdf->Ln();
-//                    $pdf->Cell(5, 5, 'M', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Tanpa Ijin', 1, 0);
-//                    $pdf->Cell(5, 5);
-//                    $pdf->Cell(5, 5, 'D', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Dispensi', 1, 0);
-//                    $pdf->Ln();
-//                    $pdf->Cell(5, 5, 'P1', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Ijin', 1, 0);
-//                    $pdf->Cell(5, 5);
-//                    $pdf->Cell(5, 5, 'H1', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Haid', 1, 0);
-//                    $pdf->Ln();
-//                    $pdf->Cell(5, 5, 'SD', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Surat Dokter', 1, 0);
-//                    $pdf->Cell(5, 5);
-//                    $pdf->Cell(5, 5, 'H2', 1, 0, 'C');
-//                    $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Hamil', 1, 0);
-//                }
-//            }
-//            $pdf->Output('Laporan Kehadiran Karyawan.pdf', 'I');
+            $pdf = new TCPDF('L', PDF_UNIT, 'F4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(6, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            if(count($ret))
+            {
+                foreach($ret as $kRet => $vRet)
+                {
+                    $pdf->setHeaderData();
+                    $pdf->setHeaderData('ij.jpg', 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
+                    $pdf->AddPage();
+                                        
+                    $headTbl1 = array('No', 'Kode', 'Nama', 'PIN',  'TMK', 'Nama','Absensi');
+                    $headTbl2 = array('','Divisi', 'Divisi', '', '','Karyawan', 'C', 'D1', 'D2', 'D3', 'SD', 'SK', 'I', 'M', 'H1', 'H2', 'TA', 'GP', 'IN', 'OUT', 'OFF');
+                    $headW = array(10,30,35,20,20,65,9*15);
+
+                    foreach($headTbl1 as $kH => $vH)
+                    {
+                        $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                    }
+                    $pdf->Ln();
+                    foreach($headTbl2 as $kH => $vH)
+                    {
+                        if($kH >= 6)
+                        {
+                            $pdf->Cell(9, 4, $vH, 'LRTB', 0, 'C');
+                        }
+                        else
+                        {
+                            $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+                        }
+                    }
+                    $pdf->Ln();
+                    foreach($vRet['data'] as $k => $v)
+                    {
+                        $sizeCell = 4;
+                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
+                        $pdf->Cell($headW[1], $sizeCell, $v['karyawan']->divisi->kode, 1, 0, 'C');
+                        $pdf->Cell($headW[2], $sizeCell, $v['karyawan']->divisi->deskripsi, 1, 0, 'C');
+                        $pdf->Cell($headW[3], $sizeCell, $v['karyawan']->pin, 1, 0, 'C');
+                        $pdf->Cell($headW[4], $sizeCell, $v['karyawan']->tanggal_masuk, 1, 0, 'C');
+                        $pdf->Cell($headW[5], $sizeCell, $v['karyawan']->nama, 1, 0, 'C');
+                        foreach($v['absensi'] as $per)
+                        {
+                            $pdf->Cell(9, $sizeCell, $per, 'LRTB', 0, 'C');
+                        }
+                        $pdf->Ln();
+                    }
+                }
+            }
+            $pdf->Output('Laporan Rekap Absen Karyawan.pdf', 'I');
         }
         else
         {
@@ -1326,22 +1312,22 @@ class LaporanController
             {
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
                 }
             }
             else
             {
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
             }            
             
@@ -1362,13 +1348,6 @@ class LaporanController
                     $active = Carbon::createFromFormat('Y-m-d', $kar->active_status_date);
                 }
                 
-                
-                
-                if($kar->tanggal_masuk)
-                {
-                    $tmk = Carbon::createFromFormat('Y-m-d', $kar->tanggal_masuk);
-                }
-                
                 $pAbsen = Prosesabsen::where('karyawan_id', $kId)
                         ->whereBetween('tanggal',
                                 [
@@ -1387,8 +1366,8 @@ class LaporanController
                         
                         if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
                         {
-                            $alasanId = json_decode($arrTgl[$per->format('d/m/Y')]->alasan_id, true);
-                            $alasan = Alasan::find($alasanId);
+//                            $alasanId = json_decode($arrTgl[$per->format('d/m/Y')]->alasan_id, true);
+                            $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
                             $arrTgl[$per->format('d/m/Y')]->alasan = $alasan;
                         }
                         
