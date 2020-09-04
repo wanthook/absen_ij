@@ -5,6 +5,9 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Auth;
+
+use Illuminate\Support\Facades\Crypt;
 
 class Jabatan extends Model
 {
@@ -13,9 +16,8 @@ class Jabatan extends Model
     protected $table = 'jabatans';
     
     protected $fillable = [
-        'nama',
         'deskripsi',   
-        'kode',
+        'kode',        
         'deleted_at',
         'created_by', 
         'created_at',
@@ -29,6 +31,44 @@ class Jabatan extends Model
      * @var array
      */
     protected $dates = ['deleted_at'];
+    
+//    public function getTunjanganAttribute($value)
+//    {
+//        if(Auth::user()->type->nama == 'ADMIN')
+//        {
+//            if(!empty($value))
+//            {
+//                return Crypt::decryptString($value);
+//            }
+//            else
+//            {
+//                return null;
+//            }
+//        }
+//        else
+//        {
+//            return $value;
+//        }
+//    }
+    
+//    public function getPrestasiAttribute($value)
+//    {
+//        if(Auth::user()->type->nama == 'ADMIN')
+//        {
+//            if(!empty($value))
+//            {
+//                return Crypt::decryptString($value);
+//            }
+//            else
+//            {
+//                return null;
+//            }
+//        }
+//        else
+//        {
+//            return $value;
+//        }
+//    }
     
     public function getCreatedAtAttribute($value)
     {

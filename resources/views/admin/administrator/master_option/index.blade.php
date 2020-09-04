@@ -1,34 +1,46 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Master Jabatan</p>
+<p>Administrator Master Option</p>
 @endsection
 
 
 @section('breadcrumb')
 <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Beranda</a></li>
-<li class="breadcrumb-item active">Master Jabatan</li>
+<li class="breadcrumb-item active">Administrator Master Option</li>
 @endsection
 
 @section('add_css')
     <!-- Datatables -->
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.css')}}">
+    <!-- select2 -->
+    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
 @endsection
 
 @section('add_js')
     <!-- Datatables -->
     <script src="{{asset('bower_components/admin-lte/plugins/datatables/jquery.dataTables.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
+    <!-- select2 -->
+    <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
     
     <script>
         var dTable = null;
         $(function(e)
         {
-            var Toast = Swal.mixin({
+            let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000
+            });
+            
+            var toastOverlay = Swal.mixin({
+                position: 'center',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false
             });
 
             $.ajaxSetup({
@@ -106,81 +118,118 @@
                 "processing": true,
                 "serverSide": true,
                 "autoWidth": false,
-                "lengthMenu": [ 100, 500, 1000, 1500, 2000 ],
+                "lengthMenu": [100, 500, 1000, 1500, 2000 ],
                 "ajax":
                 {
-                    "url"       : "{{ route('dtjabatan') }}",
+                    "url"       : "{{ route('dtadminmasteroption') }}",
                     "type"      : 'POST',
                     data: function (d) 
                     {
                         d.search     = $('#txtSearch').val();
                     }
                 },
-                "columns"           :
-                [
-                    { data    : "action", orderable: false, searchable: false},
-                    { data    : "kode", name : "kode" },
-                    { data    : "deskripsi", name : "deskripsi" },
-//                    { data    : "tunjangan", name : "tunjangan" },
-//                    { data    : "prestasi", name : "prestasi" },
-                    { data    : "created_by.name", name : "created_by" },
-                    { data    : "created_at", name : "created_at" }              
-
-                ],
-                "drawCallback": function( settings, json ) 
+                "columnDefs"    :[
                 {
-                    $('.delrow').on('click',function(e)
-                    {
-                        if(confirm('Apakah Anda yakin menghapus data ini?'))
-                        {
-                            var _this	= $(this);
-                            var datas       = dTable.row(_this.parents('tr')).data();
-                            
-                            $.ajax(
-                            {
-                                url         : "{{ route('deljabatan') }}",
-                                type        : 'POST',
-                                dataType    : 'json',
-                                data        : {id:datas.id},
-                                success     : function(result,status,xhr)
-                                {
-                                    if(result.status == 1)
-                                    {
-                                        _this.parents('tr').fadeOut();
-                                        dTable.row(_this.parents('tr')).remove().draw(false);
-                                        dTable.ajax.reload();
-                                        Toast.fire({
-                                            type: 'success',
-                                            title: result.msg
-                                        });
-                                    }
-                                    else
-                                    {
-                                        Toast.fire({
-                                            type: 'success',
-                                            title: result.msg
-                                        });
-                                    }
-                                }
-                            });
-
-                            return false;
-                        }
-                    });
-                    
-                    $('.editrow').on('click',function(e)
-                    {
-                        var _this	= $(this);
-                        var datas = dTable.row(_this.parents('tr')).data();
-                        $('#id').val(datas.id);
-                        $('#kode').val(datas.kode);
-                        $('#deskripsi').val(datas.deskripsi);
-                    });
-                    
-                    
-                }
+                    "targets": 0,
+                    "className":      'btndel',
+                    "orderable":      false,
+                    "data"     :           null,
+                    "defaultContent": '<button class="btn btn-sm btn-primary btnedit" data-toggle="modal" data-target="#modal-form"><i class="fa fa-edit"></i></button><button class="btn btn-sm btn-danger btndelete"><i class="fa fa-eraser"></i></button>'
+                },
+                {
+                        targets : 'tnama',
+                        data: "nama"
+                },
+                {
+                        targets : 'tdeskripsi',
+                        data: "deskripsi"
+                },
+                {
+                        targets : 'tkode',
+                        data: "kode"
+                },
+                {
+                        targets : 'twarna',
+                        data: "warna"
+                },
+                {
+                        targets : 'tnilai',
+                        data: "nilai"
+                }]
             });
             
+            $('#dTable tbody').on('click', '.btndelete', function () 
+            {
+                var tr = $(this).closest('tr');
+                var row = dTable.row( tr );
+                var datas = row.data();
+                
+                if(confirm('Apakah Anda yakin menghapus data ini?'))
+                {
+                    $.ajax(
+                    {
+                        url         : '{{route("deleteadminmasteroption")}}',
+                        dataType    : 'JSON',
+                        type        : 'POST',
+                        data        : {sId : datas.id} ,
+                        beforeSend  : function(xhr)
+                        {
+    //                        $('#loadingDialog').modal('show');
+                            toastOverlay.fire({
+                                type: 'warning',
+                                title: 'Sedang memproses hapus data',
+                                onBeforeOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        },
+                        success(result,status,xhr)
+                        {
+                            if(result.status == 1)
+                            {
+                                Toast.fire({
+                                    type: 'success',
+                                    title: result.msg
+                                });
+                            }
+                            else
+                            {
+                                if(Array.isArray(result.msg))
+                                {
+                                    var str = "";
+                                    for(var i = 0 ; i < result.msg.length ; i++ )
+                                    {
+                                        str += result.msg[i]+"<br>";
+                                    }
+                                    Toast.fire({
+                                        type: 'error',
+                                        title: str
+                                    });
+                                    $('#tipe_exim').attr('disabled','disabled');
+                                }
+
+                            }
+                            dTableKar.ajax.reload();
+                        }
+                    });
+
+                    return false;
+                }
+            });
+            $('#dTable tbody').on('click', '.btnedit', function () 
+            {
+                var tr = $(this).closest('tr');
+                var row = dTable.row( tr );
+                var datas = row.data();
+                
+                $('#id').val(datas.id);
+                $('#nama').val(datas.nama);
+                $('#deskripsi').val(datas.deskripsi);
+                $('#kode').val(datas.kode);
+                $('#warna').val(datas.warna);
+                $('#nilai').val(datas.nilai);
+                
+            });
         });
     </script>
 @endsection
@@ -190,32 +239,35 @@
     <div class="modal-dialog">
         <div class="modal-content bg-secondary">
             <div class="modal-header">
-            <h4 class="modal-title">Form Jabatan</h4>
+            <h4 class="modal-title">Form Master Option</h4>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <form id="form_data" action="{{route('savejabatan')}}" accept-charset="UTF-8" >
+        <form id="form_data" action="{{route('saveadminmasteroption')}}" accept-charset="UTF-8" >
             {{csrf_field()}}
             <input type="hidden" name="id" id="id">
         <div class="modal-body">            
-                
-                <div class="form-group">
-                    <label for="kode">Kode Jabatan</label>
-                    <input type="text" class="form-control" id="kode" name="kode" placeholder="Kode Jabatan">
-                </div>
-                <div class="form-group">
-                    <label for="kode">Nama Jabatan</label>
-                    <input type="text" class="form-control" id="deskripsi" name="deskripsi" placeholder="Nama Jabatan">
-                </div>
-<!--                <div class="form-group">
-                    <label for="kode">Tunjangan Jabatan</label>
-                    <input type="text" class="form-control" id="tunjangan" name="tunjangan" placeholder="Tunjangan Jabatan">
-                </div>
-                <div class="form-group">
-                    <label for="kode">Tunjangan Prestasi</label>
-                    <input type="text" class="form-control" id="prestasi" name="prestasi" placeholder="Tunjangan Prestasi">
-                </div>-->
+            <div class="form-group">
+                <label for="nama">Nama</label>
+                <input type="text" class="form-control" id="nama" name="nama">
+            </div>
+            <div class="form-group">
+                <label for="deskripsi">Deskripsi</label>
+                <input type="text" class="form-control" id="deskripsi" name="deskripsi">
+            </div>
+            <div class="form-group">
+                <label for="kode">Kode</label>
+                <input type="text" class="form-control" id="kode" name="kode">
+            </div>
+            <div class="form-group">
+                <label for="warna">Warna</label>
+                <input type="text" class="form-control" id="warna" name="warna">
+            </div>
+            <div class="form-group">
+                <label for="nilai">Nilai</label>
+                <input type="text" class="form-control" id="nilai" name="nilai">
+            </div>
         </div>
         <div class="modal-footer justify-content-between">
             <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
@@ -265,13 +317,19 @@
             <table id="dTable" class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Aksi</th>
-                        <th>Kode Jabatan</th>
-                        <th>Nama Jabatan</th>
-<!--                        <th>Tunjangan</th>
-                        <th>Prestasi</th>-->
-                        <th>Dibuat Oleh</th>
-                        <th>Tanggal Buat</th>
+                        <th></th>
+                        @php
+                        $lstTbl = ['tnama' => 'Nama', 
+                        'tdeskripsi' => 'Deskripsi', 
+                        'tkode' => 'Kode',
+                        'twarna' => 'Warna',
+                        'tnilai' => 'Nilai'];
+                        
+                        foreach($lstTbl as $k => $v)
+                        {
+                            echo '<th class="'.$k.'">'.$v.'</th>';
+                        }
+                        @endphp
                     </tr>
                 </thead>
             </table>

@@ -1483,41 +1483,34 @@ class KaryawanController extends Controller
         
         $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan', 'status', 'jadwal','createdBy'])->author();  
         
-        if(!empty($req['sPin']))
-        {
-            $datas->where('pin', $req['sPin']);
-        }
-        
-        if(!empty($req['jPinNikJadwal']))
+        if(!empty($req['sNama']))
         {
             $datas->where(function($q) use($req)
             {
-                $q->where('pin','like','%'.$req['jPinNikJadwal'].'%');
-                $q->orWhere('nik','like','%'.$req['jPinNikJadwal'].'%');
+                $q->where('pin', 'like', '%'.$req['sNama'].'%')
+                    ->orWhere('key', 'like', '%'.$req['sNama'].'%')
+                    ->orWhere('nama', 'like', '%'.$req['sNama'].'%')
+                    ->orWhere('nik', 'like', '%'.$req['sNama'].'%');
             });
         }
-        if(!empty($req['jJadwalId']))
-        {
-            $datas->where('jadwal_id', $req['jJadwalId']);
-        }
-        if(!empty($req['jDivJadwal']))
-        {
-            $datas->where('divisi_id', $req['jDivJadwal']);
-        }
-        if(!empty($req['jJabatanJadwal']))
-        {
-            $datas->where('jabatan_id', $req['jJabatanJadwal']);
-        }
-        if(!empty($req['jnJadwalId']))
-        {
-            $datas->where('jadwal_id', '<>',$req['jnJadwalId']);
-        }
         
-        if(Auth::user()->type == "ADMIN_USER")
+        if(!empty($req['sJabatan']))
         {
-            $datas->where('perusahaan_id', Auth::user()->perusahaan_id);
+            $datas->where('jabatan_id', $req['sJabatan']);
         }
-        
+        if(!empty($req['sDivisi']))
+        {
+            $datas->where('divisi_id', $req['sDivisi']);
+        }
+        if(!empty($req['sStatus']))
+        {
+            $datas->where('status_karyawan_id', $req['sStatus']);
+        }
+        if(!empty($req['sPerusahaan']))
+        {
+            $datas->where('perusahaan_id', $req['sPerusahaan']);
+        }
+                
         $datas->orderBy('id','desc');
         
         return  Datatables::of($datas)
@@ -1548,11 +1541,6 @@ class KaryawanController extends Controller
         {
             $datas->where('active_status_date', $req['sTanggal']);
         }
-        
-//        if(Auth::user()->type == "ADMIN_USER")
-//        {
-//            $datas->where('perusahaan_id', Auth::user()->perusahaan_id);
-//        }
         
         $datas->whereIn('active_status', [2,3])->author();
         

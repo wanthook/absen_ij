@@ -62,7 +62,7 @@
                 dTable.ajax.reload();
             });
             
-            $('#perusahaan_id').select2({
+            $('#sPerusahaan').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
                 allowClear: true,
@@ -90,7 +90,7 @@
                 }
             });
             
-            $('#divisi_id').select2({
+            $('#sDivisi').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
                 allowClear: true,
@@ -118,7 +118,7 @@
                 }
             });
             
-            $('#jabatan_id').select2({
+            $('#sJabatan').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
                 allowClear: true,
@@ -146,7 +146,7 @@
                 }
             });
             
-            $('#status_karyawan_id').select2({
+            $('#sStatus').select2({
                 minimumInputLength: 0,
                 delay: 250,
                 placeholder: "",
@@ -171,276 +171,6 @@
                     },
                     cache: true
                 }
-            });
-            
-            $('#jadwal_id').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('seljadwal')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#agama_id').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('selagama')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#jenis_kelamin_id').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('seljenkel')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#darah_id').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('selgoldar')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#perkawinan_id').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('selkawin')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#keluarga_relasi').select2({
-                minimumInputLength: 0,
-                delay: 250,
-                placeholder: "",
-                allowClear: true,
-                ajax: {
-                    url: "{{route('selrelasi')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#status_karyawan_id').on('select2:select', function(e)
-            {
-                var dt = $(this).select2('data');
-                if(dt[0].text === "KONTRAK")
-                {
-                    $('#grp_kontrak').show();
-                    $('#grp_probation').hide();
-                }
-                else if(dt[0].text === "PERCOBAAN")
-                {
-                    $('#grp_kontrak').hide();
-                    $('#grp_probation').show();
-                }
-                else
-                {
-                    $('#grp_kontrak').hide();
-                    $('#grp_probation').hide();
-                }
-            });
-            
-            $('#jadwal_id').on('select2:select', function(e)
-            {
-                var dt = $(this).select2('data');
-                
-                $('#tipe').val(dt[0].label);
-            });            
-
-            $('#tanggal_probation, #tanggal_kontrak, #tanggal_lahir').datetimepicker({
-                format: 'DD-MM-YYYY'
-            });
-
-            $('#form_data').submit( function(e)
-            {
-                e.preventDefault();
-                
-                let formData = $(this).serializeFormJSON();
-
-                formData.data = objJadwal;
-
-                $.ajax(
-                {
-                    url         : $(this).attr('action'),
-                    dataType    : 'json',
-                    contentType : 'application/json; charset=utf-8',
-                    type        : 'POST',
-                    data        :JSON.stringify(formData) ,
-                    beforeSend  : function(xhr)
-                    {
-                            toastOverlay.fire({
-                            type: 'warning',
-                            title: 'Sedang memproses absen',
-                            onBeforeOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    },
-                    success(result,status,xhr)
-                    {
-                        if(result.status == 1)
-                        {
-//                            document.getElementById("form_data").reset(); 
-                            
-                            Toast.fire({
-                                type: 'success',
-                                title: result.msg
-                            });
-                        }
-                        else
-                        {
-                            if(Array.isArray(result.msg))
-                            {
-                                let str = "";
-                                for(let i = 0 ; i < result.msg.length ; i++ )
-                                {
-                                    str += result.msg[i]+"<br>";
-                                }
-                                Toast.fire({
-                                    type: 'error',
-                                    title: str
-                                });
-                            }
-                            else
-                            {
-                                Toast.fire({
-                                    type: 'error',
-                                    title: result.msg
-                                });
-                            }
-                            
-                        }
-                        dTable.ajax.reload();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) { 
-                        toastOverlay.close();
-                        /* implementation goes here */ 
-                        console.log(jqXHR.responseText);
-                    }
-                    
-                });
-                
-                return false;
-            });
-            
-            $('#btn-keluarga').on('click', function(e)
-            {
-                e.preventDefault();
             });
             
             $('#cmdUpload').on('click', function(e)
@@ -501,6 +231,13 @@
                 });
             });
             
+            $('#btnCari').on('click', function(e)
+            {
+                e.preventDefault();
+                
+                dTable.ajax.reload();
+            });
+            
             dTable = $('#dTable').DataTable({
                 "sPaginationType": "full_numbers",
                 "searching":false,
@@ -509,14 +246,18 @@
                 "processing": true,
                 "serverSide": true,
                 "autoWidth": true,
-                "lengthMenu": [10, 50, 100, 500, 1000, 1500, 2000 ],
+                "lengthMenu": [100, 500, 1000, 1500, 2000 ],
                 "ajax":
                 {
                     "url"       : "{{ route('dtkaryawan') }}",
                     "type"      : 'POST',
                     data: function (d) 
                     {
-                        d.search     = $('#txtSearch').val();
+                        d.sNama     = $('#sNama').val();
+                        d.sJabatan     = $('#sJabatan').val();
+                        d.sDivisi     = $('#sDivisi').val();
+                        d.sPerusahaan     = $('#sPerusahaan').val();
+                        d.sStatus     = $('#sStatus').val();
                     }
                 },
                 "columns"           :
@@ -815,36 +556,77 @@
 @endsection
 
 @section('content')
-<div class="card card-primary card-outline">
-    <div class="card-header">
-        <h5 class="card-title">&nbsp;</h5>
-        <div class="card-tools">
-            <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
-            <a class="btn btn-success btn-xs" alt="Tambah" href="{{route('mkaryawanf')}}"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</a>
+<div class="row">      
+    <div class="col-12">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-2">
+                                <div class="form-group">                                        
+                                    {{ Form::label('sNama', 'PIN/Key/NIK/Nama') }}
+                                    {{ Form::text('sNama', null, ['id' => 'sNama', 'class' => 'form-control form-control-sm']) }}
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="form-group">                                        
+                                    {{ Form::label('sJabatan', 'Jabatan') }}
+                                    {{ Form::select('sJabatan', [], null, ['id' => 'sJabatan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="form-group">                                        
+                                    {{ Form::label('sDivisi', 'Divisi') }}
+                                    {{ Form::select('sDivisi', [], null, ['id' => 'sDivisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="form-group">                                        
+                                    {{ Form::label('sPerusahaan', 'Perusahaan') }}
+                                    {{ Form::select('sPerusahaan', [], null, ['id' => 'sPerusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="form-group">                                        
+                                    {{ Form::label('sStatus', 'Status') }}
+                                    {{ Form::select('sStatus', [], null, ['id' => 'sStatus', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary" id="btnCari" alt="Search"><i class="fa fa-search"></i>&nbsp;Cari</button>
+                                    <button class="btn btn-sm btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
+                                    <a class="btn btn-success btn-sm" alt="Tambah" href="{{route('mkaryawanf')}}"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-tools">
+                            
+                        </div>
+                    </div>
+                    <div class="card-body">  
+                        <table id="dTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksi</th>
+                                    <th>Kode</th>
+                                    <th>Nama</th>
+                                    <th>Info Karyawan</th>
+                                    <th>Jadwal</th>
+                                    <th>Status</th>
+                                    <th>Info Tanggal</th>
+                                    <th>Dibuat Oleh</th>
+                                    <th>Tanggal Buat</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
         </div>
     </div>
-<!--    <div class="card-header">
-      <h5 class="m-0">Featured</h5>
-    </div>-->
-    <!-- /.card-header -->
-        <div class="card-body">  
-            <table id="dTable" class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Aksi</th>
-                        <th>Kode</th>
-                        <th>Nama</th>
-                        <th>Info Karyawan</th>
-                        <th>Jadwal</th>
-                        <th>Status</th>
-                        <th>Info Tanggal</th>
-                        <th>Dibuat Oleh</th>
-                        <th>Tanggal Buat</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
-    <!-- /.card-body -->
 </div>
 
 @endsection

@@ -16,6 +16,8 @@ class MasterOption extends Model
         'nama',
         'deskripsi',   
         'kode',
+        'warna',
+        'nilai',
         'deleted_at',
         'created_by', 
         'created_at',

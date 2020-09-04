@@ -89,6 +89,14 @@ class Karyawan extends Model
         return $this->jadwal_manual()->wherePivot('tanggal', $tanggal);
     }
     
+    public function salary()
+    {
+        return $this->belongsToMany('App\MasterOption','salaries','karyawan_id','jenis_id')
+                ->using(SubTransaction::class)
+                ->withPivot('tanggal', 'nilai', 'tipe', 'created_by', 'created_at')
+                ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
+    }
+    
     public function jabatan()
     {
         return $this->belongsTo("App\Jabatan", "jabatan_id");

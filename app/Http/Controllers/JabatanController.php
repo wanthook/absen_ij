@@ -10,6 +10,8 @@ use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
 
+//use Illuminate\Support\Facades\Crypt;
+
 class JabatanController extends Controller
 {
     
@@ -45,11 +47,11 @@ class JabatanController extends Controller
         {
             $validation = Validator::make($request->all(), 
                 [
-                    'nama'   => 'required',
+                    'kode'   => 'required',
                     'deskripsi'      => 'required',
                 ],
                 [
-                    'nama.required'  => 'Kode harus diisi.',
+                    'kode.required'  => 'Kode harus diisi.',
                     'deskripsi.required'     => 'Nama harus diisi.',
                 ]);
 
@@ -63,7 +65,8 @@ class JabatanController extends Controller
             else
             {
                 $req = $request->all();
-
+                
+                
                 if(empty($req['id']))
                 {
                     
