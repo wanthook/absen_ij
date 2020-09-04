@@ -141,7 +141,7 @@ class ProsesabsenController extends Controller
                             
                             if($tmk)
                             {
-                                if($tmk->diffInDays($per, false) < 0)
+                                if($tmk->diffInDays($key, false) < 0)
                                 {
                                     $alasanId[] = Alasan::where('kode','IN')->first()->id;
                                 }
@@ -149,7 +149,7 @@ class ProsesabsenController extends Controller
 
                             if($active)
                             {
-                                if($active->diffInDays($per, false)>=0)
+                                if($active->diffInDays($key, false)>=0)
                                 {
                                     $alasanId[] = Alasan::where('kode','OUT')->first()->id;
                                 }
