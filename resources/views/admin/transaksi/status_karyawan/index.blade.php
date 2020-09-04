@@ -412,14 +412,28 @@
                         targets : 'tjabatan',
                         data: function(data)
                         {
-                            return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            if(data.jabatan)
+                            {
+                                return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
                         }
                 },
                 {
                         targets : 'tdivisi',
                         data: function(data)
                         {
-                            return data.divisi.kode+" - "+data.divisi.deskripsi;
+                            if(data.divisi)
+                            {
+                                return data.divisi.kode+" - "+data.divisi.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
                         }
                 },
                 {
@@ -628,8 +642,11 @@
                                     </div>
                                 </div>
                                 <div class="col-1">
-                                    <div class="form-group">
-                                        <button class="btn btn-warning btn-xs" id="cmdTambah"><i class="fa fa-user-slash"></i><br>Ubah Status</button>
+                                    <div class="btn-group">
+                                        <button class="btn btn-warning btn-xs" id="cmdTambah"><i class="fa fa-user-slash"></i>Ubah Status</button>
+                                        
+                                        <button id="btnKembali" class="btn btn-success btn-xs"><i class="fa fa-eraser"></i>Aktifkan Karyawan</button>
+                                        <button id="btnNonAktif" class="btn btn-danger btn-xs"><i class="fa fa-user-slash"></i>Non Aktifkan</button>
                                     </div>
                                 </div>
 <!--                                <div class="col-1">
@@ -641,8 +658,6 @@
                         </form>
                     </div>
                     <div class="card-body"> 
-                        <button id="btnKembali" class="btn btn-success btn-xs"><i class="fa fa-eraser"></i>Kembalikan Status</button>
-                        <button id="btnNonAktif" class="btn btn-danger btn-xs"><i class="fa fa-user-slash"></i>Non Aktifkan</button>
                         <table id="dTableKar" class="table table-hover">
                             <thead>
                                 <tr>

@@ -883,7 +883,7 @@ class LaporanController
         $kar = Karyawan::with('divisi', 'jabatan')->whereHas('status', function($q)
         {
             $q->where('nama', 'K');
-        });
+        })->author();
         
         if(isset($req['tanggal']))
         {
