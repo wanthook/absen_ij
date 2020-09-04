@@ -904,7 +904,7 @@ class LaporanController
         
         $kar->orderBy('pin', 'asc');
         
-        if(count($kar))
+        if($kar->count())
         {
             foreach($kar->get() as $kRow)
             {
