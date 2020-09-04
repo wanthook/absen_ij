@@ -671,15 +671,15 @@ class KaryawanController extends Controller
                         
                         $karId = $karyawan->first()->id;
                         $kar = Karyawan::find($karId);
-                        $par = $kar->jadwals()->wherePivot('tanggal', trim($csv[$arrKey->tanggal]));
-                        $jadwal = Jadwal::where('kode', trim($csv[$arrKey->kode]))->first();
+                        $par = $kar->jadwals()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
+                        $jadwal = Jadwal::where('kode', trim($sD[$arrKey->kode]))->first();
 //                            dd($par);
                         if($par)
                         {
                             $par->detach();
                         }
 
-                        $attach = ['tanggal' => trim($csv[$arrKey->tanggal])];
+                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal])];
 
                         $kar->jadwals()->attach($jadwal->id, $attach);
 
@@ -1154,7 +1154,11 @@ class KaryawanController extends Controller
                         $jd->active_status = 2;
                         $jd->active_comment = $req['sKeterangan'];
                         $jd->active_status_date = $req['sTanggal'];
-
+                        
+                        
+                        $jd->updated_by = Auth::user()->id;
+                        $jd->updated_at = Carbon::now();
+                        
                         $jd->save();
 
                         echo json_encode(array(
@@ -1200,7 +1204,10 @@ class KaryawanController extends Controller
                     $jd->active_status = 1;
                     $jd->active_comment = null;
                     $jd->active_status_date = null;
-
+                    
+                    $jd->updated_by = Auth::user()->id;
+                    $jd->updated_at = Carbon::now();
+                    
                     $jd->save();
 
                     echo json_encode(array(
@@ -1235,7 +1242,9 @@ class KaryawanController extends Controller
                     $jd = Karyawan::find($req['sKar']);
                     
                     $jd->active_status = 3;
-                    $jd->active_status_date = Carbon::now()->toDateString();
+                    $jd->updated_by = Auth::user()->id;
+                    $jd->updated_at = Carbon::now();
+//                    $jd->active_status_date = Carbon::now()->toDateString();
 
                     $jd->save();
 
@@ -1545,7 +1554,7 @@ class KaryawanController extends Controller
 //            $datas->where('perusahaan_id', Auth::user()->perusahaan_id);
 //        }
         
-        $datas->where('active_status', 2)->author();
+        $datas->whereIn('active_status', [2,3])->author();
         
         $datas->orderBy('id','desc');
         
@@ -1557,6 +1566,25 @@ class KaryawanController extends Controller
                     $str    .= '<button class="delrow btn btn-danger btn-xs" title="Hapus"><i class="fas fa-eraser"></i></button>';
                     $str    .= '</div>';
                     return $str;
+                })
+                ->setRowClass(function ($datas)
+                {
+                    $ret = '';
+                    switch($datas->active_status)
+                    {
+                        case 3:
+                            $ret = 'danger alert-danger';
+                            break;
+                        case 2:
+                            $ret = 'warning alert-warning';
+                            break;
+                        case 1:
+                            $ret = 'success alert-success';
+                            break;
+                        
+                    }
+                    
+                    return $ret;
                 })
                 ->editColumn('id', '{{$id}}')
                 ->make(true);
