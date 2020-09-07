@@ -269,6 +269,7 @@ class JadwalController extends Controller
                     $dS = array();
                     
                     $jadwal = Jadwal::where('tipe','D')->where('kode',$csv[$arrKey->kode]);
+                    echo $csv[$arrKey->kode].',';
                     if($jadwal->count() == 0)
                     {
                         $row = array();
