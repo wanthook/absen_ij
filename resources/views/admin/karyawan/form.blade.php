@@ -524,11 +524,6 @@
                 tblKeluarga.ajax.reload();
                 
             });
-//            
-//            $('#modal-form').on('show.bs.modal', function (e) 
-//            {  
-//                $('#tanggal_masuk').val(moment().format('DD-MM-YYYY'));
-//            });
 
             tblKeluarga = $('#tblKeluarga').DataTable({
                 "sPaginationType": "full_numbers",
@@ -554,7 +549,6 @@
                     { data    : "nama", name : "nama" },
                     { data    : "relasi.kode", name : "relasi" },
                     { data    : "telpon", name : "telpon" },
-//                    { data    : "jenkel.kode", name : "telpon" },
                     { data    : "kota", name : "kota" },
                     { data    : "alamat", name : "alamat" },
 
@@ -780,7 +774,13 @@
                                     {{ Form::text('pin', null, ['id' => 'pin', 'class' => 'form-control form-control-sm', 'placeholder' => 'PIN']) }}
                                 </div>
                             </div>
-                            <div class="col-4">
+                            <div class="col-2">
+                                <div class="form-group">
+                                    {{ Form::label('key', 'KEY') }}
+                                    {{ Form::text('key', null, ['id' => 'key', 'class' => 'form-control form-control-sm', 'placeholder' => 'KEY']) }}
+                                </div>
+                            </div>
+                            <div class="col-2">
                                 <div class="form-group">
                                     {{ Form::label('nik', 'NIK') }}
                                     {{ Form::text('nik', null, ['id' => 'nik', 'class' => 'form-control form-control-sm', 'placeholder' => 'NIK']) }}
@@ -870,8 +870,8 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('jadwal_id', 'Jadwal Karyawan') }}
-                                    @if($var->jadwal)
-                                    {{ Form::select('jadwal_id', [$var->status->id => $var->jadwal->tipe.' - '.$var->jadwal->kode], null, ['id' => 'jadwal_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @if($var->jadwals)
+                                    {{ Form::select('jadwal_id', [$var->jadwals[0]->id => $var->jadwals[0]->tipe.' - '.$var->jadwals[0]->kode], null, ['id' => 'jadwal_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('jadwal_id', [], null, ['id' => 'jadwal_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @endif                               
@@ -880,7 +880,11 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('tipe', 'Tipe Jadwal') }}
+                                    @if($var->jadwals)
+                                    {{ Form::text('tipe', (($var->jadwals[0]->tipe == 'D')?'Dayshift':'Shift'), ['id' => 'tipe', 'class' => 'form-control form-control-sm', 'readonly']) }}
+                                    @else
                                     {{ Form::text('tipe', null, ['id' => 'tipe', 'class' => 'form-control form-control-sm', 'readonly']) }}
+                                    @endif
                                 </div>
                             </div>
 

@@ -309,18 +309,18 @@
                     { data    : function(data)
                         {
                             var str = "";
-                            if(data.jadwal != null)
+                            if(data.jadwals[0] != null)
                             {
-                                if(data.jadwal.tipe == "D")
+                                if(data.jadwals[0].tipe == "D")
                                 {
                                     str += "Tipe : <b>Dayshift</b>";
                                 }
-                                else if(data.jadwal.tipe == "S")
+                                else if(data.jadwals[0].tipe == "S")
                                 {
                                     str += "Tipe : <b>Shift</b>";
                                 }
 
-                                str += "</br>Kode : " + data.jadwal.kode;
+                                str += "</br>Kode : " + data.jadwals[0].kode;
                             }
                             else
                             {

@@ -18,6 +18,9 @@ use JShrink;
 use Auth;
 use Validator;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 class JadwalController extends Controller
 {
     /**
@@ -235,31 +238,42 @@ class JadwalController extends Controller
                 
                 $fileVar->move(storage_path('tmp'),'tempFileUploadDayshift');
                 
-                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadDayshift','r');
+                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadDayshift');
                 
-                $x = 0;            
-                while(! feof($fileStorage))
+                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                
+                $x = 0;           
+                $arrKey = null;
+                
+                foreach($sheetData as $csv)
                 {
-                    $csv = fgetcsv($fileStorage, 1024, "\t");
-                    
                     if(empty($csv[0]))
                     {
                         break;
                     }
                     if($x == 0)
                     {
+                        foreach($csv as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
                         $x++;
                         continue;
-                    }
-                    
+                    }                    
                     $dS = array();
                     
-                    $jadwal = Jadwal::where('tipe','D')->where('kode',$csv[0]);
+                    $jadwal = Jadwal::where('tipe','D')->where('kode',$csv[$arrKey->kode]);
                     if($jadwal->count() == 0)
                     {
                         $row = array();
-                        $row['kode'] = strtoupper($csv[0]);
-                        $row['deskripsi'] = strtoupper($csv[1]);
+                        $row['kode'] = strtoupper($csv[$arrKey->kode]);
+                        $row['deskripsi'] = strtoupper($csv[$arrKey->deskripsi]);
                         $row['tipe']        = 'D'; 
                         $row['updated_by']   = Auth::user()->id;  
                         $row['created_by']   = Auth::user()->id;
@@ -268,14 +282,29 @@ class JadwalController extends Controller
                         $jad = Jadwal::create($row);
 
                         $jadwal = Jadwal::find($jad->id);
+                        
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->senin])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 1, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->selasa])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 2, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->rabu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 3, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->kamis])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 4, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->jumat])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 5, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->sabtu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 6, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->minggu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 7, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                     }
                     else
                     {
                         $idJad = $jadwal->first()->id;
                         
                         Jadwal::find($idJad)->fill(
-                                array('kode' => strtoupper($csv[0]),
-                                      'deskripsi' => strtoupper($csv[1]),
+                                array('kode' => strtoupper($csv[$arrKey->kode]),
+                                      'deskripsi' => strtoupper($csv[$arrKey->deskripsi]),
                                       'updated_by' => Auth::user()->id))->save();
                         
                         $jadwal = Jadwal::find($idJad);
@@ -283,12 +312,20 @@ class JadwalController extends Controller
 
                     $jadwal->jadwal_kerja()->detach();
 
-                    for($i=2 ; $i<=8 ; $i++)
-                    {
-                        $jKerja = JamKerja::where('kode', $csv[$i])->first();
-
-                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => ($i-1), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    }
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->senin])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 1, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->selasa])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 2, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->rabu])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 3, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->kamis])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 4, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->jumat])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 5, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->sabtu])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 6, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    $jKerja = JamKerja::where('kode', $csv[$arrKey->minggu])->first();
+                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 7, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                 }
             }
             echo json_encode(array(
@@ -422,34 +459,47 @@ class JadwalController extends Controller
                 
                 $fileVar->move(storage_path('tmp'),'tempFileUploadShift');
                 
-                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadShift','r');
+                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadShift');
+                
+                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                              
+                
                 
                 $x = 0;       
                 $kdBefore = ""; $jadId = 0;
-                $jadwalMaster = null;
+                $jadwalMaster = null;  
+                $arrKey = null;
                 
                 $jadwal = null;
                 
                 
-                while(! feof($fileStorage))
+                foreach($sheetData as $csv)
                 {
-                    $csv = fgetcsv($fileStorage, 1024, "\t");
-                    
                     if(empty($csv[0]))
                     {
                         break;
                     }
                     if($x == 0)
                     {
+                        foreach($csv as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
                         $x++;
                         continue;
                     }
                     
-                    if($kdBefore != $csv[0])
+                    if($kdBefore != $csv[$arrKey->kode])
                     {
-                        $kdBefore = $csv[0];
+                        $kdBefore = $csv[$arrKey->kode];
                         $jadId = 0;
-                        $jadwalMaster = Jadwal::where('kode', $csv[0])->where('tipe', 'S');
+                        $jadwalMaster = Jadwal::where('kode', $csv[$arrKey->kode])->where('tipe', 'S');
                         
                         if($jadwalMaster->count() != 0)
                         {
@@ -467,9 +517,9 @@ class JadwalController extends Controller
                         continue;
                     }
                     
-                    $jKerja = JamKerja::where('kode',$csv[2])->first();
+                    $jKerja = JamKerja::where('kode',$csv[$arrKey->kode])->first();
                     
-                    $detach = $jadwal->jadwal_kerja()->wherePivot('tanggal',$csv[1]);
+                    $detach = $jadwal->jadwal_kerja()->wherePivot('tanggal',$csv[$arrKey->tanggal]);
                     
                     if($detach)
                     {
@@ -477,7 +527,7 @@ class JadwalController extends Controller
                     }
                     
                     $jadwal->jadwal_kerja()->attach($jKerja->id,
-                            ['tanggal' => $csv[1], 
+                            ['tanggal' => $csv[$arrKey->tanggal], 
                              'created_by' => Auth::user()->id, 
                              'created_at' => Carbon::now()]);
                 }

@@ -222,6 +222,16 @@ class KaryawanController extends Controller
                         $row = array();
                         $row['pin'] = $csv[$arrKey->pin];
                         
+                        if(!empty($csv[$arrKey->rekening]))
+                        {
+                            $row['rekening'] = trim($csv[$arrKey->rekening]);
+                        }
+                        
+                        if(!empty($csv[$arrKey->npwp]))
+                        {
+                            $row['npwp'] = trim($csv[$arrKey->npwp]);
+                        }                        
+                        
                         $perusahaan = Perusahaan::where('pin_min', '<=', $csv[$arrKey->pin])->where('pin_max', '>=', $csv[$arrKey->pin])->first();
                         if($perusahaan)
                         {
@@ -577,6 +587,10 @@ class KaryawanController extends Controller
                             {
                                 $attach['waktu'] = trim($sD[$arrKey->waktu]);
                             }
+                            if(trim($sD[$arrKey->keterangan]))
+                            {
+                                $attach['keterangan'] = trim($sD[$arrKey->keterangan]);
+                            }
                             
                             $kar->alasan()->attach($alasan->id, $attach);
                         }
@@ -782,7 +796,7 @@ class KaryawanController extends Controller
                             $par->detach();
                         }
 
-                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
+                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->keterangan]),'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
 
                         $kar->jadwal_manual()->attach($jadwal->id, $attach);
                         
@@ -1481,7 +1495,7 @@ class KaryawanController extends Controller
     {
         $req    = $request->all();
         
-        $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan', 'status', 'jadwal','createdBy'])->author();  
+        $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan', 'status', 'jadwals','createdBy'])->author();  
         
         if(!empty($req['sNama']))
         {

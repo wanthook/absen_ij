@@ -20,6 +20,8 @@ class Karyawan extends Model
         'key',
         'nik',
         'nama',
+        'npwp',
+        'rekening',
         'foto',
         'email',
         'ktp',
