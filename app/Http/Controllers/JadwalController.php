@@ -269,7 +269,7 @@ class JadwalController extends Controller
                     $dS = array();
                     
                     $jadwal = Jadwal::where('tipe','D')->where('kode',$csv[$arrKey->kode]);
-                    echo $csv[$arrKey->kode].',';
+//                    echo $csv[$arrKey->kode].',';
                     if($jadwal->count() == 0)
                     {
                         $row = array();
@@ -309,24 +309,25 @@ class JadwalController extends Controller
                                       'updated_by' => Auth::user()->id))->save();
                         
                         $jadwal = Jadwal::find($idJad);
+                        $jadwal->jadwal_kerja()->detach();
+
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->senin])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 1, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->selasa])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 2, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->rabu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 3, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->kamis])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 4, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->jumat])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 5, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->sabtu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 6, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $jKerja = JamKerja::where('kode', $csv[$arrKey->minggu])->first();
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 7, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                     }
 
-                    $jadwal->jadwal_kerja()->detach();
-
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->senin])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 1, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->selasa])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 2, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->rabu])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 3, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->kamis])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 4, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->jumat])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 5, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->sabtu])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 6, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                    $jKerja = JamKerja::where('kode', $csv[$arrKey->minggu])->first();
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,['day' => 7, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    
                 }
             }
             echo json_encode(array(
