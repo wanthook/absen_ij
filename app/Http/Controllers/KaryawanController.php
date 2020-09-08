@@ -185,11 +185,24 @@ class KaryawanController extends Controller
                 
                 $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadKaryawan');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
-                
-//                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadKaryawan','r');
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadKaryawan','r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadKaryawan');
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;    
                 $arrKey = null;
@@ -540,10 +553,24 @@ class KaryawanController extends Controller
                 
                 $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadAlasanKaryawan');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
-//                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadAlasanKaryawan','r');
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadAlasanKaryawan','r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadAlasanKaryawan');
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;    
                 $arrKey = null;
@@ -654,11 +681,23 @@ class KaryawanController extends Controller
                 
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalKaryawan');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
-                
-//                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalKaryawan','r');
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalKaryawan','r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalKaryawan');
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;    
                 $arrKey = null;
@@ -753,9 +792,8 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                
-                $sheetData = [];
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
+                $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
@@ -773,7 +811,6 @@ class KaryawanController extends Controller
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
-                //                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
                 
                 $x = 0;    
                 $arrKey = null;
