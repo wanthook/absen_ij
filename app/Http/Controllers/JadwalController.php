@@ -524,7 +524,7 @@ class JadwalController extends Controller
                         continue;
                     }
                     
-                    $jKerja = JamKerja::where('kode',$csv[$arrKey->kode])->first();
+                    $jKerja = JamKerja::where('kode',$csv[$arrKey->jamkerja])->first();
                     
                     if($jKerja)
                     {
