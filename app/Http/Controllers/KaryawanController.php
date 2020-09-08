@@ -758,7 +758,7 @@ class KaryawanController extends Controller
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadDayshift','r');
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "/t");
