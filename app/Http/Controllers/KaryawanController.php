@@ -753,16 +753,17 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-//                Settings::setCache(Cache);
+                
                 $spreadsheet = [];
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
+                
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
                     $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
                     while(! feof($fileStorage))
                     {
-                        $csv = fgetcsv($fileStorage, 1024, "/t");
-                        
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
                         $spreadsheet[] = $csv;
                     }
                 }
