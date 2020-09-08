@@ -213,7 +213,12 @@ class JamKerjaController extends Controller
         }
         else
         {
-            $data = JamKerja::where('kode','like','%'.$request->input('q').'%');
+            $data = JamKerja::where(function($q) use($request)
+            {
+                $q->where('kode','like','%'.$request->input('q').'%');
+                $q->orWhere('jam_masuk','like','%'.$request->input('q').'%');
+                $q->orWhere('jam_keluar','like','%'.$request->input('q').'%');
+            });
         }
         $datas = $data->get();
         
