@@ -291,11 +291,6 @@ class KaryawanController extends Controller
                             $row['divisi_id'] = $divisi->id;
                         }
                         
-                        $jadwal = Jadwal::where('kode',trim($csv[$arrKey->kode_jadwal]))->first();
-                        if($jadwal)
-                        {
-                            $row['jadwal_id'] = $jadwal->id;
-                        }
                         
                         if(!empty(trim($csv[$arrKey->tanggal_kontrak])))
                         {
@@ -323,7 +318,16 @@ class KaryawanController extends Controller
                         $row['updated_by']   = Auth::user()->id;  
                         $row['created_by']   = Auth::user()->id;
 
-                        Karyawan::create($row);
+                        $kar = Karyawan::create($row);
+                        if($kar->id)
+                        {
+                            $jadwal = Jadwal::where('kode',trim($csv[$arrKey->kode_jadwal]))->first();
+                            $tanggalJadwal = trim($csv[$arrKey->tanggal_jadwal]);
+                            if($jadwal && $tanggalJadwal)
+                            {
+                                Karyawan::find($kar->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
+                            }
+                        }
                     }
                     else
                     {
@@ -393,9 +397,10 @@ class KaryawanController extends Controller
                         }
                         
                         $jadwal = Jadwal::where('kode',trim($csv[$arrKey->kode_jadwal]))->first();
-                        if($jadwal)
+                        $tanggalJadwal = trim($csv[$arrKey->tanggal_jadwal]);
+                        if($jadwal && $tanggalJadwal)
                         {
-                            $row['jadwal_id'] = $jadwal->id;
+                            Karyawan::find($kar->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
                         }
                         
                         if(!empty(trim($csv[$arrKey->tanggal_kontrak])))
