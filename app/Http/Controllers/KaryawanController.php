@@ -24,9 +24,11 @@ use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
 use DB;
+use Illuminate\Support\Facades\Cache;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Settings;
 
 class KaryawanController extends Controller
 {
@@ -751,11 +753,25 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
+//                Settings::setCache(Cache);
+                $spreadsheet = [];
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
-                
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan');
-                
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadDayshift','r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "/t");
+                        
+                        $spreadsheet[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan');
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 //                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
                 
                 $x = 0;    
