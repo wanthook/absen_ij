@@ -754,7 +754,7 @@ class KaryawanController extends Controller
                 $fileVar = $req['formUpload'];
                 
                 
-                $spreadsheet = [];
+                $sheetData = [];
                 $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
@@ -764,7 +764,7 @@ class KaryawanController extends Controller
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
 //                        dd($csv);
-                        $spreadsheet[] = $csv;
+                        $sheetData[] = $csv;
                     }
                 }
                 else
