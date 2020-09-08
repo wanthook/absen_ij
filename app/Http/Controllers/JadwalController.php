@@ -512,6 +512,11 @@ class JadwalController extends Controller
                             $jadwal = Jadwal::find($jadId);
 //                            continue;
                         }
+                        else
+                        {
+                            $jadId = Jadwal::create(['kode' => $csv[$arrKey->kode], 'tipe' => 'S', 'created_by' => Auth::user()->id, 'updated_by' => Auth::user()->id]);
+                            $jadId = $jadId->id;
+                        }
                     }
                     
                     if($jadId == 0)
@@ -521,17 +526,20 @@ class JadwalController extends Controller
                     
                     $jKerja = JamKerja::where('kode',$csv[$arrKey->kode])->first();
                     
-                    $detach = $jadwal->jadwal_kerja()->wherePivot('tanggal',$csv[$arrKey->tanggal]);
-                    
-                    if($detach)
+                    if($jKerja)
                     {
-                        $detach->detach();
+                        $detach = $jadwal->jadwal_kerja()->wherePivot('tanggal',$csv[$arrKey->tanggal]);
+
+                        if($detach)
+                        {
+                            $detach->detach();
+                        }
+
+                        $jadwal->jadwal_kerja()->attach($jKerja->id,
+                                ['tanggal' => $csv[$arrKey->tanggal], 
+                                 'created_by' => Auth::user()->id, 
+                                 'created_at' => Carbon::now()]);
                     }
-                    
-                    $jadwal->jadwal_kerja()->attach($jKerja->id,
-                            ['tanggal' => $csv[$arrKey->tanggal], 
-                             'created_by' => Auth::user()->id, 
-                             'created_at' => Carbon::now()]);
                 }
             }
             echo json_encode(array(
