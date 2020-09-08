@@ -1696,6 +1696,11 @@ class KaryawanController extends Controller
             $datas->where('id', $req['sKar']);
         }
         
+        if(isset($req['sPerusahaan']))
+        {
+            $datas->where('perusahaan_id', $req['sPerusahaan']);
+        }
+        
         return  Datatables::of($datas)
                 ->make(true);
     }

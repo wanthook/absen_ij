@@ -70,7 +70,14 @@
             $('#sKar').on('change', function(e)
             {
                 dTableKar.ajax.reload();
-            });            
+            });        
+            
+            $('#cmdCari').on('click', function(e)
+            {
+                e.preventDefault();
+                
+                dTableKar.ajax.reload();
+            });
             
             $('#cmdUpload').on('click', function(e)
             {
@@ -197,6 +204,7 @@
                     data: function (d) 
                     {
                         d.sKar   = $('#sKar').val();
+                        d.sPerusahaan   = $('#sPerusahaan').val();
                     }
                 },        
                 select: 
@@ -335,6 +343,33 @@
                         }
                     });
             } );
+            $('#sPerusahaan').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selperusahaan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
             
             $('#sKar').select2({
                 placeholder: "",
@@ -497,19 +532,27 @@
                                         {{ Form::select('sJadwal', [], null, ['id' => 'sJadwal', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="form-group">                                        
                                         {{ Form::label('sKar', 'Karyawan') }}
                                         {{ Form::select('sKar', [], null, ['id' => 'sKar', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
+                                </div>                                
+                                @if(Auth::user()->type->nama != 'REKANAN')
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        {{ Form::label('sPerusahaan', 'Perusahaan') }}
+                                        {{ Form::select('sPerusahaan', [], null, ['id' => 'sPerusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    </div>
                                 </div>
+                                @endif
                                 <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sKeterangan', 'Keterangan') }}
                                         {{ Form::text('sKeterangan',  null, ['id' => 'sKeterangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
                                     </div>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="btn-group">
                                         <button class="btn btn-primary btn-sm" id="cmdCari"><i class="fa fa-search"></i>Cari</button>
                                         <button class="btn btn-success btn-sm" id="cmdTambah"><i class="fa fa-plus-circle"></i>Tambah</button>

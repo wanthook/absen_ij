@@ -217,6 +217,36 @@
                 });
             });
             
+            
+            
+            $('#sPerusahaan').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selperusahaan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
             dTableKar = $('#dTableKar').DataTable({
                 "sPaginationType": "full_numbers",
                 "searching":false,
@@ -235,9 +265,9 @@
                     "type"      : 'POST',
                     data: function (d) 
                     {
-                        d.jPinNikJadwal   = $('#sKarPin').val();
-                        d.jDivJadwal      = $('#sKarDiv').val();
-                        d.jJabatanJadwal  = $('#sKarJab').val();
+                        d.sNama   = $('#sKarPin').val();
+                        d.sDivisi      = $('#sKarDiv').val();
+                        d.sPerusahaan      = $('#sPerusahaan').val();
                     }
                 },        
                 select: 
@@ -580,7 +610,7 @@
                     <div class="card-header">
                         <form>
                             <div class="row">
-                                <div class="col-4">
+                                <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sKarPin', 'PIN/NIK') }}
                                         {{ Form::text('sKarPin', null, ['id' => 'sKarPin', 'class' => 'form-control form-control-sm', 'placeholder' => 'PIN/NIK']) }}
@@ -593,13 +623,15 @@
 
                                     </div>
                                 </div>
-<!--                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('sKarJab', 'Jabatan') }}
-                                        {{ Form::select('sKarJab', [], null, ['id' => 'sKarJab', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>-->
+                                @if(Auth::user()->type->nama != 'REKANAN')
                                 <div class="col-4">
+                                    <div class="form-group">
+                                        {{ Form::label('sPerusahaan', 'Perusahaan') }}
+                                        {{ Form::select('sPerusahaan', [], null, ['id' => 'sPerusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    </div>
+                                </div>
+                                @endif
+                                <div class="col-2">
                                     <div class="btn-group">
                                         {{ Form::button('<i class="fa fa-search"></i>Cari',['id' => 'sKarCar', 'class' => 'btn btn-success btn-sm']) }}
                                         {{ Form::button('<i class="fa fa-upload"></i>Upload',['id' => 'sKarUpload', 'class' => 'btn btn-primary btn-sm', 'alt'=>'Upload', 'data-toggle' => 'modal', 'data-target' => '#modal-form-upload']) }}
