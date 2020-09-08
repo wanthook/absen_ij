@@ -818,7 +818,7 @@ class KaryawanController extends Controller
                             $par->detach();
                         }
 
-                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->keterangan]),'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
+                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
 
                         $kar->jadwal_manual()->attach($jadwal->id, $attach);
                         
