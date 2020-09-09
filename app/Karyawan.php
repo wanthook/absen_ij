@@ -88,7 +88,8 @@ class Karyawan extends Model
     
     public function jadwalManualTanggal($tanggal)
     {
-        return $this->jadwal_manual()->wherePivot('tanggal', $tanggal);
+        return $this->belongsToMany('App\JamKerja')
+                    ->withPivot('tanggal','created_by','created_at')->wherePivot('tanggal', $tanggal);
     }
     
     public function salary()
@@ -119,6 +120,16 @@ class Karyawan extends Model
         return $this->belongsTo("App\MasterOption", "status_karyawan_id");
     }
     
+    public function nikah()
+    {
+        return $this->belongsTo("App\MasterOption", "perkawinan_id");
+    }
+    
+    public function darah()
+    {
+        return $this->belongsTo("App\MasterOption", "darah_id");
+    }
+    
     public function jeniskelamin()
     {
         return $this->belongsTo("App\MasterOption", "jenis_kelamin_id");
@@ -138,6 +149,11 @@ class Karyawan extends Model
     {
         return $this->belongsToMany('App\Alasan')
                     ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at');
+    }
+    
+    public function agama()
+    {
+        return $this->belongsToMany('App\MasterOption','agama_id');
     }
     
     public function alasanTanggal($tanggal)

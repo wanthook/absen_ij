@@ -365,12 +365,13 @@
             $('#status_karyawan_id').on('select2:select', function(e)
             {
                 var dt = $(this).select2('data');
-                if(dt[0].text === "KONTRAK")
+//                console.log(dt);
+                if(dt[0].deskripsi === "KONTRAK")
                 {
                     $('#grp_kontrak').show();
                     $('#grp_probation').hide();
                 }
-                else if(dt[0].text === "PERCOBAAN")
+                else if(dt[0].deskripsi === "PERCOBAAN")
                 {
                     $('#grp_kontrak').hide();
                     $('#grp_probation').show();
@@ -909,20 +910,32 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('agama_id', 'Agama') }}
-                                    {{ Form::select('agama_id', [], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    @if($var->jadwals)
+                                    {{ Form::select('agama_id', [$var->agama->id => $var->agama->kode.' - '.$var->agama->deskripsi], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @else
+                                    {{ Form::select('agama_id', [], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @endif     
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="form-group">
                                     {{ Form::label('jenis_kelamin_id', 'Jenis Kelamin') }}
-                                    {{ Form::select('jenis_kelamin_id', [], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    @if($var->jeniskelamin)
+                                    {{ Form::select('jenis_kelamin_id', [$var->jeniskelamin->id => $var->jeniskelamin->kode.' - '.$var->jeniskelamin->deskripsi], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @else
+                                    {{ Form::select('jenis_kelamin_id', [], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @endif     
                                     </select>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="form-group">
                                     {{ Form::label('darah_id', 'Golongan Darah') }}
-                                    {{ Form::select('darah_id', [], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    @if($var->darah)
+                                    {{ Form::select('darah_id', [$var->darah->id => $var->darah->kode.' - '.$var->darah->deskripsi], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @else
+                                    {{ Form::select('darah_id', [], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @endif     
                                     </select>
                                 </div>
                             </div>
@@ -946,7 +959,11 @@
                             <div class="col-3">
                                 <div class="form-group">
                                     {{ Form::label('perkawinan_id', 'Status Menikah') }}
-                                    {{ Form::select('perkawinan_id', [], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    @if($var->darah)
+                                    {{ Form::select('perkawinan_id', [$var->nikah->id => $var->nikah->kode.' - '.$var->nikah->deskripsi], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @else
+                                    {{ Form::select('perkawinan_id', [], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @endif 
                                     </select>
                                 </div>
                             </div>
@@ -1011,6 +1028,24 @@
                             </div>
                         </div>
                     </div><!-- End Keluarga -->
+                    
+                    <!-- Lain-lain -->
+                    <div class="tab-pane" id="tabs-lain" role="tabpanel" aria-labelledby="tabs-lain">
+                        <div class="row">                                            
+                            <div class="col-4">
+                                <div class="form-group">
+                                    {{ Form::label('ukuran_baju', 'Ukuran Baju') }}
+                                    {{ Form::text('ukuran_baju', null, ['id' => 'ukuran_baju', 'class' => 'form-control form-control-sm', 'placeholder' => 'Ukuran Baju']) }}
+                                </div>
+                            </div>                                           
+                            <div class="col-4">
+                                <div class="form-group">
+                                    {{ Form::label('ukuran_sepatu', 'Ukuran Baju') }}
+                                    {{ Form::text('ukuran_sepatu', null, ['id' => 'ukuran_sepatu', 'class' => 'form-control form-control-sm', 'placeholder' => 'Ukuran Sepatu']) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- End Lain-lain -->
                 </div>  
             </div>
             <div class="card-footer">

@@ -131,7 +131,6 @@ class ProsesabsenController extends Controller
                     $jadwalArr = $this->jadwals($tanggal, $karyawan);
 
                     $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-
                     if($jadwalArr)
                     {
                         foreach($jadwalArr as $key => $val)
@@ -174,6 +173,8 @@ class ProsesabsenController extends Controller
                             $nilaiGpOut = null;
                             $jumlahJamKerja = null;
                             $jumlahActivityKerja = null;
+                            
+                            $absenManual = null;
 
                             $addRangeStart = 0;
                             $addRangeEnd = 0;
@@ -195,7 +196,7 @@ class ProsesabsenController extends Controller
                                 if($tmk->diffInDays($key, false) < 0)
                                 {
                                     $alasanId[] = Alasan::where('kode','IN')->first()->id;
-//                                    goto proses_simpan;
+                                    goto proses_simpan;
                                 }
                             }
 
@@ -204,7 +205,7 @@ class ProsesabsenController extends Controller
                                 if($active->diffInDays($key, false)>=0)
                                 {
                                     $alasanId[] = Alasan::where('kode','OUT')->first()->id;
-//                                    goto proses_simpan;
+                                    goto proses_simpan;
                                 }
                             }
                             
@@ -227,23 +228,31 @@ class ProsesabsenController extends Controller
                              */
                             if($jadwalManual[$key])
                             {
+//                                dd($jadwalManual);
                                 $val = $jadwalManual[$key];
                             }
                             /*
                              * End Ambil Jadwal Manual
                              */
 
+                            
+                            
                             /*
                              * Start If
                              * 
-                             * Apakah kode jadwal adalah L
+                             * Apakah kode jadwal bukan L
                              * Jika Ya, Masukkan nilai jadwal masuk dan pulang
                              * Jika Tidak, Nilai libur akan 1
                              */
                             if($val->kode != 'L')
                             {
+                                /*
+                                 * Absen Manual
+                                 */                       
+                                                           
                                 $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
                                 $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                                
                             }
                             else
                             {
@@ -665,12 +674,22 @@ class ProsesabsenController extends Controller
                             /*
                              * start absen manual
                              */
-                            $actMan = ActivityManual::where('karyawan_id', $rowId)->where('tanggal', $key)->first();
-                            
+                            $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();;
+                            if($key=='2020-09-04')
+                            {
+//                                dd($actMan);
+                            }
                             if($actMan)
                             {
-                                $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $key.' '.$actMan->jam_masuk);
-                                $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $key.' '.$actMan->jam_keluar);
+                                $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
+                                $jMasukId = $actMan->id;
+                                $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
+                                $jKeluarId = $actMan->id;
+                                
+                                $isTa = null;
+                                $isMangkir = null;
+                                $flagNotInOut = null;
+                                
                                 
                                 if($jMasuk->greaterThan($jKeluar))
                                 {
