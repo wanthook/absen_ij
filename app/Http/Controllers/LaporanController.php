@@ -1320,7 +1320,17 @@ class LaporanController
             $datas->whereBetween('alasan_karyawan.tanggal',$tgl);
         }
         
-        $datas->orderBy('alasan_karyawan.created_at', 'desc');
+        if(isset($req['divisi']))
+        {
+            $datas->where('karyawans.divisi_id', $req['divisi']);
+        }
+        
+        if(isset($req['pin']))
+        {
+            $datas->where('alasan_karyawan.karyawan_id', $req['pin']);
+        }
+        
+        $datas->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan.tanggal', 'desc');
         $kar = [];
         foreach($datas->get() as $rowKar)
         {

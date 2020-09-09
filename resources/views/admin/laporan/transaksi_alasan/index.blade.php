@@ -54,6 +54,63 @@
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
+            });            
+            
+            $('#divisi').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('seldivisi')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
+            $('#pin').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selkaryawan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term,
+                            t: true
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
             });
             
             $('#tanggal').daterangepicker({
@@ -76,7 +133,19 @@
     <div class="col-12">
         <div class="card card-primary card-outline card-tabs">
             <div class="card-body">
-                <div class="row">
+                <div class="row">                    
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ Form::label('pin', 'Karyawan') }}
+                            {{ Form::select('pin', [], null, ['id' => 'pin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ Form::label('divisi', 'Divisi') }}
+                            {{ Form::select('divisi', [], null, ['id' => 'divisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                        </div>
+                    </div>
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('tanggal', 'Tanggal') }}
