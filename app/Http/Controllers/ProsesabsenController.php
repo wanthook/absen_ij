@@ -723,7 +723,7 @@ class ProsesabsenController extends Controller
                             /*
                              * End Hitung Lembur
                              */
-
+                            proses_simpan:
                             /*
                              * Hitung Lembur otomatis
                              */
@@ -897,7 +897,7 @@ class ProsesabsenController extends Controller
                             {
                                 $alasanId = json_encode($alasanId);
                             }
-                            proses_simpan:
+                            
                             $arrProses = [
                                 'karyawan_id' => $rowId,
                                 'alasan_id' => $alasanId,
