@@ -898,21 +898,21 @@ class ProsesabsenController extends Controller
                                 $alasanId = json_encode($alasanId);
                             }
                             proses_simpan:
-                            $arrProses = array(
+                            $arrProses = [
                                 'karyawan_id' => $rowId,
                                 'alasan_id' => $alasanId,
                                 'tanggal' => $key,
-                                'jam_masuk' => (isset($jMasuk))?$jMasuk->format('H:i:s'):null,
-                                'jam_keluar' => (isset($jKeluar))?$jKeluar->format('H:i:s'):null,
+                                'jam_masuk' => (!empty($jMasuk))?$jMasuk->format('H:i:s'):null,
+                                'jam_keluar' => (!empty($jKeluar))?$jKeluar->format('H:i:s'):null,
                                 'jam_masuk_id' => $jMasukId,
                                 'jam_keluar_id' => $jKeluarId,
                                 'kode_jam_kerja' => $val->kode,
                                 'jadwal_jam_masuk' => $val->jam_masuk,
                                 'jadwal_jam_keluar' => $val->jam_keluar,
-                                'n_masuk' => (isset($nMasuk))?$nMasuk:null,
-                                'n_keluar' => (isset($nKeluar))?$nKeluar:null,
+                                'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
+                                'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
                                 'libur' => $isLibur,
-                                'libur_nasional' => (isset($isLn)?1:null),
+                                'libur_nasional' => (!empty($isLn)?1:null),
                                 'pendek' => $pendek,
                                 'mangkir' => $isMangkir,
                                 'ta' => $isTa,
@@ -921,13 +921,12 @@ class ProsesabsenController extends Controller
                                 'lembur_ln' => $lemburLN,
                                 'hitung_lembur_ln' => $hitungLemburLN,
                                 'total_lembur' => $totalLembur,
-                                'shift3' => (isset($shift3))?$shift3:null,
+                                'shift3' => (!empty($shift3))?$shift3:null,
                                 'gp' => $nilaiGp,
-                                'jumlah_jam_kerja' => isset($jumlahJamKerja)?$jumlahJamKerja:null,
+                                'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
                                 'keterangan' => $keterangan,
                                 'created_by' => Auth::user()->id
-
-                            );
+                            ];
 
                             Prosesabsen::create($arrProses);
                         }
