@@ -737,100 +737,103 @@ class ProsesabsenController extends Controller
                                     $hitungLembur = $this->hitungLembur($lemburAktual);
                                 }
 
-                                if($alasan->count())
+                                if(isset($alasan))
                                 {
-                                    foreach($alasan->get() as $vAlasan)
+                                    if($alasan->count())
                                     {
-                                        $lAkt = null;
-
-                                        if($vAlasan->kode == 'SPL')
+                                        foreach($alasan->get() as $vAlasan)
                                         {
-                                            $waktuMenit = $addRangeEnd;
-
-                                            if(abs($nKeluar) >= $waktuMenit)
-                                            {
-                                                $lAkt = (float) $vAlasan->pivot->waktu;
-                                                $lemburAktual += $lAkt;
-                                            }
-                                            else
-                                            {
-                                                $lAkt = (float) $this->roundDec($nKeluar);
-                                                $lemburAktual += $lAkt;
-                                            }
-                                            $keterangan[] = "SPL ".$lAkt;
-                                            $hitungLembur = $this->hitungLembur($lemburAktual);
-                                        }
-                                        else if($vAlasan->kode == 'SLA')
-                                        {
-                                            $waktuMenit = $addRangeStart;
                                             $lAkt = null;
 
-                                            if(abs($nMasuk) >= $waktuMenit)
+                                            if($vAlasan->kode == 'SPL')
                                             {
-                                                $lAkt = (float) $vAlasan->pivot->waktu;
-                                                $lemburAktual += $lAkt;
-                                            }
-                                            else
-                                            {
-                                                $lAkt = (float) $this->roundDec($nMasuk);
-                                                $lemburAktual += $lAkt;
-                                            }
-                                            $keterangan[] = "SLA ".$lAkt;
-                                            $hitungLembur = $this->hitungLembur($lemburAktual);
-                                        }
-                                        else if($vAlasan->kode == 'SPO')
-                                        {     
-                                            $jDiff = $jKeluar->diffInHours($jMasuk);
-                                            $wkt = (float)$vAlasan->pivot->waktu;
-                                            $lAkt = null;
-                                            if($jDiff>=$wkt)
-                                            {
-                                                $lAkt = $wkt;
-                                                $lemburAktual += $lAkt;
+                                                $waktuMenit = $addRangeEnd;
 
-                                                if($lAkt>5)
+                                                if(abs($nKeluar) >= $waktuMenit)
                                                 {
-                                                    $lAkt -= 1;
-                                                    $lemburAktual -= 1;
+                                                    $lAkt = (float) $vAlasan->pivot->waktu;
+                                                    $lemburAktual += $lAkt;
                                                 }
+                                                else
+                                                {
+                                                    $lAkt = (float) $this->roundDec($nKeluar);
+                                                    $lemburAktual += $lAkt;
+                                                }
+                                                $keterangan[] = "SPL ".$lAkt;
+                                                $hitungLembur = $this->hitungLembur($lemburAktual);
                                             }
-                                            else
+                                            else if($vAlasan->kode == 'SLA')
                                             {
-                                                $lAkt = (float) $this->roundDec($jDiff);
-                                                $lemburAktual += $lAkt;
-                                                if($jDiff>5)
-                                                {
-                                                    $lAkt -= 1;
-                                                    $lemburAktual -= 1;
-                                                }
-                                            }
-                                            $keterangan[] = "SPO ".$lAkt;
-                                            $hitungLembur = $lemburAktual * 2;
-                                        }
-                                        else if($vAlasan->kode == 'LN')
-                                        {       
-                                            $wkt = (float)$vAlasan->pivot->waktu;
+                                                $waktuMenit = $addRangeStart;
+                                                $lAkt = null;
 
-                                            if($jDiff>=$wkt)
-                                            {
-                                                $lemburLN += $wkt;
-
-                                                if($wkt>5)
+                                                if(abs($nMasuk) >= $waktuMenit)
                                                 {
-                                                    $lemburLN -= 1;
+                                                    $lAkt = (float) $vAlasan->pivot->waktu;
+                                                    $lemburAktual += $lAkt;
                                                 }
-                                            }
-                                            else
-                                            {
-                                                $lemburLN += (float) $this->roundDec($jDiff);
-                                                if($jDiff>5)
+                                                else
                                                 {
-                                                    $lemburLN -= 1;
+                                                    $lAkt = (float) $this->roundDec($nMasuk);
+                                                    $lemburAktual += $lAkt;
                                                 }
+                                                $keterangan[] = "SLA ".$lAkt;
+                                                $hitungLembur = $this->hitungLembur($lemburAktual);
                                             }
+                                            else if($vAlasan->kode == 'SPO')
+                                            {     
+                                                $jDiff = $jKeluar->diffInHours($jMasuk);
+                                                $wkt = (float)$vAlasan->pivot->waktu;
+                                                $lAkt = null;
+                                                if($jDiff>=$wkt)
+                                                {
+                                                    $lAkt = $wkt;
+                                                    $lemburAktual += $lAkt;
 
-                                            $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
-                                            $hitungLemburLN = $lemburLN * 2;
+                                                    if($lAkt>5)
+                                                    {
+                                                        $lAkt -= 1;
+                                                        $lemburAktual -= 1;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    $lAkt = (float) $this->roundDec($jDiff);
+                                                    $lemburAktual += $lAkt;
+                                                    if($jDiff>5)
+                                                    {
+                                                        $lAkt -= 1;
+                                                        $lemburAktual -= 1;
+                                                    }
+                                                }
+                                                $keterangan[] = "SPO ".$lAkt;
+                                                $hitungLembur = $lemburAktual * 2;
+                                            }
+                                            else if($vAlasan->kode == 'LN')
+                                            {       
+                                                $wkt = (float)$vAlasan->pivot->waktu;
+
+                                                if($jDiff>=$wkt)
+                                                {
+                                                    $lemburLN += $wkt;
+
+                                                    if($wkt>5)
+                                                    {
+                                                        $lemburLN -= 1;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    $lemburLN += (float) $this->roundDec($jDiff);
+                                                    if($jDiff>5)
+                                                    {
+                                                        $lemburLN -= 1;
+                                                    }
+                                                }
+
+                                                $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
+                                                $hitungLemburLN = $lemburLN * 2;
+                                            }
                                         }
                                     }
                                 }
