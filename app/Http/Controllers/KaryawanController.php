@@ -1000,12 +1000,9 @@ class KaryawanController extends Controller
                 
                 $al = Alasan::find($req['sAlasan']);
                 
-                if($al->kode == 'H2' || $al->kode == 'SD' || $al->kode == 'SKK')
+                if($req['sTanggalAkhir'])
                 {
-                    if($req['sTanggalAkhir'])
-                    {
-                        $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggalAkhir']);
-                    }
+                    $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggalAkhir']);
                 }
 //                dd($tglA->toDateString());
                 $tglPer = CarbonPeriod::create($tglA->toDateString(), $tglB->toDateString())->toArray();
