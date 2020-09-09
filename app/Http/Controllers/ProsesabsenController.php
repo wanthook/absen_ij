@@ -195,7 +195,7 @@ class ProsesabsenController extends Controller
                                 if($tmk->diffInDays($key, false) < 0)
                                 {
                                     $alasanId[] = Alasan::where('kode','IN')->first()->id;
-                                    goto proses_simpan;
+//                                    goto proses_simpan;
                                 }
                             }
 
@@ -204,7 +204,7 @@ class ProsesabsenController extends Controller
                                 if($active->diffInDays($key, false)>=0)
                                 {
                                     $alasanId[] = Alasan::where('kode','OUT')->first()->id;
-                                    goto proses_simpan;
+//                                    goto proses_simpan;
                                 }
                             }
                             
