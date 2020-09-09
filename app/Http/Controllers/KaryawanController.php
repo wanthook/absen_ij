@@ -1674,7 +1674,7 @@ class KaryawanController extends Controller
             $datas->where('karyawans.perusahaan_id', $req['perusahaan']);
         }
         
-        $datas->orderBy('alasan_karyawan.pin', 'asc')->orderBy('alasan_karyawan.tanggal','desc');        
+        $datas->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan.tanggal','desc');        
                 
         return  Datatables::of($datas)
                 ->make(true);
