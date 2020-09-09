@@ -188,6 +188,7 @@ class ProsesabsenController extends Controller
                             $isLnOff    = false;
                             
                             $flagNotInOut = null;
+                            $pendek = null;
                             
                             if($tmk)
                             {
@@ -207,7 +208,7 @@ class ProsesabsenController extends Controller
                                 }
                             }
                             
-                            $pendek = null;
+                            
                             if(isset($val->pendek))
                             {
                                 if($val->pendek == "1")
