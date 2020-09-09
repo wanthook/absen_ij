@@ -139,32 +139,6 @@ class ProsesabsenController extends Controller
                             
                             $alasanId = null;
                             
-                            if($tmk)
-                            {
-                                if($tmk->diffInDays($key, false) < 0)
-                                {
-                                    $alasanId[] = Alasan::where('kode','IN')->first()->id;
-                                    goto proses_simpan;
-                                }
-                            }
-
-                            if($active)
-                            {
-                                if($active->diffInDays($key, false)>=0)
-                                {
-                                    $alasanId[] = Alasan::where('kode','OUT')->first()->id;
-                                    goto proses_simpan;
-                                }
-                            }
-                            
-                            $pendek = null;
-                            if(isset($val->pendek))
-                            {
-                                if($val->pendek == "1")
-                                {
-                                    $pendek = 1;
-                                }
-                            }
 
                             $jadwalBefore = null;
 //                            $jadwalAfter = null;
@@ -214,6 +188,33 @@ class ProsesabsenController extends Controller
                             $isLnOff    = false;
                             
                             $flagNotInOut = null;
+                            
+                            if($tmk)
+                            {
+                                if($tmk->diffInDays($key, false) < 0)
+                                {
+                                    $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                                    goto proses_simpan;
+                                }
+                            }
+
+                            if($active)
+                            {
+                                if($active->diffInDays($key, false)>=0)
+                                {
+                                    $alasanId[] = Alasan::where('kode','OUT')->first()->id;
+                                    goto proses_simpan;
+                                }
+                            }
+                            
+                            $pendek = null;
+                            if(isset($val->pendek))
+                            {
+                                if($val->pendek == "1")
+                                {
+                                    $pendek = 1;
+                                }
+                            }
 
                             if(!isset($val->kode))
                             {
