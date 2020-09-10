@@ -749,11 +749,14 @@ class ProsesabsenController extends Controller
                             if(!$isMangkir && !$isTa && !$nilaiGp)
                             {
                             
-                                if(substr($val->kode,0,1) == "J")
+                                if(isset($var->kode))
                                 {
-                                    //3.5 hitung lembur kalau gak telat sama gak gp
-                                    $lemburAktual += 2;
-                                    $hitungLembur = $this->hitungLembur($lemburAktual);
+                                    if(substr($val->kode,0,1) == "J")
+                                    {
+                                        //3.5 hitung lembur kalau gak telat sama gak gp
+                                        $lemburAktual += 2;
+                                        $hitungLembur = $this->hitungLembur($lemburAktual);
+                                    }
                                 }
 
                                 if(isset($alasan))
