@@ -67,6 +67,36 @@
                 dTable.ajax.reload();
             });
             
+            $('#pin').on('keypress', function(e)
+            {
+//                e.preventDefault();
+                if(e.keyCode == 13)
+                {
+                    e.preventDefault();
+                    var param = {pin:$(this).val()};
+                    $.ajax(
+                    {
+                        url         : '{{route('selkaryawan')}}',
+                        dataType    : 'json',
+                        type        : 'POST',
+                        data        : param,
+                        success(result,status,xhr)
+                        {
+//                            console.log(result);
+                            if(result.items)
+                            {
+                                window.open("{{route('mkaryawane','')}}"+"/"+result.items[0].id, '_self');
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) { 
+                            /* implementation goes here */ 
+                            console.log(jqXHR.responseText);
+                        }
+
+                    });
+                }
+            });
+            
             $("#photos_img").click(function(e)
             {
                 e.preventDefault();
@@ -827,7 +857,7 @@
                                 <div class="form-group">
                                     {{ Form::label('status_karyawan_id', 'Status Karyawan') }}
                                     @if($var->status)
-                                    {{ Form::select('status_karyawan_id', [$var->status->id => $var->status->kode.' - '.$var->status->deskripsi], null, ['id' => 'status_karyawan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    {{ Form::select('status_karyawan_id', [$var->status->id => $var->status->nama.' - '.$var->status->deskripsi], null, ['id' => 'status_karyawan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     @else
                                     {{ Form::select('status_karyawan_id', [], null, ['id' => 'status_karyawan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     @endif
@@ -910,8 +940,8 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('agama_id', 'Agama') }}
-                                    @if($var->jadwals)
-                                    {{ Form::select('agama_id', [$var->agama->id => $var->agama->kode.' - '.$var->agama->deskripsi], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @if($var->agama)
+                                    {{ Form::select('agama_id', [$var->agama->id => $var->agama->deskripsi], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('agama_id', [], null, ['id' => 'agama_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @endif     
@@ -921,7 +951,7 @@
                                 <div class="form-group">
                                     {{ Form::label('jenis_kelamin_id', 'Jenis Kelamin') }}
                                     @if($var->jeniskelamin)
-                                    {{ Form::select('jenis_kelamin_id', [$var->jeniskelamin->id => $var->jeniskelamin->kode.' - '.$var->jeniskelamin->deskripsi], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    {{ Form::select('jenis_kelamin_id', [$var->jeniskelamin->id => $var->jeniskelamin->nama.' - '.$var->jeniskelamin->deskripsi], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('jenis_kelamin_id', [], null, ['id' => 'jenis_kelamin_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @endif     
@@ -932,7 +962,7 @@
                                 <div class="form-group">
                                     {{ Form::label('darah_id', 'Golongan Darah') }}
                                     @if($var->darah)
-                                    {{ Form::select('darah_id', [$var->darah->id => $var->darah->kode.' - '.$var->darah->deskripsi], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    {{ Form::select('darah_id', [$var->darah->id => $var->darah->nama.' - '.$var->darah->deskripsi], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('darah_id', [], null, ['id' => 'darah_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @endif     
@@ -959,8 +989,8 @@
                             <div class="col-3">
                                 <div class="form-group">
                                     {{ Form::label('perkawinan_id', 'Status Menikah') }}
-                                    @if($var->darah)
-                                    {{ Form::select('perkawinan_id', [$var->nikah->id => $var->nikah->kode.' - '.$var->nikah->deskripsi], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
+                                    @if($var->nikah)
+                                    {{ Form::select('perkawinan_id', [$var->nikah->id => $var->nikah->nama.' - '.$var->nikah->deskripsi], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('perkawinan_id', [], null, ['id' => 'perkawinan_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @endif 

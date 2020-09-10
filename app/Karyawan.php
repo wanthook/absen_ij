@@ -153,7 +153,7 @@ class Karyawan extends Model
     
     public function agama()
     {
-        return $this->belongsToMany('App\MasterOption','agama_id');
+        return $this->belongsTo('App\MasterOption','agama_id');
     }
     
     public function alasanTanggal($tanggal)

@@ -16,6 +16,8 @@ use App\Divisi;
 use App\Alasan;
 use App\ExceptionLog;
 
+use App\Prosesabsen;
+
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -30,8 +32,11 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Settings;
 
+use App\Http\Traits\TraitProses;
+
 class KaryawanController extends Controller
 {
+    use TraitProses;
     /**
      * Display a listing of the resource.
      *
@@ -71,6 +76,42 @@ class KaryawanController extends Controller
     {
         $var = new Karyawan;
         return view('admin.karyawan.form', ['var' => $var]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Karyawan  $karyawan
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Karyawan $karyawan)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Karyawan  $karyawan
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id, Request $request)
+    {
+        $var = Karyawan::find($id);
+        
+        return view('admin.karyawan.form', compact('var')); 
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Karyawan  $karyawan
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Karyawan $karyawan)
+    {
+        //
     }
 
     /**
@@ -1004,9 +1045,9 @@ class KaryawanController extends Controller
                 {
                     $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggalAkhir']);
                 }
-//                dd($tglA->toDateString());
+                
                 $tglPer = CarbonPeriod::create($tglA->toDateString(), $tglB->toDateString())->toArray();
-//                dd($tglPer);
+                
                 foreach($tglPer as $vTgl)
                 {
                     $par = $jd->alasan()->wherePivot('tanggal', $vTgl);
@@ -1026,6 +1067,8 @@ class KaryawanController extends Controller
                         }
 
                         $jd->alasan()->attach($req['sAlasan'], $attach);
+                        
+                        $this->prosesAbsTanggal($jd->id, $vTgl);
                     }
                 }
 
@@ -1336,42 +1379,6 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Karyawan  $karyawan
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Karyawan $karyawan)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Karyawan  $karyawan
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id, Request $request)
-    {
-        $var = Karyawan::find($id);
-        
-        return view('admin.karyawan.form', ['var' => $var]); 
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Karyawan  $karyawan
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Karyawan $karyawan)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Karyawan  $Request $request
@@ -1654,10 +1661,12 @@ class KaryawanController extends Controller
               
         
         $datas = DB::table('alasan_karyawan')
-                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi')
+                  ->selectRaw('min(alasan_karyawan.tanggal) as tanggal_awal, max(alasan_karyawan.tanggal) as tanggal_akhir, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi')
                   ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
                   ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
-                  ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id');
+                  ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
+                  ->orderBy('alasan_karyawan.tanggal', 'desc')
+                  ->groupBy('alasan_karyawan.alasan_id', 'alasan_karyawan.karyawan_id');
         
         if(isset($req['sTanggal']))
         {
@@ -1674,9 +1683,9 @@ class KaryawanController extends Controller
             $datas->where('karyawans.perusahaan_id', $req['perusahaan']);
         }
         
-        $datas->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan.tanggal','desc');        
+//        $datas->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan.tanggal','desc');        
                 
-        return  Datatables::of($datas)
+        return  Datatables::of($datas->get())
                 ->make(true);
     }
     
@@ -1739,23 +1748,27 @@ class KaryawanController extends Controller
     public function select2(Request $request)
     {
         $tags = null;
+        $req = $request->all();
         
-        $term = trim($request->input('q'));
-        $tags = Karyawan::author()->where(function($q) use($term)
+//        $term = trim($req['q']);
+        if(isset($req['q']))
         {
-            $q->where('pin','like','%'.$term.'%')
-              ->orWhere('nik','like','%'.$term.'%')
-              ->orWhere('nama','like','%'.$term.'%')
-              ->orWhere('id',$term);
-        });
-        
-        if(!$request->input('t'))
+            $term = $req['q'];
+            $tags = Karyawan::author()->where(function($q) use($term)
+            {
+                $q->where('pin','like','%'.$term.'%')
+                  ->orWhere('nik','like','%'.$term.'%')
+                  ->orWhere('nama','like','%'.$term.'%')
+                  ->orWhere('id',$term);
+            })->limit(50);
+        }
+        else if(isset($req['pin']))
         {
-            $tags = $tags->where('active_status',1);
+            $tags = Karyawan::where('pin', $req['pin']);
         }
         
         $formatted_tags = [];
-        foreach ($tags->limit(20)->get() as $tag) {
+        foreach ($tags->get() as $tag) {
             $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama];
         }
         

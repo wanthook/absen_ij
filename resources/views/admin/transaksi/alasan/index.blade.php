@@ -238,8 +238,12 @@
                     "defaultContent": '<button class="btn btn-sm btn-danger"><i class="fa fa-eraser"></i></button>'
                 },
                 {
-                    targets : 'ttanggal',
-                    data : 'tanggal'
+                    targets : 'ttanggalawal',
+                    data : 'tanggal_awal'
+                },
+                {
+                    targets : 'ttanggalakhir',
+                    data : 'tanggal_akhir'
                 },
                 {
                         targets : 'tpin',
@@ -611,7 +615,8 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th class="ttanggal">Tanggal</th>
+                                    <th class="ttanggalawal">Tanggal Awal</th>
+                                    <th class="ttanggalakhir">Tanggal Akhir</th>
                                     <th class="tpin">PIN</th>
                                     <!--<th class="tnik">NIK</th>-->
                                     <th class="tnama">Nama</th>
