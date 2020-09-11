@@ -488,57 +488,57 @@
                 e.preventDefault();
                 
                 let formData = $(this).serializeFormJSON();
-
-                $.ajax(
-                {
-                    url         : $(this).attr('action'),
-                    dataType    : 'json',
-                    contentType : 'application/json; charset=utf-8',
-                    type        : 'POST',
-                    data        :JSON.stringify(formData) ,
-                    success(result,status,xhr)
-                    {
-                        if(result.status == 1)
-                        {
-//                            document.getElementById("form_data").reset(); 
-                            document.getElementById("form_data_keluarga").reset(); 
-                            $('#kel_relasi_id').val("").trigger('change');
-                            Toast.fire({
-                                type: 'success',
-                                title: result.msg
-                            });
-                        }
-                        else
-                        {
-                            if(Array.isArray(result.msg))
-                            {
-                                let str = "";
-                                for(let i = 0 ; i < result.msg.length ; i++ )
-                                {
-                                    str += result.msg[i]+"<br>";
-                                }
-                                Toast.fire({
-                                    type: 'error',
-                                    title: str
-                                });
-                            }
-                            else
-                            {
-                                Toast.fire({
-                                    type: 'error',
-                                    title: result.msg
-                                });
-                            }
-                            
-                        }
-                        tblKeluarga.ajax.reload();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) { 
-                        /* implementation goes here */ 
-                        console.log(jqXHR.responseText);
-                    }
-                    
-                });
+                console.log(formData);
+//                $.ajax(
+//                {
+//                    url         : $(this).attr('action'),
+//                    dataType    : 'json',
+//                    contentType : 'application/json; charset=utf-8',
+//                    type        : 'POST',
+//                    data        :JSON.stringify(formData) ,
+//                    success(result,status,xhr)
+//                    {
+//                        if(result.status == 1)
+//                        {
+////                            document.getElementById("form_data").reset(); 
+//                            document.getElementById("form_data_keluarga").reset(); 
+//                            $('#kel_relasi_id').val("").trigger('change');
+//                            Toast.fire({
+//                                type: 'success',
+//                                title: result.msg
+//                            });
+//                        }
+//                        else
+//                        {
+//                            if(Array.isArray(result.msg))
+//                            {
+//                                let str = "";
+//                                for(let i = 0 ; i < result.msg.length ; i++ )
+//                                {
+//                                    str += result.msg[i]+"<br>";
+//                                }
+//                                Toast.fire({
+//                                    type: 'error',
+//                                    title: str
+//                                });
+//                            }
+//                            else
+//                            {
+//                                Toast.fire({
+//                                    type: 'error',
+//                                    title: result.msg
+//                                });
+//                            }
+//                            
+//                        }
+//                        tblKeluarga.ajax.reload();
+//                    },
+//                    error: function(jqXHR, textStatus, errorThrown) { 
+//                        /* implementation goes here */ 
+//                        console.log(jqXHR.responseText);
+//                    }
+//                    
+//                });
                 
                 return false;
             });
@@ -669,9 +669,9 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            {{Form::open(['url' => route('savekeluargakaryawan'), 'id' => 'form_data_keluarga'])}}     
-            {{ Form::hidden('kel_id', null, ['id' => 'kel_id']) }}
-            {{ Form::hidden('kel_keluarga_id', null, ['id' => 'kel_keluarga_id']) }}
+            {{Form::open(['url' => route('savekeluargakaryawan'), 'id' => 'form_data_keluarga'])}}   
+            {{ Form::hidden('karyawan_keluarga_id', null, ['id' => 'karyawan_keluarga_id']) }}
+            {{ Form::hidden('keluarga_id', null, ['id' => 'keluarga_id']) }}
             <div class="modal-body">
                 <div class="row">                    
                     <div class="col-5">
@@ -901,7 +901,7 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('jadwal_id', 'Jadwal Karyawan') }}
-                                    @if($var->jadwals)
+                                    @if(isset($var->jadwals[0]))
                                     {{ Form::select('jadwal_id', [$var->jadwals[0]->id => $var->jadwals[0]->tipe.' - '.$var->jadwals[0]->kode], null, ['id' => 'jadwal_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
                                     @else
                                     {{ Form::select('jadwal_id', [], null, ['id' => 'jadwal_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}     
@@ -911,7 +911,7 @@
                             <div class="col-4">
                                 <div class="form-group">
                                     {{ Form::label('tipe', 'Tipe Jadwal') }}
-                                    @if($var->jadwals)
+                                    @if(isset($var->jadwals[0]))
                                     {{ Form::text('tipe', (($var->jadwals[0]->tipe == 'D')?'Dayshift':'Shift'), ['id' => 'tipe', 'class' => 'form-control form-control-sm', 'readonly']) }}
                                     @else
                                     {{ Form::text('tipe', null, ['id' => 'tipe', 'class' => 'form-control form-control-sm', 'readonly']) }}

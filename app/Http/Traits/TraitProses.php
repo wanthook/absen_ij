@@ -907,4 +907,148 @@ trait traitProses
             }
         }
     }
+    
+    
+    
+    private function jadwals($tanggal, $kar)
+    {
+        $arr = array();
+        
+        
+        
+        foreach($tanggal as $tgl)
+        {
+            $jad = null;
+            $kJad = $kar->jadwalsTanggal($tgl->toDateString())->first();
+            
+            if($kJad)
+            {
+                if($kJad->tipe == 'D')
+                {
+                    $jad = Jadwal::find($kJad->id)->jadwalKerjaDay($tgl->format("N"))->first();
+                }
+                else
+                {
+                    $jad = Jadwal::find($kJad->id)->jadwalKerjaShift($tgl->toDateString())->first();
+                }
+            }
+            $arr[$tgl->toDateString()] = $jad;            
+        }
+        
+        return $arr;
+    }
+    
+    
+    
+    private function jadwalDay($tanggal, $jadwal)
+    {
+        $arr = array();
+        foreach($tanggal as $tgl)
+        {
+            foreach($jadwal->jadwal_kerja as $jad)
+            {
+                $jad = $jadwal->jadwalKerjaDay($tgl->format("N"))->first();
+                $arr[$tgl->toDateString()] = $jad;
+            }
+        }
+        return $arr;
+    }
+    
+    private function jadwalShift($tanggal, $jadwal)
+    {
+        $arr = array();
+        foreach($tanggal as $tgl)
+        {
+            $jad = $jadwal->jadwalKerjaShift($tgl->toDateString())->first();
+            $arr[$tgl->toDateString()] = $jad;
+        }
+        return $arr;
+    }
+    
+    private function jadwalManual($tanggal, $karyawan)
+    {
+        $arr = array();
+        foreach($tanggal as $tgl)
+        {
+            $jad = $karyawan->jadwalManualTanggal($tgl->toDateString())->first();
+            $arr[$tgl->toDateString()] = $jad;
+        }
+        return $arr;
+    }
+    
+    
+    
+    private function HitungLibNas($jam,$jJam=7)
+    {
+        $hit = 0;
+        
+        if($jam<=$jJam)
+        {
+            $hit = $jam*2;
+        }
+        else if($jam>$jJam)
+        {
+            $hit = 14;
+            
+            if(($jam-$jJam)==1)
+            {
+                $hit += (1*3);
+            }
+            else if(($jam-$jJam)>1)
+            {
+                $hit += (1*3);
+                $hit += (($jam-8)*4);
+            }
+        }
+            
+        return $hit;
+    }
+    
+    private function hitungLembur($nilai)
+    {
+        $ret = (float) ((2*$nilai) - 0.5);
+        
+        return $ret;
+    }
+    
+    private function gpOld($masuk, $pulang)
+    {
+        $ret = null;
+        
+        if($masuk > 0)
+        {
+            $ret += abs($masuk);
+        }
+        if($pulang > 0)
+        {
+            $ret += abs($pulang);
+        }
+        if($ret)
+        {
+            $ret = ceil($ret/30)*30;
+        }
+        
+        return $ret;
+    }
+    
+    private function gp($time)
+    {
+        $ret = null;
+        
+        if($time)
+        {
+            $ret = ceil(abs($time)/30)*30;
+        }
+        
+        return $ret;
+    }
+    
+    private function roundDec($param)
+    {
+        $scr = abs($param) / 60;
+        $scr = round($scr,1,PHP_ROUND_HALF_DOWN);
+        $scr -= fmod($scr,0.5);
+        
+        return $scr;
+    }
 }
