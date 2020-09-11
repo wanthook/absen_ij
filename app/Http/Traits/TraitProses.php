@@ -39,7 +39,19 @@ use Auth;
 use Validator;
 
 
-trait traitProses {
+trait traitProses 
+{
+    public function cekProses($karId, $tanggal)
+    {
+        $proc = Prosesabsen::where('karyawan_id', $karId)->where('tanggal', $tanggal)->count();
+        
+        if($proc)
+        {
+            return true;
+        }
+        return false;
+    }
+    
     public function prosesAbsTanggal($karId, $tanggal)
     {
         $tgl = CarbonPeriod::create($tanggal, $tanggal)->toArray();
