@@ -956,15 +956,11 @@ class KaryawanController extends Controller
             {
                 $req = $request->all();
                 
-                $req['nama']            = $req['kel_nama']; unset($req['kel_nama']);
-                $req['ktp']             = $req['kel_ktp']; unset($req['kel_ktp']);
-                $req['relasi_id']       = $req['kel_relasi_id']; unset($req['kel_relasi_id']);
-                $req['tempat_lahir']    = $req['kel_tempat_lahir']; unset($req['kel_tempat_lahir']);
-                $req['tanggal_lahir']    = $req['kel_tanggal_lahir']; unset($req['kel_tempat_lahir']);
-                $req['telpon']          = $req['kel_telpon']; unset($req['kel_telpon']);
-                $req['alamat']          = $req['kel_alamat']; unset($req['kel_alamat']);
-                $req['kota']            = $req['kel_kota']; unset($req['kel_kota']);
-                $req['kode_pos']        = $req['kel_kode_pos']; unset($req['kel_kode_pos']);
+//                $arr = [
+//                    'nama' => $req[''],
+//                    'ktp'   => $req[''],
+//                    'tempat_la'
+//                ]
                 
                 
                 if(empty($req['kel_id']))

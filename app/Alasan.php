@@ -17,6 +17,7 @@ class Alasan extends Model
         'deskripsi',   
         'kode',
         'warna',
+        'libur',
         'deleted_at',
         'created_by', 
         'created_at',

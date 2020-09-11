@@ -355,18 +355,11 @@ trait traitProses
                             case "SPL": $addRangeEnd = 60 * $vAlasan->pivot->waktu; break;
                             case "SLA": $addRangeStart = 60 * $vAlasan->pivot->waktu; break;
                             case "SPO": $isSpo = true; break;
-                            case "C" : 
-                            case "I" : 
-                            case "D1":
-                            case "D2" :
-                            case "D3" :                                
-                            case "D4":
-                            case "SD" :
-                            case "SK" :
-                            case "H1" :
-                            case "H2" : 
-                            case "SKK":
-                            case "OFF" :$keterangan[] = $vAlasan->deskripsi; $isLibur = 1;break;
+                        }
+                        
+                        if($vAlasan->libur == 'Y')
+                        {
+                            $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
                         }
                     }
                 }

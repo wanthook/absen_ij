@@ -488,57 +488,58 @@
                 e.preventDefault();
                 
                 let formData = $(this).serializeFormJSON();
-                console.log(formData);
-//                $.ajax(
-//                {
-//                    url         : $(this).attr('action'),
-//                    dataType    : 'json',
-//                    contentType : 'application/json; charset=utf-8',
-//                    type        : 'POST',
-//                    data        :JSON.stringify(formData) ,
-//                    success(result,status,xhr)
-//                    {
-//                        if(result.status == 1)
-//                        {
-////                            document.getElementById("form_data").reset(); 
-//                            document.getElementById("form_data_keluarga").reset(); 
-//                            $('#kel_relasi_id').val("").trigger('change');
-//                            Toast.fire({
-//                                type: 'success',
-//                                title: result.msg
-//                            });
-//                        }
-//                        else
-//                        {
-//                            if(Array.isArray(result.msg))
-//                            {
-//                                let str = "";
-//                                for(let i = 0 ; i < result.msg.length ; i++ )
-//                                {
-//                                    str += result.msg[i]+"<br>";
-//                                }
-//                                Toast.fire({
-//                                    type: 'error',
-//                                    title: str
-//                                });
-//                            }
-//                            else
-//                            {
-//                                Toast.fire({
-//                                    type: 'error',
-//                                    title: result.msg
-//                                });
-//                            }
-//                            
-//                        }
-//                        tblKeluarga.ajax.reload();
-//                    },
-//                    error: function(jqXHR, textStatus, errorThrown) { 
-//                        /* implementation goes here */ 
-//                        console.log(jqXHR.responseText);
-//                    }
-//                    
-//                });
+                formData.karyawan_keluarga_id = $('#id').val();
+//                console.log(formData);
+                $.ajax(
+                {
+                    url         : $(this).attr('action'),
+                    dataType    : 'json',
+                    contentType : 'application/json; charset=utf-8',
+                    type        : 'POST',
+                    data        :JSON.stringify(formData) ,
+                    success(result,status,xhr)
+                    {
+                        if(result.status == 1)
+                        {
+//                            document.getElementById("form_data").reset(); 
+                            document.getElementById("form_data_keluarga").reset(); 
+                            $('#kel_relasi_id').val("").trigger('change');
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
+                        }
+                        else
+                        {
+                            if(Array.isArray(result.msg))
+                            {
+                                let str = "";
+                                for(let i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                            }
+                            else
+                            {
+                                Toast.fire({
+                                    type: 'error',
+                                    title: result.msg
+                                });
+                            }
+                            
+                        }
+                        tblKeluarga.ajax.reload();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { 
+                        /* implementation goes here */ 
+                        console.log(jqXHR.responseText);
+                    }
+                    
+                });
                 
                 return false;
             });
