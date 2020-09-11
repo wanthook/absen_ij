@@ -49,6 +49,7 @@ class Karyawan extends Model
         'active_status',
         'active_comment',
         'active_status_date',
+        'jumlah_anak',
         'deleted_at',
         'created_by',
         'updated_by',

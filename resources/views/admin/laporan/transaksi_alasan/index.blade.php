@@ -56,6 +56,7 @@
                 }
             });            
             
+            
             $('#divisi').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",

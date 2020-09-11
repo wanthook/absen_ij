@@ -956,21 +956,34 @@ class KaryawanController extends Controller
             {
                 $req = $request->all();
                 
-//                $arr = [
-//                    'nama' => $req[''],
-//                    'ktp'   => $req[''],
-//                    'tempat_la'
-//                ]
+                $arr = [
+                    'nama' => $req['kel_nama'],
+                    'ktp'   => $req['kel_ktp'],
+                    'tempat_lahir' => $req['kel_tempat_lahir'],
+                    'tanggal_lahir' => $req['kel_tanggal_lahir'],
+                    'telpon' => $req['kel_telpon'],
+                    'kota' => $req['kel_kota'],
+                    'kode_pos' => $req['kel_kode_pos'],
+                    'alamat' => $req['kel_alamat'],
+                    'relasi_id' => $req['kel_relasi_id'],
+                    'karyawan_id' => (isset($req['karyawan_keluarga_id'])?$req['karyawan_keluarga_id']:null),
+                    'created_by' => Auth::user()->id,
+                    'updated_by' => Auth::user()->id,
+                ];
                 
                 
-                if(empty($req['kel_id']))
-                {
-                    $req['updated_by']   = Auth::user()->id;        
-                    $req['updated_at']   = Carbon::now();
-                    $req['created_by']   = Auth::user()->id;
-                    $req['created_at']   = Carbon::now();
+                if(empty($req['keluarga_id']))
+                {                                        
+                    $id = KaryawanKeluarga::create($arr);
                     
-                    KaryawanKeluarga::create($req);
+                    if(isset($req['karyawan_keluarga_id']))
+                    {
+                        $idAnak = MasterOption::where('nama', 'ANAK')->where('kode', 'RELASI')->first()->id;
+                        
+                        $cnt = KaryawanKeluarga::where('karyawan_id', $req['karyawan_keluarga_id'])->where('relasi_id', $idAnak)->count();
+                        
+                        Karyawan::find($req['karyawan_keluarga_id'])->fill(['jumlah_anak' => $cnt])->save();
+                    }
                     
                     echo json_encode(array(
                         'status' => 1,
@@ -979,10 +992,15 @@ class KaryawanController extends Controller
                 }
                 else
                 {
+                    unset($arr['created_by']);
+                    KaryawanKeluarga::find($req['keluarga_id'])->fill($arr)->save();
                     
-                    $req['updated_by']   = Auth::user()->id;        
-                    $req['updated_at']   = Carbon::now();
-                    KaryawanKeluarga::find($req['kel_id'])->fill($req)->save();
+                    if(isset($req['karyawan_keluarga_id']))
+                    {
+                        $idAnak = MasterOption::where('nama', 'ANAK')->where('kode', 'RELASI')->first()->id;
+                        $cnt = KaryawanKeluarga::where('karyawan_id', $req['karyawan_keluarga_id'])->where('relasi_id', $idAnak)->count();
+                        Karyawan::find($req['karyawan_keluarga_id'])->fill(['jumlah_anak' => $cnt])->save();
+                    }
                     
                     echo json_encode(array(
                         'status' => 1,

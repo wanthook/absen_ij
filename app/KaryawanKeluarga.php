@@ -22,8 +22,6 @@ class KaryawanKeluarga extends Model
         'kode_pos',
         'alamat',
         'relasi_id',
-        'jenis_kelamin_id',
-        'agama_id',
         'karyawan_id',
         'deleted_at',
         'created_by',
@@ -43,35 +41,6 @@ class KaryawanKeluarga extends Model
     {
         return $this->belongsTo('App\MasterOption','relasi_id');
     }
-    
-//    public function jenkel()
-//    {
-//        return $this->hasOne('App\MasterOptions','jenis_kelamin_id');
-//    }
-    
-//    public function agama()
-//    {
-//        return $this->hasOne('App\MasterOptions','agama_id');
-//    }
-    
-//    public function getTanggalLahirAttribute($value)
-//    {
-//        if(empty($value) || is_null($value))
-//        {
-//            return "";
-//        }
-//        return Carbon::parse($value)->format('d-m-Y');
-//    }
-//    
-//    public function formTanggalLahirAttribute($value)
-//    {
-//        if(empty($value) || is_null($value))
-//        {
-//            return "";
-//        }
-//        
-//        return Carbon::parse($value)->format('d-m-Y');
-//    }
     
     public function getCreatedAtAttribute($value)
     {

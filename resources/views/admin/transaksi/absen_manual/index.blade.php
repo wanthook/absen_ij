@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css')}}">
     <!-- select2 -->
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.css')}}">
     <style>
         td.details-control {
             background: url('{{asset('images/details_open.png')}}') no-repeat center center;
@@ -38,6 +40,8 @@
     <script src="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js')}}"></script>
     <!-- select2 -->
     <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
+    <!-- date-range-picker -->
+    <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
     
     <script>
         let dTableKar = null;
@@ -64,6 +68,13 @@
                 allowEnterKey: false,
                 showConfirmButton: false
             });
+            
+            $('#sTanggal').daterangepicker({
+                singleDatePicker:true,
+                locale: {
+                    format: 'YYYY-MM-DD'
+                }
+            });  
             
             $('#sTanggal').on('change', function(e)
             {
@@ -395,7 +406,7 @@
                                     <div class="form-group">
                                         {{ Form::label('sTanggal', 'Tanggal') }}
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::date('sTanggal', now(), ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Absen Manual']) }}
+                                            {{ Form::text('sTanggal', now(), ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Absen Manual']) }}
                                             <div class="input-group-append" data-target="#tanggal_masuk">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
                                             </div>
