@@ -359,11 +359,13 @@ trait traitProses
                             case "I" : 
                             case "D1":
                             case "D2" :
-                            case "D3" :
+                            case "D3" :                                
+                            case "D4":
                             case "SD" :
                             case "SK" :
                             case "H1" :
                             case "H2" : 
+                            case "SKK":
                             case "OFF" :$keterangan[] = $vAlasan->deskripsi; $isLibur = 1;break;
                         }
                     }
