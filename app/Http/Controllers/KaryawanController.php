@@ -1664,7 +1664,7 @@ class KaryawanController extends Controller
               
         
         $datas = DB::table('alasan_karyawan')
-                  ->selectRaw('min(alasan_karyawan.tanggal) as tanggal_awal, max(alasan_karyawan.tanggal) as tanggal_akhir, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi')
+                  ->selectRaw('alasan_karyawan.tanggal as tanggal, min(alasan_karyawan.tanggal) as tanggal_awal, max(alasan_karyawan.tanggal) as tanggal_akhir, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi')
                   ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
                   ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
                   ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
