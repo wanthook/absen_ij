@@ -1451,7 +1451,7 @@ class KaryawanController extends Controller
                 {
                     $par->detach($req['sAlasan']);
                 }
-
+                $this->prosesAbsTanggal($jd->id, $req['sTanggal']);
                 echo json_encode(array(
                     'status' => 1,
                     'msg'   => 'Data berhasil dihapus'
