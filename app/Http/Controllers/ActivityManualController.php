@@ -13,11 +13,14 @@ use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
 
+use App\Http\Traits\TraitProses;
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class ActivityManualController extends Controller
 {
+    use TraitProses;
     /**
      * Display a listing of the resource.
      *
@@ -76,7 +79,9 @@ class ActivityManualController extends Controller
                     $act = $act->first();
                     ActivityManual::find($act->id)->fill($req)->save();
                 }
-
+                
+                $this->prosesAbsTanggal($req['karyawan_id'], $req['tanggal']);
+                
                 echo json_encode(array(
                     'status' => 1,
                     'msg'   => 'Data berhasil diubah'
@@ -182,7 +187,7 @@ class ActivityManualController extends Controller
                             $act = $act->first();
                             ActivityManual::find($act->id)->fill($req)->save();
                         }
-                        
+                        $this->prosesAbsTanggal($req['karyawan_id'], $req['tanggal']);
                     }
                     else
                     {
@@ -216,7 +221,14 @@ class ActivityManualController extends Controller
         $req = $request->all();
         try 
         {
-            ActivityManual::find($req['id'])->delete();
+            $act = ActivityManual::find($req['id']);
+            
+            $tanggal = $act->tanggal;
+            $karyawan = $act->karyawan_id;
+            
+            $act->delete();
+            
+            $this->prosesAbsTanggal($karyawan, $tanggal);
             
             echo json_encode(array(
                "status" => 1,
