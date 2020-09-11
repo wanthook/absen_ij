@@ -863,6 +863,10 @@ trait traitProses
                     $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
                 }
 
+                if($isLibur)
+                {
+                    $shift3 = null;
+                }
 
                 if($alasanId)
                 {
