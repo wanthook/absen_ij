@@ -41,6 +41,7 @@ use Validator;
 
 trait traitProses 
 {
+    private $rangeAbs = 4 * 60;
     public function cekProses($karId, $tanggal)
     {
         $proc = Prosesabsen::where('karyawan_id', $karId)->where('tanggal', $tanggal)->count();
