@@ -1068,10 +1068,10 @@ class KaryawanController extends Controller
 
                         $jd->alasan()->attach($req['sAlasan'], $attach);
                         
-                        if($this->cekProses($jd->id, $vTgl))
-                        {
+//                        if($this->cekProses($jd->id, $vTgl))
+//                        {
                             $this->prosesAbsTanggal($jd->id, $vTgl);
-                        }
+//                        }
                     }
                 }
 
