@@ -863,7 +863,7 @@ trait traitProses
                     $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
                 }
 
-                if($isLibur)
+                if($isLibur || $isMangkir)
                 {
                     $shift3 = null;
                 }
