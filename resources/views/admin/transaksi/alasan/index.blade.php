@@ -213,7 +213,7 @@
                 "scrollX": true,
                 "scrollY": 600,
                 "autoWidth": false,
-                "lengthMenu": [100, 500, 1000, 1500, 2000 ],
+                "lengthMenu": [500, 1000, 1500, 2000 ],
                 "ajax":
                 {
                     "url"       : "{{ route('dttalasankaryawan') }}",
