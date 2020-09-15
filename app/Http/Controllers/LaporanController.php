@@ -44,12 +44,17 @@ use App\Karyawan;
 use App\ExceptionLog;
 use App\Alasan;
 use App\Divisi;
+use App\Activity;
 
 use DB;
+
+use App\Http\Traits\TraitProses;
 
 
 class LaporanController 
 {
+    use TraitProses;
+    
     /**
      * Display a listing of the resource.
      *
@@ -128,6 +133,16 @@ class LaporanController
     public function indexTransaksiAlasan()
     {
         return view('admin.laporan.transaksi_alasan.index');
+    }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexLogJamMasuk()
+    {
+        return view('admin.laporan.log_jam_masuk.index');
     }
     
     public function laporanDetail(Request $request)
@@ -1295,8 +1310,6 @@ class LaporanController
         
     }
     
-    
-    
     public function laporanTransaksiAlasan(Request $request)
     {
         $req = $request->all();
@@ -1538,6 +1551,125 @@ class LaporanController
             $writer->setPreCalculateFormulas(true);
             $writer->save('php://output');
             exit;
+        }
+        else
+        {
+            return abort(404,'Not Found');
+        }
+        
+    }
+        
+    public function laporanLogJamMasuk(Request $request)
+    {
+        $req = $request->all();
+        
+        $ret = [];
+        
+        $periode = null;
+        
+        $action = [];
+        
+        $karyawan = Karyawan::with('jadwals', 'divisi');
+//        $act = Activity::with('mesin', 'karyawan');
+//        
+        if(isset($req['pin']))
+        {
+//            $kar = Karyawan::find($req['pin']);
+            $karyawan->where('id', $req['pin']);
+        }
+//        
+        if(isset($req['divisi']))
+        {
+//            $kar = Karyawan::where('divisi_id',$req['divisi'])->pluck('key');
+            $karyawan->where('divisi_id',$req['divisi']);
+        }
+//        
+        if(isset($req['perusahaan']))
+        {
+//            $kar = Karyawan::where('perusahaan_id',$req['perusahaan'])->pluck('key');
+            $karyawan->where('perusahaan_id',$req['perusahaan']);
+        }
+//        
+        if(isset($req['tanggal']))
+        {            
+            $periode = CarbonPeriod::create($req['tanggal'], $req['tanggal'])->toArray();
+        }
+//        
+        if(isset($req['tanggalRange']))
+        {            
+            $tgl = explode(' - ', $req['tanggalRange']);
+            $periode = CarbonPeriod::create($tgl[0], $tgl[1])->toArray();
+        }
+        
+        foreach($karyawan->KaryawanAktif()->get() as $kar)
+        {
+//            dd($kar->id);
+            foreach($periode as $per)
+            {
+                $abs = $this->absenMasuk($per, $kar->id);
+                $action[] = [
+                    'pin' => $kar->pin,
+                    'nama' => $kar->nama,
+                    'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
+                    'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                    'kode_divisi' => $kar->divisi->kode,
+                    'nama_divisi' => $kar->divisi->deskripsi,
+                    'tanggal_absen' => $per->format('d-m-Y'),
+                    'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                    'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
+                ];
+            }
+        }
+        
+        $ret = [
+            'periode' => $periode,
+            'data' => $action
+        ];
+        
+        if($req['btnSubmit'] == "preview")
+        {
+            return view('admin.laporan.log_jam_masuk.preview', ['var' => $ret, 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
+            );
+        }
+        else if($req['btnSubmit'] == "pdf")
+        {
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(6, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            if(count($ret))
+            {
+                foreach($ret as $kRet => $vRet)
+                {
+                    $pdf->setHeaderData();
+                    $pdf->setHeaderData('ij.jpg', 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($vRet['periode'])->format('d/m/Y').' S/D '.end($vRet['periode'])->format('d/m/Y'));
+                    $pdf->AddPage();
+                                        
+                    $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
+                    $headW = array(10,30,65,20,20,20,20,35,20,50);
+
+                    foreach($headTbl1 as $kH => $vH)
+                    {
+                        $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                    }
+                    $pdf->Ln();
+                    foreach($vRet['data'] as $k => $v)
+                    {
+                        $sizeCell = 4;
+                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
+                        foreach($v as $ky => $kvVar)
+                        {                            
+                            $pdf->Cell($headW[$ky+1], $sizeCell, $kvVar, 1, 0, 'C');
+                        }
+                        $pdf->Ln();
+                    }
+                }
+            }
+            $pdf->Output('Laporan Rekap Log Jam Masuk Karyawan.pdf', 'I');
         }
         else
         {

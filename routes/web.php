@@ -63,6 +63,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('laporan-karyawan-daftar-hadir', ['as' => 'lkaryawandaftarhadir', 'uses' => 'LaporanController@indexKaryawanDaftarHadir']);
             Route::get('laporan-karyawan-rekap-absen', ['as' => 'lkaryawanrekapabsen', 'uses' => 'LaporanController@indexKaryawanRekapAbsen']);
             Route::get('laporan-transaksi-alasan', ['as' => 'ltransaksialasan', 'uses' => 'LaporanController@indexTransaksiAlasan']);
+            Route::get('laporan-log-jam-masuk', ['as' => 'llogjammasuk', 'uses' => 'LaporanController@indexLogJamMasuk']);
         });
 
         Route::group(['prefix' => 'administrator'], function()
@@ -174,6 +175,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('laporankaryawandaftarhadir', ['as' => 'karyawandaftarhadirlaporan', 'uses' => 'LaporanController@laporanKaryawanDaftarHadir']);
             Route::post('laporankaryawanrekapabsen', ['as' => 'karyawanrekapabsenlaporan', 'uses' => 'LaporanController@laporanKaryawanRekapAbsen']);
             Route::post('laporantransaksialasan', ['as' => 'transaksialasanlaporan', 'uses' => 'LaporanController@laporanTransaksiAlasan']);
+            Route::post('laporanlogjammasuk', ['as' => 'logjammasuklaporan', 'uses' => 'LaporanController@laporanLogJamMasuk']);
 
             Route::post('absenmanualsave', ['as' => 'saveabsenmanual', 'uses' => 'ActivityManualController@store']);
             Route::post('absenmanualuploadsave', ['as' => 'saveabsenmanualupload', 'uses' => 'ActivityManualController@storeUploadAbsenManual']);

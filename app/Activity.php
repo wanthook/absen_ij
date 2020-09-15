@@ -30,7 +30,7 @@ class Activity extends Model
      *
      * @var array
      */
-    protected $dates = ['deleted_at'];
+    protected $dates = ['tanggal','deleted_at'];
     
     public function mesin()
     {

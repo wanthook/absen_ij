@@ -180,7 +180,7 @@ class KaryawanController extends Controller
                 {
                     $req['updated_by']   = Auth::user()->id;        
                     $req['updated_at']   = Carbon::now();
-                    KaryawanKeluarga::find($req['id'])->fill($req)->save();
+                    Karyawan::find($req['id'])->fill($req)->save();
                     
                     echo json_encode(array(
                         'status' => 1,

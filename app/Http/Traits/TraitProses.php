@@ -910,7 +910,7 @@ trait traitProses
     
     
     
-    private function jadwals($tanggal, $kar)
+    public function jadwals($tanggal, $kar)
     {
         $arr = array();
         
@@ -938,9 +938,28 @@ trait traitProses
         return $arr;
     }
     
+    public function jadwalSingle($tanggal, $kar)
+    {
+        $jad = null;
+        $kJad = $kar->jadwalsTanggal($tanggal->toDateString())->first();
+
+        if($kJad)
+        {
+            if($kJad->tipe == 'D')
+            {
+                $jad = Jadwal::find($kJad->id)->jadwalKerjaDay($tanggal->format("N"))->first();
+            }
+            else
+            {
+                $jad = Jadwal::find($kJad->id)->jadwalKerjaShift($tanggal->toDateString())->first();
+            }
+        }
+        return $jad;     
+    }
     
     
-    private function jadwalDay($tanggal, $jadwal)
+    
+    public function jadwalDay($tanggal, $jadwal)
     {
         $arr = array();
         foreach($tanggal as $tgl)
@@ -952,6 +971,31 @@ trait traitProses
             }
         }
         return $arr;
+    }
+    
+    public function absenMasuk($tanggal, $karyawanId)
+    {
+        $karyawan = Karyawan::find($karyawanId);
+        
+        if($karyawan)
+        {
+            $jadwal = $this->jadwalSingle($tanggal, $karyawan);
+            
+            if($jadwal)
+            {
+                $in = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
+
+                $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+
+                return ['jadwal' => $jadwal, 'activity' => $actIn];
+            }
+            return null;
+            
+        }
+        return null;
     }
     
     private function jadwalShift($tanggal, $jadwal)

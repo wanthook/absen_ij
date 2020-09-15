@@ -47,10 +47,10 @@
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000,
-                onClose: function()
-                {
-                    document.location.href="{{route('mkaryawan')}}";
-                }
+//                onClose: function()
+//                {
+//                    document.location.href="{{route('mkaryawan')}}";
+//                }
             });
             
             var Toast = Swal.mixin({
