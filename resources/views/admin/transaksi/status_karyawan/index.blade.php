@@ -64,15 +64,21 @@
             
             $('#sTanggal').daterangepicker({
                 singleDatePicker:true,
+                autoUpdateInput: false,
                 locale: {
                     format: 'YYYY-MM-DD'
                 }
             });  
             
-            $('#sTanggal').on('change', function(e)
-            {
+//            $('#sTanggal').on('change', function(e)
+//            {
+//                dTableKar.ajax.reload();
+//            }); 
+            
+            $('#sTanggal').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD'));
                 dTableKar.ajax.reload();
-            });            
+            });
             
             $('#cmdUpload').on('click', function(e)
             {
@@ -633,7 +639,7 @@
                                     <div class="form-group">
                                         {{ Form::label('sTanggal', 'Tanggal') }}
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('sTanggal', now(), ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
+                                            {{ Form::text('sTanggal', null, ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
                                             <div class="input-group-append" data-target="#tanggal_masuk">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
                                             </div>

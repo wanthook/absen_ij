@@ -323,8 +323,6 @@ trait traitProses
                             else
                             {
                                 $isLibur = 1;
-//                                    dd("bla");
-//                                    continue;
                             }
                             /*
                              * End if
@@ -369,8 +367,8 @@ trait traitProses
                     if($val->kode != 'L')
                     {
                         /*
-                        * cek jadwal shift3
-                        */
+                         * cek jadwal shift3
+                         */
                         if($in->greaterThan($out))
                         {
                             $out->addDay();
@@ -383,14 +381,19 @@ trait traitProses
                         $jumlahJamKerja = $out->diffInHours($in);
 
                         $actIn = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                ->whereBetween('tanggal', [
+                                    $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
+                                    $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
+                                ])
                                 ->orderBy('tanggal', 'ASC')
                                 ->first();
                         $jMasukId = ($actIn)?$actIn->id:null;
 
                         $actOut = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                    $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()])
+                                ->whereBetween('tanggal', [
+                                    $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                    $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
+                                ])
                                 ->orderBy('tanggal', 'DESC')
                                 ->first();
                         $jKeluarId = ($actOut)?$actOut->id:null;
@@ -418,7 +421,7 @@ trait traitProses
                                             ->first();
 
                                     $flagNotInOut = "out";
-//                                                dd($actOut);
+                                    
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
                             }
@@ -461,8 +464,6 @@ trait traitProses
                 }
                 else
                 {
-//                            dd($jadwalBefore);
-
                     $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 07:00:00");
                     $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 14:00:00");
                     $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 23:00:00");
@@ -506,7 +507,7 @@ trait traitProses
                                 ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                 ->orderBy('tanggal', 'ASC')
                                 ->first();
-//                                    dd($actIn);
+                            
                             $actOut = Activity::where('pin', $karyawan->key)
                                 ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                 ->orderBy('tanggal', 'DESC')
@@ -514,8 +515,7 @@ trait traitProses
                             $shift3 = 1;
 
                             $jMasukId = ($actIn)?$actIn->id:null;
-                            $jKeluarId = ($actOut)?$actOut->id:null;
-//                                    dd($actOut);
+                            $jKeluarId = ($actOut)?$actOut->id:null;                            
                         }
                     }
                     else
@@ -581,8 +581,7 @@ trait traitProses
                         $jumlahJamKerja = $aOut->diffInHours($aIn);
                     }
                 }
-//                        dd($actIn);
-
+                
                 if($actIn)
                 {
                     $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actIn->tanggal);
@@ -594,14 +593,11 @@ trait traitProses
                     $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actOut->tanggal);
                     $jSubKeluar = $jKeluar->copy()->subSeconds((int)$jKeluar->format('s'));
                 }
-
-//                            if($actIn && $actOut)
+                
                 if($jMasukId && $jKeluarId)
                 {
                     if(!$isLn && !$isLnOff && !$isSpo)
                     {
-
-
                         if($jSubMasuk)
                         {
                             $nMasuk = $jadMasuk->diffInMinutes($jSubMasuk, false);
@@ -610,23 +606,16 @@ trait traitProses
                         {
                             $nKeluar = $jSubKeluar->diffInMinutes($jadKeluar, false);
                         }
-
-
                     }
 
                     $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
                 }
 
-
-
                 /*
                  * start absen manual
                  */
-                $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();;
-                if($key=='2020-09-04')
-                {
-//                                dd($actMan);
-                }
+                $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
+                
                 if($actMan)
                 {
                     $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);

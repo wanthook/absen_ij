@@ -56,7 +56,7 @@
                 }
             });
             
-            $('#shift').select2();
+            $('#shift').select2({placeholder: "",allowClear: true});
             
             $('#divisi').select2({
                 // placeholder: 'Silakan Pilih',
