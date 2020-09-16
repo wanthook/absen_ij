@@ -56,6 +56,8 @@
                 }
             });
             
+            $('#shift').select2();
+            
             $('#divisi').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
@@ -241,6 +243,12 @@
                                 {{ Form::text('tanggalRange', null, ['id' => 'tanggalRange', 'class' => 'form-control form-control-sm float-right']) }}
                             </div>
                             
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ Form::label('shift', 'Jenis Shift') }}
+                            {{ Form::select('shift', [1=>'Shift 1', 2=>'Shift 2', 3=>'Shift 3'], null, ['id' => 'shift', 'class' => 'form-control form-control-sm select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
                 </div>

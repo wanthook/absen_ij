@@ -973,9 +973,14 @@ trait traitProses
         return $arr;
     }
     
-    public function absenMasuk($tanggal, $karyawanId)
+    public function absenMasuk($tanggal, $karyawanId, $sf = null)
     {
         $karyawan = Karyawan::find($karyawanId);
+        
+        $in = null;
+        $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 07:00:00");
+        $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 14:00:00");
+        $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 23:00:00");
         
         if($karyawan)
         {
@@ -984,7 +989,41 @@ trait traitProses
             if($jadwal)
             {
                 $in = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
-
+                if($sf == 1)
+                {
+                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS2))
+                    {
+                        goto proses;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else if($sf == 2)
+                {
+                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS3))
+                    {
+                        goto proses;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else if($sf == 3)
+                {
+                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addDay()))
+                    {
+                        goto proses;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                
+                proses:
                 $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')

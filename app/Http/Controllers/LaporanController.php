@@ -847,7 +847,7 @@ class LaporanController
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
-            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$req['tanggal']);
+            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Tidak Absen","Periode : ".$req['tanggal']);
             $pdf->AddPage();
             $headTbl1 = array('No','PIN', 'Nama', 'Tanggal', 'Kode', 'Nama',  'Tanggal','Jadwal', 'Jam', 'Keterangan');
             $headTbl2 = array('','', 'Karyawan','Masuk', 'Divisi', 'Divisi', 'Tidak Absen', 'Kerja', 'Kerja', '');
@@ -1566,6 +1566,7 @@ class LaporanController
         $ret = [];
         
         $periode = null;
+        $sf = null;
         
         $action = [];
         
@@ -1601,23 +1602,31 @@ class LaporanController
             $periode = CarbonPeriod::create($tgl[0], $tgl[1])->toArray();
         }
         
+        if(isset($req['shift']))
+        {
+            $sf = $req['shift'];
+        }
+        
         foreach($karyawan->KaryawanAktif()->get() as $kar)
         {
 //            dd($kar->id);
             foreach($periode as $per)
             {
-                $abs = $this->absenMasuk($per, $kar->id);
-                $action[] = [
-                    'pin' => $kar->pin,
-                    'nama' => $kar->nama,
-                    'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
-                    'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
-                    'kode_divisi' => $kar->divisi->kode,
-                    'nama_divisi' => $kar->divisi->deskripsi,
-                    'tanggal_absen' => $per->format('d-m-Y'),
-                    'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
-                    'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
-                ];
+                $abs = $this->absenMasuk($per, $kar->id,$sf);
+                if($abs)
+                {
+                    $action[] = [
+                        'pin' => $kar->pin,
+                        'nama' => $kar->nama,
+                        'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
+                        'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                        'kode_divisi' => $kar->divisi->kode,
+                        'nama_divisi' => $kar->divisi->deskripsi,
+                        'tanggal_absen' => $per->format('d-m-Y'),
+                        'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                        'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
+                    ];
+                }
             }
         }
         
