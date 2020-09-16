@@ -1652,30 +1652,29 @@ class LaporanController
             
             if(count($ret))
             {
-                foreach($ret as $kRet => $vRet)
+                $pdf->setHeaderData();
+                $pdf->setHeaderData('ij.jpg', 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+                $pdf->AddPage();
+                
+                $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
+                $headW = array(10,20,65,20,20,20,20,35,20,50);
+                foreach($headTbl1 as $kH => $vH)
                 {
-                    $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.jpg', 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($vRet['periode'])->format('d/m/Y').' S/D '.end($vRet['periode'])->format('d/m/Y'));
-                    $pdf->AddPage();
-                                        
-                    $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
-                    $headW = array(10,30,65,20,20,20,20,35,20,50);
-
-                    foreach($headTbl1 as $kH => $vH)
+                    $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                }
+                $pdf->Ln();
+                
+                foreach($ret['data'] as $kRet => $vRet)
+                {      
+                    $sizeCell = 4;
+                    $pdf->Cell($headW[0], $sizeCell, $kRet+1, 1, 0, 'C');
+                    $i = 1;
+                    foreach($vRet as $v)
                     {
-                        $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v, 1, 0, 'C');
+                        
                     }
                     $pdf->Ln();
-                    foreach($vRet['data'] as $k => $v)
-                    {
-                        $sizeCell = 4;
-                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
-                        foreach($v as $ky => $kvVar)
-                        {                            
-                            $pdf->Cell($headW[$ky+1], $sizeCell, $kvVar, 1, 0, 'C');
-                        }
-                        $pdf->Ln();
-                    }
                 }
             }
             $pdf->Output('Laporan Rekap Log Jam Masuk Karyawan.pdf', 'I');
