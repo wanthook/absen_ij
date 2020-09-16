@@ -1649,25 +1649,25 @@ class KaryawanController extends Controller
                     $str    .= '</div>';
                     return $str;
                 })
-                ->setRowClass(function ($datas)
-                {
-                    $ret = '';
-                    switch($datas->active_status)
-                    {
-                        case 3:
-                            $ret = 'danger alert-danger';
-                            break;
-                        case 2:
-                            $ret = 'warning alert-warning';
-                            break;
-                        case 1:
-                            $ret = 'success alert-success';
-                            break;
-                        
-                    }
-                    
-                    return $ret;
-                })
+//                ->setRowClass(function ($datas)
+//                {
+//                    $ret = '';
+//                    switch($datas->active_status)
+//                    {
+//                        case 3:
+//                            $ret = 'danger alert-danger';
+//                            break;
+//                        case 2:
+//                            $ret = 'warning alert-warning';
+//                            break;
+//                        case 1:
+//                            $ret = 'success alert-success';
+//                            break;
+//                        
+//                    }
+//                    
+//                    return $ret;
+//                })
                 ->editColumn('id', '{{$id}}')
                 ->make(true);
     }

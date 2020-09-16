@@ -459,7 +459,24 @@
                 },
                 {
                         targets : 'tketerangan',
-                        data: "active_comment"
+                        data: function(data)
+                        {
+                            var lbl = '';
+                            if(data.active_status == 1)
+                            {
+                                lbl = '<span class="badge badge-success">'+data.active_comment+'</span>';
+                            }
+                            else if(data.active_status == 2)
+                            {
+                                lbl = '<span class="badge badge-warning">'+data.active_comment+'</span>';
+                            }
+                            else if(data.active_status == 3)
+                            {
+                                lbl = '<span class="badge badge-danger">'+data.active_comment+'</span>';
+                            }
+                            
+                            return lbl;
+                        }
                 }],
                 "drawCallback": function( settings, json ) 
                 {
