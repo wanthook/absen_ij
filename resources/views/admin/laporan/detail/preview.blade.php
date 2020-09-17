@@ -181,12 +181,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$kabs}}</td>
                 @if($vabs)
                 @php
+                $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                
                 $lemburAktual += $vabs->lembur_aktual;
                 $hitungLembur += $vabs->hitung_lembur;
                 $shiftMalam += $vabs->shift3;
                 $lemburLn += $vabs->lembur_ln;
                 $hitungLn += $vabs->hitung_lembur_ln;
-                $tLembur += $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                
                 $totLem += $tLembur;
                 @endphp
                 <td class="dc">{{substr($vabs->jadwal_jam_masuk,0,5)}}</td>
