@@ -681,7 +681,7 @@ trait traitProses
                 /*
                  * Hitung Lembur otomatis
                  */
-                if(!$isMangkir && !$isTa && !$nilaiGp)
+                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
                 {
 
                     if(isset($val->kode))
