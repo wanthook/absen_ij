@@ -684,8 +684,9 @@ trait traitProses
                 if(!$isMangkir && !$isTa && !$nilaiGp)
                 {
 
-                    if(isset($var->kode))
+                    if(isset($val->kode))
                     {
+//                        dd($val->kode);
                         if(substr($val->kode,0,1) == "J")
                         {
                             //3.5 hitung lembur kalau gak telat sama gak gp

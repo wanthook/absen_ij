@@ -65,39 +65,58 @@ class ProsesabsenController extends Controller
      */
     public function proses(Request $request)
     {
-        $req = $request->all();
+        
         try
         {
-            $karyawanId = array();
-            $tanggal = null;
+            $validation = Validator::make($request->all(), 
+                [
+                    'tanggal'   => 'required'
+                ],
+                [
+                    'tanggal.required'  => 'Kode harus diisi.'
+                ]);
 
-            $karyawan = Karyawan::KaryawanAktif();
-            
-            if(isset($req['pin']))
+            if($validation->fails())
             {
-                $karyawan->where('id', $req['pin']);
-            }            
-            else if(isset($req['divisi']))
-            {
-                $karyawan->where('divisi_id', $req['divisi']);
-            }
-            
-            $tArr = explode(" - ", $req['tanggal']);
-            $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
-            
-            $karyawan->chunk(100, function($kar) use($tanggal)
-            {
-                
-                foreach($kar as $rKar)
-                {
-                    $this->prosesAbs($rKar->id, $tanggal);
-                }
-            });
-            
-            echo json_encode(array(
-                'status' => 1,
-                'msg'   => 'Data berhasil diproses'
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
                 ));
+            }
+            else
+            {
+                $req = $request->all();
+                $karyawanId = array();
+                $tanggal = null;
+
+                $karyawan = Karyawan::KaryawanAktif();
+
+                if(isset($req['pin']))
+                {
+                    $karyawan->where('id', $req['pin']);
+                }            
+                else if(isset($req['divisi']))
+                {
+                    $karyawan->where('divisi_id', $req['divisi']);
+                }
+
+                $tArr = explode(" - ", $req['tanggal']);
+                $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
+
+                $karyawan->chunk(100, function($kar) use($tanggal)
+                {
+
+                    foreach($kar as $rKar)
+                    {
+                        $this->prosesAbs($rKar->id, $tanggal);
+                    }
+                });
+
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil diproses'
+                    ));
+            }
         }
         catch(Exception $e)
         {

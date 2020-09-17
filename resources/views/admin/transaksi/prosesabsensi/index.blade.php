@@ -80,7 +80,7 @@
                         toastOverlay.close();
                         if(result.status == 1)
                         {
-                            document.getElementById("form_data").reset(); 
+//                            document.getElementById("form_data").reset(); 
                             
                             Toast.fire({
                                 type: 'success',
