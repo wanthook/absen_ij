@@ -13,22 +13,34 @@
 @section('add_css')
     <!-- Datatables -->
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.css')}}">
+    <!-- select2 -->
+    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
 @endsection
 
 @section('add_js')
     <!-- Datatables -->
     <script src="{{asset('bower_components/admin-lte/plugins/datatables/jquery.dataTables.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
+    <!-- select2 -->
+    <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
     
     <script>
         var dTable = null;
         $(function(e)
         {
-            var Toast = Swal.mixin({
+            let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000
+            });
+            
+            var toastOverlay = Swal.mixin({
+                position: 'center',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false
             });
 
             $.ajaxSetup({
@@ -42,11 +54,38 @@
                 dTable.ajax.reload();
             });
             
+            $('#parent_id').select2({
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('seldivisi')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
             $('#form_data').submit( function(e)
             {
                 e.preventDefault();
                 const data = $(this).serialize();
-                
+                console.log(data);
                 $.ajax(
                 {
                     url         : $(this).attr('action'),
@@ -90,6 +129,67 @@
                 });
                 
                 return false;
+            });
+            
+            $('#cmdUpload').on('click', function(e)
+            {
+                let frm = document.getElementById('form_data_upload');
+                let datas = new FormData(frm);
+                
+                $.ajax(
+                {
+                    url         : $('#form_data_upload').attr('action'),
+                    dataType    : 'JSON',
+                    type        : 'POST',
+                    data        : datas ,
+                    processData: false,
+                    contentType: false,
+                    beforeSend  : function(xhr)
+                    {
+//                        $('#loadingDialog').modal('show');
+                        toastOverlay.fire({
+                            type: 'warning',
+                            title: 'Sedang memproses data upload',
+                            onBeforeOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success(result,status,xhr)
+                    {
+                        toastOverlay.close();
+                        if(result.status == 1)
+                        {
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
+                        }
+                        else
+                        {
+                            if(Array.isArray(result.msg))
+                            {
+                                var str = "";
+                                for(var i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                                $('#tipe_exim').attr('disabled','disabled');
+                            }
+                            
+                        }
+                        dTable.ajax.reload();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { 
+                        /* implementation goes here */ 
+                        toastOverlay.close();
+                        console.log(jqXHR.responseText);
+                    }
+                });
             });
             
             $('#modal-form').on('hidden.bs.modal', function (e) 
@@ -173,6 +273,8 @@
                         $('#id').val(datas.id);
                         $('#kode').val(datas.kode);
                         $('#deskripsi').val(datas.deskripsi);
+//                        console.log($('#id').val());
+//                        $('#parent_id').val(datas.parent_id).
                     });
                     
                     
@@ -184,6 +286,46 @@
 @endsection
 
 @section('modal_form')
+<div class="modal fade" id="modal-form-upload">
+    <div class="modal-dialog">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-upload"></i>Form Upload Absen Manual Karyawan</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {{ Form::open(['route' => ['uploaddivisi'], 'id' => 'form_data_upload', 'files' => true]) }}
+            {{ Form::hidden('uploadId',null, ['id' => 'uploadId']) }}
+            <div class="modal-body">   
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="kode">File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="formUpload" name="formUpload">
+                                        <label class="custom-file-label" for="formUpload">Choose file</label>
+                                    </div>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="cmdUpload">Upload</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                        <div class="col-12">
+                            <a class="btn btn-info btn-xs" href="{{route('app.files', 'file_temp_divisi')}}" target="_blank"><i class="fa fa-download"></i>Template Document</a>
+                        </div>
+                    </div>
+                </div>
+            </div>   
+            {{ Form::close() }}
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog">
         <div class="modal-content bg-secondary">
@@ -196,7 +338,7 @@
         <form id="form_data" action="{{route('savedivisi')}}" accept-charset="UTF-8" >
             {{csrf_field()}}
             <input type="hidden" name="id" id="id">
-        <div class="modal-body">            
+        <div class="modal-body">           
                 
                 <div class="form-group">
                     <label for="kode">Kode Divisi</label>
@@ -205,6 +347,10 @@
                 <div class="form-group">
                     <label for="kode">Nama Divisi</label>
                     <input type="text" class="form-control" id="deskripsi" name="deskripsi" placeholder="Nama Divisi">
+                </div>
+                <div class="form-group">
+                    <label for="kode">Parent Divisi</label>
+                    <select name="parent_id" id="parent_id" class="form-control select2" style="width:100%"></select>
                 </div>
         </div>
         <div class="modal-footer justify-content-between">
@@ -244,6 +390,7 @@
     <div class="card-header">
         <h5 class="card-title">&nbsp;</h5>
         <div class="card-tools">
+            <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
             <button class="btn btn-xs btn-success" alt="Tambah" data-toggle="modal" data-target="#modal-form"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</button>
         </div>
     </div>

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
@@ -10,12 +11,15 @@ use Illuminate\Support\Facades\Auth;
 
 class Karyawan extends Model
 {
-    
+    use NodeTrait;
     use SoftDeletes;
     
     protected $table = 'karyawans';
     
     protected $fillable = [
+        'parent_id',
+        '_lft',
+        '_rgt',
         'pin',
         'key',
         'nik',

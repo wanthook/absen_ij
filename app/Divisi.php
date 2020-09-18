@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,13 +10,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Divisi extends Model
 {
     use SoftDeletes;
+    use NodeTrait;
     
     protected $table = 'divisis';
     
     protected $fillable = [
-        'nama',
         'deskripsi',   
         'kode',
+        'parent_id', 
+        '_lft',
+        '_rgt',
         'deleted_at',
         'created_by', 
         'created_at',

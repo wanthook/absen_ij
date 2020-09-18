@@ -91,6 +91,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('divisisave', ['as' => 'savedivisi', 'uses' => 'DivisiController@store']);
             Route::post('divisidel', ['as' => 'deldivisi', 'uses' => 'DivisiController@destroy']);
             Route::post('divisisel', ['as' => 'seldivisi', 'uses' => 'DivisiController@select2']);
+            Route::post('divisiupload', ['as' => 'uploaddivisi', 'uses' => 'DivisiController@storeUpload']);
 
             Route::post('jabatandt', ['as' => 'dtjabatan', 'uses' => 'JabatanController@dt']);
             Route::post('jabatansave', ['as' => 'savejabatan', 'uses' => 'JabatanController@store']);
@@ -238,6 +239,9 @@ Route::group(['middleware' => 'auth'],function()
                 break;
             case "file_temp_salary":
                 $path = storage_path('app').'/public/salary.xlsx';
+                break;
+            case "file_temp_divisi":
+                $path = storage_path('app').'/public/divisi.xlsx';
                 break;
             default:
                 $path = "";

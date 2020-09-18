@@ -10,6 +10,10 @@ use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Settings;
+
 class DivisiController extends Controller
 {
     
@@ -45,11 +49,11 @@ class DivisiController extends Controller
         {
             $validation = Validator::make($request->all(), 
                 [
-                    'nama'   => 'required',
+                    'kode'   => 'required',
                     'deskripsi'      => 'required',
                 ],
                 [
-                    'nama.required'  => 'Kode harus diisi.',
+                    'kode.required'  => 'Kode harus diisi.',
                     'deskripsi.required'     => 'Nama harus diisi.',
                 ]);
 
@@ -80,11 +84,13 @@ class DivisiController extends Controller
                     ));
                 }
                 else
-                {
-                    $req['updated_by']   = Auth::user()->id;        
-                    $req['updated_at']   = Carbon::now();
-                    Divisi::find($req['id'])->fill($req)->save();
-                    
+                {                    
+                    Divisi::find($req['id'])->fill([
+                        'kode' => $req['kode'],
+                        'deskripsi' => $req['deskripsi'],
+                        'parent_id' => $req['parent_id'],
+                        'updated_by'   => Auth::user()->id
+                    ])->save();
                     echo json_encode(array(
                         'status' => 1,
                         'msg'   => 'Data berhasil diubah'
@@ -98,6 +104,125 @@ class DivisiController extends Controller
             echo json_encode(array(
                 'status' => 0,
                 'msg'   => 'Data gagal disimpan'
+            ));
+        }
+    }
+    
+    public function storeUpload(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+                $fileVar->move(storage_path('tmp'),'tempFileUploadDivisi');
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadDivisi','r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadDivisi');
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                foreach($sheetData as $sD)
+                {
+                    if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $dS = array();
+                    
+                    $divisi = Divisi::where('kode', trim($sD[$arrKey->kode]))->first();
+                    
+                    $parent = null;
+                    if(trim($sD[$arrKey->parent]))
+                    {
+                        $parent = Divisi::where('kode', trim($sD[$arrKey->parent]))->first()->id;
+                    }
+                    
+                    if(!$divisi)
+                    {
+                                                
+                        Divisi::create([
+                            'kode' => trim($sD[$arrKey->kode]),
+                            'deskripsi' => trim($sD[$arrKey->nama]),
+                            'parent_id' => $parent,
+                            'updated_by'   => Auth::user()->id, 
+                            'created_by'   => Auth::user()->id
+                        ]);
+                    }
+                    else
+                    {
+                        Divisi::find($divisi->id)->fill([
+                            'kode' => trim($sD[$arrKey->kode]),
+                            'deskripsi' => trim($sD[$arrKey->nama]),
+                            'parent_id' => $parent,
+                            'updated_by'   => Auth::user()->id
+                        ])->save();
+                        
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
             ));
         }
     }
