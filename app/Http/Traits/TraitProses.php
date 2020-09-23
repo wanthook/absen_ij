@@ -81,7 +81,8 @@ trait traitProses
 
         $jadwalArr = array();
 
-        $proses = Prosesabsen::where('karyawan_id', $karId)->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
+        $proses = Prosesabsen::where('karyawan_id', $karId)
+                ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
 
         if($proses->count()>0)
         {
@@ -100,6 +101,7 @@ trait traitProses
         
         if($jadwalArr)
         {
+            $arrProses = [];
             foreach($jadwalArr as $key => $val)
             {        
 
@@ -213,9 +215,15 @@ trait traitProses
                     /*
                      * Absen Manual
                      */                       
-
-                    $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
-                    $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                    if($val->jam_masuk && $val->jam_keluar)
+                    {
+                        $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
+                        $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                    }
+                    else
+                    {
+                        goto proses_simpan;
+                    }
 
                 }
                 else
@@ -863,7 +871,7 @@ trait traitProses
                     $alasanId = json_encode($alasanId);
                 }
 
-                $arrProses = [
+                $arrProses[] = [
                     'karyawan_id' => $karId,
                     'alasan_id' => $alasanId,
                     'tanggal' => $key,
@@ -893,6 +901,10 @@ trait traitProses
                     'created_by' => Auth::user()->id
                 ];
 
+//                Prosesabsen::create($arrProses);
+            }
+            if(count($arrProses) > 0)
+            {
                 Prosesabsen::create($arrProses);
             }
         }
