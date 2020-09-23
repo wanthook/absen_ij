@@ -905,7 +905,7 @@ trait traitProses
             }
             if(count($arrProses) > 0)
             {
-                Prosesabsen::create($arrProses);
+                Prosesabsen::insert($arrProses);
             }
         }
     }
