@@ -47,7 +47,7 @@
             });
 
             $('#timepicker,#timepicker2').datetimepicker({
-                format: 'hh:mm'
+                format: 'HH:mm'
             });
             
             $('#warna').colorpicker();
