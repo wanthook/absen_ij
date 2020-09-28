@@ -83,6 +83,18 @@ Route::group(['middleware' => 'auth'],function()
         });
     });
     
+    Route::group(['prefix' => 'request'], function()
+    {
+        Route::group(['prefix' => 'alasan'], function()
+        {
+            Route::get('request-alasan', ['as' => 'alasanrequest', 'uses' => 'RequestAlasanController@index']);
+            Route::get('request-alasan-form', ['as' => 'alasanrequestform', 'uses' => 'RequestAlasanController@create']);
+            Route::get('request-alasan-edit/{id}', ['as' => 'alasanrequestedit', 'uses' => 'RequestAlasanController@edit']);
+            Route::get('request-alasan-show/{id}', ['as' => 'alasanrequestshow', 'uses' => 'RequestAlasanController@show']);
+            Route::get('request-alasan-approval/{id}', ['as' => 'alasanrequestapproval', 'uses' => 'RequestAlasanController@approval']);
+        });
+    });
+    
     Route::group(['prefix' => 'api'], function()
     {
         Route::group(['prefix' => 'hr'], function()
@@ -182,6 +194,9 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('absenmanualuploadsave', ['as' => 'saveabsenmanualupload', 'uses' => 'ActivityManualController@storeUploadAbsenManual']);
             Route::post('absenmanualdelete', ['as' => 'deleteabsenmanual', 'uses' => 'ActivityManualController@destroy']);
             Route::post('absenmanualdt', ['as' => 'dttabsenmanual', 'uses' => 'ActivityManualController@dt']);
+        
+            
+            
         });
         
         Route::group(['prefix' => 'payroll'], function()
@@ -191,6 +206,26 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('salaryuploadsave', ['as' => 'savesalaryupload', 'uses' => 'SalaryController@storeUploadSalary']);
             Route::post('salarydelete', ['as' => 'deletesalary', 'uses' => 'SalaryController@destroy']);
             Route::post('salarydt', ['as' => 'dtsalary', 'uses' => 'SalaryController@dtMaster']);
+        });
+        
+        Route::group(['prefix' => 'request'], function()
+        {
+            Route::post('requestalasansave', ['as' => 'saverequestalasan', 'uses' => 'RequestAlasanController@store']);
+            Route::post('requestalasandetsave', ['as' => 'saverequestalasandet', 'uses' => 'RequestAlasanController@storeDetail']);
+            Route::post('requestalasannodokumensave', ['as' => 'saverequestalasannodokumen', 'uses' => 'RequestAlasanController@storeDokumen']);
+            Route::post('requestalasandt', ['as' => 'dtrequestalasan', 'uses' => 'RequestAlasanController@dt']);
+            Route::post('requestalasandelete', ['as' => 'deleterequestalasan', 'uses' => 'RequestAlasanController@destroy']);
+            Route::post('requestalasansend', ['as' => 'sendrequestalasan', 'uses' => 'RequestAlasanController@send']);
+            Route::post('requestalasanappapi', ['as' => 'apirequestalasanapp', 'uses' => 'RequestAlasanController@appApi']);
+            Route::post('requestalasandetapi', ['as' => 'apirequestalasandet', 'uses' => 'RequestAlasanController@showDetailApi']);                   
+            Route::post('requestalasandecapi', ['as' => 'apirequestalasandec', 'uses' => 'RequestAlasanController@declineApi']);  
+            Route::post('requestalasandetdecapi', ['as' => 'apirequestalasandetdec', 'uses' => 'RequestAlasanController@declineDetailApi']);
+//            Route::post('salaryjenisselect', ['as' => 'selsalaryjenis', 'uses' => 'MasterOptionController@select2jenissalary']);
+//            Route::post('salaryuploadsave', ['as' => 'savesalaryupload', 'uses' => 'SalaryController@storeUploadSalary']);
+            Route::post('requestalasandetdelete', ['as' => 'deleterequestalasandet', 'uses' => 'RequestAlasanController@destroyDetail']);
+            Route::post('requestalasandetdt', ['as' => 'dtrequestalasandet', 'uses' => 'RequestAlasanController@dtDetail']);
+            
+            Route::get('requestalasandownload/{kode}', ['as' => 'downloadrequestalasan','uses'   => 'RequestAlasanController@download']);
         });
         
         Route::post('adminmoduledt', ['as' => 'dtadminmodule', 'uses' => 'ModuleController@dt']);        
@@ -208,7 +243,6 @@ Route::group(['middleware' => 'auth'],function()
         Route::post('adminmasteroptionsave', ['as' => 'saveadminmasteroption', 'uses' => 'MasterOptionController@store']);
         Route::post('adminmasteroptiondelete', ['as' => 'deleteadminmasteroption', 'uses' => 'MasterOptionController@destroy']);
     });
-    
     
     Route::get('files/{kode}',      ['as' => 'app.files', function ($kode)
     {

@@ -456,7 +456,7 @@ class KaryawanController extends Controller
                         $tanggalJadwal = trim($csv[$arrKey->tanggal_jadwal]);
                         if($jadwal && $tanggalJadwal)
                         {
-                            Karyawan::find($kar->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
+                            Karyawan::find($karyawan->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
                         }
                         
                         if(!empty(trim($csv[$arrKey->tanggal_kontrak])))
@@ -1775,13 +1775,17 @@ class KaryawanController extends Controller
             {
                 $q->where('pin','like','%'.$term.'%')
                   ->orWhere('nik','like','%'.$term.'%')
-                  ->orWhere('nama','like','%'.$term.'%')
-                  ->orWhere('id',$term);
+                  ->orWhere('nama','like','%'.$term.'%');
+//                  ->orWhere('id',$term);
             })->limit(50);
         }
         else if(isset($req['pin']))
         {
             $tags = Karyawan::where('pin', $req['pin']);
+        }
+        else if(isset($req['id']))
+        {
+            $tags = Karyawan::where('id', $req['id']);
         }
         
         $formatted_tags = [];

@@ -1,0 +1,476 @@
+@extends('adminlte3.app')
+
+@section('title_page')
+<p>Preview Transaksi Request Alasan</p>
+@endsection
+
+
+@section('breadcrumb')
+<li class="breadcrumb-item"><a href="{{route('dashboard')}}">Beranda</a></li>
+<li class="breadcrumb-item active">Preview Transaksi Request Alasan</li>
+@endsection
+
+@section('add_css')
+<!-- Datatables -->
+<link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.css')}}">
+<link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables.net-select-bs4/css/select.bootstrap4.min.css')}}">
+
+<!-- select2 -->
+<link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
+<!-- daterange picker -->
+<link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.css')}}">
+<style>
+    td.details-control {
+        background: url('{{asset('images/details_open.png')}}') no-repeat center center;
+        cursor: pointer;
+    }
+    tr.shown td.details-control {
+        background: url('{{asset('images/details_close.png')}}') no-repeat center center;
+    }
+</style>
+@endsection
+
+@section('add_js')
+<!-- Datatables -->
+<script src="{{asset('bower_components/admin-lte/plugins/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
+<script src="{{asset('bower_components/admin-lte/plugins/datatables.net-select-bs4/js/select.bootstrap4.min.js')}}"></script>
+<!-- bootstrap color picker -->
+<script src="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js')}}"></script>
+<!-- select2 -->
+<script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
+<!-- date-range-picker -->
+<script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
+<!-- bs-custom-file-input -->
+<script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
+
+<script src="{{asset('js/myjs.js')}}"></script>
+<script>
+$(function(e)
+{
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+            
+    $('#tanggal, #dtanggal').daterangepicker({
+        singleDatePicker: true,
+        locale: {
+            format: 'YYYY-MM-DD'
+        }
+    });
+
+    $('#dtanggalAkhir').daterangepicker({
+        singleDatePicker: true,
+        autoUpdateInput: false,
+        locale: {
+            format: 'YYYY-MM-DD'
+        }
+    }).on('apply.daterangepicker', function (ev, picker) {
+        $(this).val(picker.startDate.format('YYYY-MM-DD'));
+    });
+    @if($var->status == 'send')
+    $('#cmdSimpanDetail').on('click', function(e)
+    {
+        e.preventDefault();
+        
+        var obj = {
+            did : $('#did').val(),
+            dtanggal : $('#dtanggal').val(),
+            dtanggalAkhir : $('#dtanggalAkhir').val(),
+            dwaktu : $('#dwaktu').val(),
+            dpin : $('#dkaryawanid').val(),
+            dalasan : $('#dalasan').val(),
+            dcatatan : $('#dcatatan').val()
+        };
+        
+        $.ajax(
+        {
+            url         : '{{route('saverequestalasandet')}}',
+            dataType    : 'JSON',
+            type        : 'POST',
+            data        : obj,
+            beforeSend  : function(xhr)
+            {
+                callToastOverlay('warning', 'Loading');
+            },
+            success(result,status,xhr)
+            {
+                toastOverlay.close();
+                if (result.status == 1)
+                {
+                    callToast('success', result.msg);
+                    location.reload();
+                } else
+                {
+                    if (Array.isArray(result.msg))
+                    {
+                        var str = "";
+                        for (var i = 0; i < result.msg.length; i++)
+                        {
+                            str += result.msg[i] + "<br>";
+                        }
+                        callToast('error', str);
+                    }
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) { 
+                toastOverlay.close();
+                console.log(jqXHR.responseText);
+            }
+        });
+    });
+    $('#btnApp').on('click', function(e)
+    {
+        e.preventDefault();
+        
+        var ids = $('#id').val();
+        $.ajax(
+        {
+            url         : '{{route('apirequestalasanapp')}}',
+            dataType    : 'JSON',
+            type        : 'POST',
+            data        : { id : ids},
+            beforeSend  : function(xhr)
+            {
+                callToastOverlay('warning', 'Loading');
+            },
+            success(result,status,xhr)
+            {
+                toastOverlay.close();
+                if (result.status == 1)
+                {
+                    callToast('success', result.msg);
+                    window.open("{{route('alasanrequest')}}", '_self');
+                } 
+                else
+                {
+                    if (Array.isArray(result.msg))
+                    {
+                        var str = "";
+                        for (var i = 0; i < result.msg.length; i++)
+                        {
+                            str += result.msg[i] + "<br>";
+                        }
+                        callToast('error', str);
+                    }
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) { 
+                toastOverlay.close();
+                console.log(jqXHR.responseText);
+            }
+        });
+    });
+    $('#btnDec').on('click', function(e)
+    {
+        e.preventDefault();
+        
+        if($conf = prompt('Silakan masukkan alasan penolakan'))
+        {
+            var ids = $('#id').val();
+            $.ajax(
+            {
+                url         : '{{route('apirequestalasandec')}}',
+                dataType    : 'JSON',
+                type        : 'POST',
+                data        : { id : ids,
+                                catatan : $conf},
+                beforeSend  : function(xhr)
+                {
+                    callToastOverlay('warning', 'Loading');
+                },
+                success(result,status,xhr)
+                {
+                    toastOverlay.close();
+                    if (result.status == 1)
+                    {
+                        callToast('success', result.msg);
+                        location.reload();
+                    } 
+                    else
+                    {
+                        if (Array.isArray(result.msg))
+                        {
+                            var str = "";
+                            for (var i = 0; i < result.msg.length; i++)
+                            {
+                                str += result.msg[i] + "<br>";
+                            }
+                            callToast('error', str);
+                        }
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) { 
+                    toastOverlay.close();
+                    console.log(jqXHR.responseText);
+                }
+            });
+        }
+    });
+    
+    $('.btndetdec').on('click', function(e)
+    {
+        e.preventDefault();
+        
+        if($conf = prompt('Silakan masukkan alasan penolakan'))
+        {
+            var ids = $(this).val();
+            $.ajax(
+            {
+                url         : '{{route('apirequestalasandetdec')}}',
+                dataType    : 'JSON',
+                type        : 'POST',
+                data        : { id : ids,
+                                catatan : $conf},
+                beforeSend  : function(xhr)
+                {
+                    callToastOverlay('warning', 'Loading');
+                },
+                success(result,status,xhr)
+                {
+                    toastOverlay.close();
+                    if (result.status == 1)
+                    {
+                        callToast('success', result.msg);
+                        location.reload();
+                    } 
+                    else
+                    {
+                        if (Array.isArray(result.msg))
+                        {
+                            var str = "";
+                            for (var i = 0; i < result.msg.length; i++)
+                            {
+                                str += result.msg[i] + "<br>";
+                            }
+                            callToast('error', str);
+                        }
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) { 
+                    toastOverlay.close();
+                    console.log(jqXHR.responseText);
+                }
+            });
+        }
+    });
+    
+    $('.btnedit').on('click', function(e)
+    {
+        e.preventDefault();
+        var ids = $(this).val();
+        $.ajax(
+        {
+            url         : '{{route('apirequestalasandet')}}',
+            dataType    : 'JSON',
+            type        : 'POST',
+            data        : { id : ids },
+            beforeSend  : function(xhr)
+            {
+                callToastOverlay('warning', 'Loading');
+            },
+            success(result,status,xhr)
+            {
+                toastOverlay.close();
+                if(result.tanggal)
+                {
+                    var option = new Option($(strSel(result.alasan)).html(), result.alasan.id, true, true);
+                    var dalasan = $('#dalasan').append(option).trigger('change');
+                    
+                    $('#dkaryawan').val(result.karyawan.pin+' - '+result.karyawan.nama);
+                    $('#dkaryawanid').val(result.karyawan.id);
+
+                    $('#dcatatan').val(result.catatan);
+                    $('#dtanggal').val(result.tanggal);
+                    $('#dtanggalAkhir').val(result.tanggal_akhir);
+                    $('#dwaktu').val(result.waktu);
+                    $('#did').val(result.id);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) { 
+                toastOverlay.close();
+                console.log(jqXHR.responseText);
+            }
+        });
+    });
+    @endif
+    $('#dalasan').select2({
+        minimumInputLength: 0,
+        allowClear: true,
+        delay: 250,
+        placeholder: {
+            id: "",
+            placeholder: ""
+        },
+        ajax: {
+            url: "{{route('selalasan')}}",
+            dataType: 'json',
+            type: 'post',
+            data: function (params)
+            {
+                let query = {
+                    q: params.term
+                }
+
+                return query;
+            },
+            processResults: function (data)
+            {
+                return {
+                    results: data.items
+                };
+            },
+            cache: true
+        },
+        templateResult: function (par)
+        {
+            return par.name || $(strSel(par));
+        },
+        templateSelection: function (par)
+        {
+            if (par.text == "")
+            {
+                return par.name || $(strSel(par));
+            }
+            return par.name || par.text;
+        }
+    });
+    
+});
+
+
+function resetDetail()
+{
+    $('#dpin').val(null).trigger('change');
+    $('#dalasan').val(null).trigger('change');
+    $('#dcatatan').val(null);
+    $('#did').val(null);
+    $('#dtanggalAkhir').val(null);
+    $('#dwaktu').val(null);
+}
+
+
+var strSel = function (par)
+{
+    return '<span class="badge" style="background-color:' + par.warna + '">' + par.kode + ' - ' + par.deskripsi + '</span>';
+}
+</script>
+@endsection
+
+@section('content')
+
+<div class="row">        
+    <div class="col-4">
+        <div class="row">
+            <div class="col-12">                
+                <div class="card card-primary card-outline">
+                    <div class="card-header">Master Request Alasan</div>
+                    {{Form::hidden('id', $var->id, ['id' => 'id'])}}
+                    <div class="card-body">
+                        <div class="row">
+                            <table class="table table-striped table-sm table-borderless">
+                                <tr>
+                                    <td><label>No Dokumen</label></td>
+                                    <td>{{$var->no_dokumen}}</td>
+                                </tr>
+                                <tr>
+                                    <td><label>File Dokumen</label></td>
+                                    <td><a class="btn btn-success btn-sm" href="{{route('downloadrequestalasan',$var->file_dokumen)}}"><i class="fa fa-file-pdf"></i>{{$var->file_dokumen}}</a></td>
+                                </tr>
+                                <tr>
+                                    <td><label>Tanggal Request</label></td>
+                                    <td>{{$var->tanggal}}</td>
+                                </tr>
+                                <tr>
+                                    <td><label>Catatan</label></td>
+                                    <td>{{$var->catatan}}</td>
+                                </tr>
+                                    <td><label>Status Dokumen</label></td>
+                                    <td>
+                                        @php
+                                            if($var->status == 'new')
+                                                echo '<span class="badge badge-primary">'.ucfirst($var->status).'</span>';
+                                            else if($var->status == 'send')
+                                                echo '<span class="badge badge-secondary">'.ucfirst($var->status).'</span>';
+                                            else if($var->status == 'approve')
+                                                echo '<span class="badge badge-success">'.ucfirst($var->status).'</span>';
+                                            else if($var->status == 'decline')
+                                                echo '<span class="badge badge-danger">'.ucfirst($var->status).'</span>';
+                                        @endphp
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>  
+                    <div class="card-footer">
+                        <div class="row">
+                            @if($var->status=='send')
+                            <button class="btn btn-outline-success btn-sm col-sm-6 d-inline" id="btnApp"><i class="fa fa-check"></i> Approve</button>
+                            <button class="btn btn-outline-danger btn-sm col-sm-6 d-inline" id="btnDec"><i class="fa fa-check"></i> Decline</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="row">
+            <div class="col-12">                
+                <div class="card card-primary card-outline">
+                    <div class="card-header">List Karyawan</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <th></th>
+                                        <th class='ttanggal'>Tanggal</th>
+                                        <th class='tpin'>PIN</th>
+                                        <th class='tnama'>Nama</th>
+                                        <th class='tdivisi'>Divisi</th>
+                                        <th class='talasan'>Alasan</th>
+                                        <th class='twaktu'>Waktu</th>
+                                        <th class='tcatatan'>Catatan</th>
+                                        <th class='tstatus'>Status</th>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->where('request_alasan_id', $var->id)->get();
+                                            foreach($dataKar as $rKar)
+                                            {
+                                                $btn = null;
+                                                if(!$rKar->status && $var->status == 'send')
+                                                {
+                                                    $btn = '<button class="btn btn-danger btn-sm btndetdec" value="'.$rKar->id.'"><i class="fa fa-user-times"></i></button>'.
+                                                    '<button class="btn btn-primary btn-sm btnedit" value="'.$rKar->id.'"><i class="fa fa-edit"></i></button>';
+                                                }
+                                            
+                                                $arr = [
+                                                $btn,
+                                                $rKar->tanggal.(($rKar->tanggal_akhir)?' - '.$rKar->tanggal_akhir:''),
+                                                $rKar->karyawan->pin,
+                                                $rKar->karyawan->nama,
+                                                $rKar->karyawan->divisi->kode.' - '.$rKar->karyawan->divisi->deskripsi,
+                                                $rKar->alasan->kode.' - '.$rKar->alasan->deskripsi,
+                                                $rKar->waktu,
+                                                $rKar->catatan,
+                                                ($rKar->status == 'decline')?'<span class="badge badge-danger">Decline</span>':(($rKar->status == 'approve')?'<span class="badge badge-success">Approve</span>':$rKar->status)
+                                                ];
+                                                
+                                                echo '<tr><td>'.implode('</td><td>',$arr).'</tr></td>';
+                                            }
+                                        @endphp
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

@@ -10,7 +10,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <title>Aplikasi Absensi Indah Jaya</title>
+  <title>{{config('global.app_name').' '.config('global.perusahaan_short')}}</title>
   
   <!--<link rel="stylesheet" href="{{asset('css/bootstrap.min.css')}}">-->
   <!-- Font Awesome Icons -->
@@ -68,7 +68,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <a href="index3.html" class="brand-link">
       <img src="{{asset('images/ij.jpg')}}" alt="Absen APP IJ" class="brand-image img-square elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light">Absen APP</span>
+      <span class="brand-text font-weight-light">{{config('global.app_name_short')}}</span>
     </a>
 
     <!-- Sidebar -->
@@ -173,7 +173,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       Taufiq Hari Widodo (Ext. 383) | Laravel {{ App::VERSION() }}
     </div>
     <!-- Default to the left -->
-    <strong>Copyright &copy; 2019 Indah Jaya Textile Industry.</strong> All rights reserved.
+    <strong>Copyright &copy; 2019 {{config('global.perusahaan')}}.</strong> All rights reserved.
   </footer>
 </div>
 <!-- ./wrapper -->

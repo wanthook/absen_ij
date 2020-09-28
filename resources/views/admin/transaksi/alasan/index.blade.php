@@ -148,7 +148,6 @@
                                     type: 'error',
                                     title: str
                                 });
-                                $('#tipe_exim').attr('disabled','disabled');
                             }
                             
                         }

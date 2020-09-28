@@ -39,7 +39,7 @@ use Auth;
 use Validator;
 
 
-trait traitProses 
+trait TraitProses 
 {
     private $rangeAbs = 4 * 60;
     public function cekProses($karId, $tanggal)
