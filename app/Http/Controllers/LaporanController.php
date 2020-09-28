@@ -19,7 +19,6 @@ use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
 use TCPDF;
-//use PDF;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -1018,7 +1017,16 @@ class LaporanController
         
         if(isset($req['divisi']))
         {
-            $div->where('id', $req['divisi']);
+            if(isset($req['divisi_akhir']))
+            {
+                $dAwal = Divisi::find($req['divisi']);
+                $dAkhir = Divisi::find($req['divisi_akhir']);
+                $div->whereBetween('kode', [$dAwal->kode, $dAkhir->kode]);
+            }
+            else
+            {
+                $div->where('id', $req['divisi']);
+            }
         }
                 
         $periode = null;
@@ -1030,7 +1038,7 @@ class LaporanController
             
         }
         
-        
+        $div->whereRaw('LENGTH(kode)>1');
         
         foreach($div->get() as $rowDiv)
         {
@@ -1050,12 +1058,37 @@ class LaporanController
                     ];
                 }
                 
+                usort($kar, function($a, $b)
+                {
+                    $ret =  $a['jadwal'] <=> $b['jadwal'];
+                    if($ret == 0 )
+                    {
+                        $ret = $a['nama'] <=> $b['nama'];
+                    }
+                    
+                    return $ret;
+                });
+                
+                
+                $bag = [];
+                
+                foreach(Divisi::ancestorsAndSelf($rowDiv->id) as $kTree => $dTree)
+                {
+                    $bag[] = $dTree->kode.' - '.$dTree->deskripsi;
+                }
+                
+                if(count($bag)>=4)
+                {
+                    $bag = array_slice($bag, count($bag)-4);
+                }
+                
                 $ret[] = [
                     'periode_awal' => reset($periode)->format('d-m-Y'),
                     'periode_akhir' => end($periode)->format('d-m-Y'),
                     'periode' => $periode,
-                    'kode_bagian' => $rowDiv->kode,
-                    'nama_bagian' => $rowDiv->deskripsi,
+                    'bagian' => implode(' -> ', $bag),
+//                    'kode_bagian' => $rowDiv->kode,
+//                    'nama_bagian' => $rowDiv->deskripsi,
                     'karyawan' => $kar
                 ];
             }
@@ -1071,8 +1104,9 @@ class LaporanController
         {
             $pdf = new TCPDF('L', PDF_UNIT, 'F4', true, 'UTF-8', true);
             $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+//            $pdf->setPrintFooter(false);
             $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-            $pdf->SetMargins(6, 23, 5);
+            $pdf->SetMargins(6, 20, 5);
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
@@ -1081,19 +1115,19 @@ class LaporanController
                 foreach($ret as $kRet => $vRet)
                 {
                     $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.jpg', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
+                    $pdf->setHeaderData('ij.png', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
                     $pdf->AddPage();
                     
                     $infoWidth = array(25,3,300);
                     $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
                     $pdf->Cell($infoWidth[1], 3, ":");
-                    $pdf->Cell($infoWidth[2], 3, $vRet['kode_bagian'].' - '.$vRet['nama_bagian']);
+                    $pdf->Cell($infoWidth[2], 3, $vRet['bagian']);
                     $pdf->Ln();
                     $pdf->Ln();
                     
                     $headTbl1 = array('No', 'Nama Karyawan', 'Tanggal', 'L/P',  'PIN', 'Kd Jad','Tanggal', 'Keterangan');
                     $headTbl2 = array('','', 'Masuk','', '', '','','');
-                    $headW = array(7,60,17,5,10,20,5.5,30);
+                    $headW = array(7,50,17,5,15,25,5.5,30);
 
                     foreach($headTbl1 as $kH => $vH)
                     {
@@ -1124,9 +1158,46 @@ class LaporanController
                     $pdf->Ln();
                     foreach($vRet['karyawan'] as $k => $v)
                     {
+                        if($k % 25 == 0 && $k!=0)
+                        {
+                            $pdf->AddPage();
+                            $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
+                            $pdf->Cell($infoWidth[1], 3, ":");
+                            $pdf->Cell($infoWidth[2], 3, $vRet['bagian']);
+                            $pdf->Ln();
+                            $pdf->Ln();
+                            foreach($headTbl1 as $kH => $vH)
+                            {
+                                if($kH == 6)
+                                {
+                                    $pdf->Cell(($headW[$kH] * count($vRet['periode'])), 4, $vH, 'LRT', 0, 'C');
+                                }
+                                else
+                                {
+                                    $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+                                }
+                            }
+                            $pdf->Ln();
+                            foreach($headTbl2 as $kH => $vH)
+                            {
+                                if($kH == 6)
+                                {
+                                    foreach($vRet['periode'] as $per)
+                                    {
+                                        $pdf->Cell($headW[$kH], 4, $per->format('d'), 'LRTB', 0, 'C');
+                                    }
+                                }
+                                else
+                                {
+                                    $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+                                }
+                            }
+                            $pdf->Ln();
+                        }
+                        
                         $sizeCell = 6;
                         $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
-                        $pdf->Cell($headW[1], $sizeCell, $v['nama'], 1, 0, 'C');
+                        $pdf->Cell($headW[1], $sizeCell, ' '.$v['nama'], 1, 0, 'L');
                         $pdf->Cell($headW[2], $sizeCell, $v['tanggal_masuk'], 1, 0, 'C');
                         $pdf->Cell($headW[3], $sizeCell, $v['jenkel'], 1, 0, 'C');
                         $pdf->Cell($headW[4], $sizeCell, $v['pin'], 1, 0, 'C');
@@ -1138,7 +1209,7 @@ class LaporanController
                         $pdf->Cell($headW[7], $sizeCell, '', 'LRTB', 0, 'C');
                         $pdf->Ln();
                     }
-                    $pdf->Ln();
+//                    $pdf->Ln();
                     $pdf->Cell(10, 5, "Keterangan");
                     $pdf->Ln();
                     $pdf->Cell(5, 5, 'K', 1, 0, 'C');
@@ -1146,6 +1217,12 @@ class LaporanController
                     $pdf->Cell(5, 5);
                     $pdf->Cell(5, 5, 'C', 1, 0, 'C');
                     $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Tahunan', 1, 0);
+                    
+                    $pdf->Cell(30, 5);
+                    $pdf->Cell(50, 5, 'Diketahui Oleh,', 0, 0, 'C');
+                    $pdf->Cell(30, 5);
+                    $pdf->Cell(50, 5, 'Dibuat Oleh,', 0, 0, 'C');
+                    
                     $pdf->Ln();
                     $pdf->Cell(5, 5, 'M', 1, 0, 'C');
                     $pdf->Cell(60, 5, 'Tidak Masuk Kerja Tanpa Ijin', 1, 0);
@@ -1164,6 +1241,16 @@ class LaporanController
                     $pdf->Cell(5, 5);
                     $pdf->Cell(5, 5, 'H2', 1, 0, 'C');
                     $pdf->Cell(60, 5, 'Tidak Masuk Kerja Karena Cuti Hamil', 1, 0);
+                    
+                    $pdf->Cell(30, 5);
+                    $pdf->Cell(50, 5, '(______________________)', 0, 0, 'C');
+                    $pdf->Cell(30, 5);
+                    $pdf->Cell(50, 5, '(______________________)', 0, 0, 'C');
+                    $pdf->Ln();
+                    $pdf->Cell(165, 5);
+                    $pdf->Cell(50, 5, 'Pimpinan Bagian', 0, 0, 'C');
+                    $pdf->Cell(30, 5);
+                    $pdf->Cell(50, 5, 'ADM Bagian', 0, 0, 'C');
                 }
             }
             $pdf->Output('Laporan Kehadiran Karyawan.pdf', 'I');
