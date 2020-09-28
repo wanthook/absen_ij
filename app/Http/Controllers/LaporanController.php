@@ -1115,7 +1115,7 @@ class LaporanController
                 foreach($ret as $kRet => $vRet)
                 {
                     $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.png', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
+                    $pdf->setHeaderData('ij.jpg', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
                     $pdf->AddPage();
                     
                     $infoWidth = array(25,3,300);
