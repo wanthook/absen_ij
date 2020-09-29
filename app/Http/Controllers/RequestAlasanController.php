@@ -106,21 +106,30 @@ class RequestAlasanController extends Controller
      */
     public function approval($kode, Request $request)
     {
-        if($datas = RequestAlasan::where('uid_dokumen', $kode)->where('status', 'send')->first())
-        {
-            if($var = RequestAlasan::find($datas->id))
+       if(Auth::user()->type->nama == 'ADMIN' || Auth::user()->type == 'PAYROLL' || Auth::user()->type == 'HRD')
+       {
+        
+            if($datas = RequestAlasan::where('uid_dokumen', $kode)->where('status', 'send')->first())
             {
-                return view('request.alasan.approval', ['var' => $var]);
+                if($var = RequestAlasan::find($datas->id))
+                {
+                    return view('request.alasan.approval', ['var' => $var]);
+                }
+                else
+                {
+                    return abort(404);
+                }
             }
             else
             {
                 return abort(404);
             }
-        }
-        else
-        {
-            return abort(404);
-        }
+       }
+       else
+       {
+           return abort(404);
+       }
+        
     }
 
     /**
@@ -796,6 +805,18 @@ class RequestAlasanController extends Controller
                 {
                     return route('alasanrequestshow', $datas->uid_dokumen);
                 })
+                ->addColumn('link_approve', function($datas)
+                {
+                    switch(Auth::user()->type->nama)
+                    {
+                        case 'ADMIN':
+                        case 'PAYROLL':
+                        case 'HRD':
+                            return route('alasanrequestapproval', $datas->uid_dokumen);
+                    }
+                    
+                    return '';
+                })
                 ->addColumn('action', function($datas)
                 {
                     $str = '<button class="btn btn-sm btn-default btnshow"><i class="fa fa-search"></i></button>';
@@ -805,6 +826,18 @@ class RequestAlasanController extends Controller
                                '<button class="btn btn-sm btn-danger btndel"><i class="fa fa-eraser"></i></button>'.
                                '<button class="btn btn-sm btn-success btnsend"><i class="fa fa-paper-plane"></i></button>';
                     }
+                    else if($datas->status == 'send')
+                    {
+                        switch(Auth::user()->type->nama)
+                        {
+                            case 'ADMIN':
+                            case 'PAYROLL':
+                            case 'HRD':
+                                $str .= '<button class="btn btn-sm btn-info btnapprove"><i class="fa fa-check"></i></button>';
+                                break;
+                        }
+                    }
+                        
                     return $str;
                 })
                 ->make(true);

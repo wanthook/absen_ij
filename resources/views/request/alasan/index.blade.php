@@ -242,6 +242,19 @@
                 window.open(datas.link_edit,'_self');
             });     
             
+            @if(Auth::user()->type->nama == 'ADMIN' || Auth::user()->type->nama == 'PAYROLL' || Auth::user()->type->nama == 'HRD')
+             
+            $('#dTable tbody').on('click', '.btnapprove', function (e)
+            {
+                e.preventDefault();
+                var tr = $(this).closest('tr');
+                var row = dTable.row(tr);
+                var datas = row.data();
+
+                window.open(datas.link_approve,'_self');
+            });     
+            @endif
+            
             $('#dTable tbody').on('click', '.btnshow', function (e)
             {
                 e.preventDefault();
