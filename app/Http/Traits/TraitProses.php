@@ -1030,6 +1030,14 @@ trait TraitProses
                                     ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
+                
+                if(!$actIn)
+                {
+                    $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
+                                    ->whereDate('tanggal', $tanggal->toDateString())
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+                }
 
                 return ['jadwal' => $jadwal, 'activity' => $actIn];
             }
