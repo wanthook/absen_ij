@@ -68,6 +68,13 @@ class Karyawan extends Model
      */
     protected $dates = ['deleted_at'];
     
+    public function log_divisi()
+    {
+        return $this->belongsToMany('App\Divisi','divisi_karyawan_log','karyawan_id','divisi_id')
+                    ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                    ->orderBy('tanggal', 'desc');
+    }
+    
     public function prosesabsen()
     {
         return $this->hasMany('App\Prosesabsen');

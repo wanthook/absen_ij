@@ -346,4 +346,22 @@ class MasterOptionController extends Controller
         }
         echo json_encode(array('items' => $formatted_tags));
     }
+    
+    public function select2golongankaryawan(Request $request)
+    {
+        $tags = null;
+        
+        $term = trim($request->input('q'));
+        $tags = MasterOption::where(function($q) use($term)
+        {
+            $q->where('nama','like','%'.$term.'%')
+              ->orWhere('deskripsi','like','%'.$term.'%')
+              ->orWhere('id',$term);
+        })->where('kode','GOLKAR')->limit(100)->get();
+        $formatted_tags = [];
+        foreach ($tags as $tag) {
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->deskripsi];
+        }
+        echo json_encode(array('items' => $formatted_tags));
+    }
 }

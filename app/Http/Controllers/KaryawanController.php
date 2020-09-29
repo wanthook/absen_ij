@@ -66,6 +66,16 @@ class KaryawanController extends Controller
     {
         return view('admin.transaksi.status_karyawan.index');
     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexDivisi()
+    {
+        return view('admin.transaksi.divisi.index');
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -808,6 +818,119 @@ class KaryawanController extends Controller
         }
     }
     
+    public function storeUploadDivisi(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                foreach($sheetData as $sD)
+                {
+                    if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
+                    
+                    if($karyawan->count())
+                    {
+                        
+                        $karId = $karyawan->first()->id;
+                        $kar = Karyawan::find($karId);
+                        
+                        $tgl = Carbon::now();
+                        
+                        $divisi = Divisi::where('kode', trim($sD[$arrKey->divisi]))->first();
+
+                        $attach = ['tanggal' => $tgl->toDateString(), 
+                        'keterangan' => trim($sD[$arrKey->catatan]),
+                        'created_by' => Auth::user()->id,
+                        'updated_by' => Auth::user()->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()];
+                        
+                        $kar->log_divisi()->attach($divisi->id, $attach);
+
+                        $kar->fill(['divisi_id' => $divisi->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
+            ));
+        }
+    }
+    
     public function storeUploadJadwalManual(Request $request)
     {
         try
@@ -1395,6 +1518,74 @@ class KaryawanController extends Controller
         }
     }
 
+    public function storeDivisi(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sKar'   => 'required',
+                'sDivisi'   => 'required'
+            ],
+            [
+                'sDivisi.required'  => 'Tanggal harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $karyawan = Karyawan::find($req['sKar']);
+                
+                if($karyawan->id)
+                {
+                    $tgl = Carbon::now();
+                    
+                    $karyawan->log_divisi()->attach($req['sDivisi'], [
+                        'tanggal' => $tgl->toDateString(), 
+                        'keterangan' => $req['sKeterangan'],
+                        'created_by' => Auth::user()->id,
+                        'updated_by' => Auth::user()->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+                    
+                    $karyawan->fill(['divisi_id' => $req['sDivisi'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                    
+                    echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Data gagal disimpan'
+                    ));
+                }
+                
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -1722,6 +1913,28 @@ class KaryawanController extends Controller
         if(isset($req['sPerusahaan']))
         {
             $datas->where('perusahaan_id', $req['sPerusahaan']);
+        }
+        
+        return  Datatables::of($datas)
+                ->make(true);
+    }
+    
+    public function dtSetDivisi(Request $request)
+    {
+        $req    = $request->all();
+                        
+        $datas = Karyawan::with(['log_divisi' => function($q){
+            $q->orderBy('created_at', 'desc');
+        },'divisi'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        
+        if(isset($req['sKar']))
+        {
+            $datas->where('id', $req['sKar']);
+        }
+        
+        if(isset($req['sDivisi']))
+        {
+            $datas->where('divisi_id', $req['sDivisi']);
         }
         
         return  Datatables::of($datas)
