@@ -1031,7 +1031,7 @@ trait TraitProses
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
                 
-                if(!$actIn)
+                if(!$actIn && $sf != null)
                 {
                     $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
                                     ->whereDate('tanggal', $tanggal->toDateString())

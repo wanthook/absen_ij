@@ -169,7 +169,7 @@ class LaporanController
                 {
                     foreach($ret['msg'] as $var)
                     {
-                        $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan","Periode : ".$var['periodeStart']." s/d ".$var['periodeEnd']);
+                        $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan","Periode : ".$var['periodeStart']." s/d ".$var['periodeEnd']);
                         $pdf->AddPage();
                         $infoWidth = array(25,3,300);
                         $pdf->Cell($infoWidth[0], 3, "PIN / Nama");
@@ -329,7 +329,7 @@ class LaporanController
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
-            $pdf->setHeaderData('ij.jpg', 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
+            $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
             $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 8, 'Divisi' => 15, 'Nama' => 40);
             $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7);
@@ -713,7 +713,7 @@ class LaporanController
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
-            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
+            $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
             $pdf->AddPage();
             $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
             $headW = array(10,15,50,10,30,15,13,40,20);
@@ -846,7 +846,7 @@ class LaporanController
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
-            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Tidak Absen","Periode : ".$req['tanggal']);
+            $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Tidak Absen","Periode : ".$req['tanggal']);
             $pdf->AddPage();
             $headTbl1 = array('No','PIN', 'Nama', 'Tanggal', 'Kode', 'Nama',  'Tanggal','Jadwal', 'Jam', 'Keterangan');
             $headTbl2 = array('','', 'Karyawan','Masuk', 'Divisi', 'Divisi', 'Tidak Absen', 'Kerja', 'Kerja', '');
@@ -953,7 +953,7 @@ class LaporanController
             $pdf->setFontSubsetting(false);
             $pdf->SetFont('helvetica', '', 8);
             
-            $pdf->setHeaderData('ij.jpg', 10, "Laporan Karyawan Aktif","Periode : ".$req['tanggal']);
+            $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Aktif","Periode : ".$req['tanggal']);
             $pdf->AddPage();
             $headTbl1 = array('No','PIN', 'Nama', 'Kode', 'Nama',  'Tanggal', 'Kode','Nama', 'Tanggal');
             $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Habis Kontrak');
@@ -1115,7 +1115,7 @@ class LaporanController
                 foreach($ret as $kRet => $vRet)
                 {
                     $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.jpg', 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
+                    $pdf->setHeaderData(config('global.img_laporan'), 10, "Daftar Hadir Karyawan","Periode : ".$vRet['periode_awal'].' S/D '.$vRet['periode_akhir']);
                     $pdf->AddPage();
                     
                     $infoWidth = array(25,3,300);
@@ -1347,7 +1347,7 @@ class LaporanController
                 foreach($ret as $kRet => $vRet)
                 {
                     $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.jpg', 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
+                    $pdf->setHeaderData(config('global.img_laporan'), 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
                     $pdf->AddPage();
                                         
                     $headTbl1 = array('No', 'Kode', 'Nama', 'PIN',  'TMK', 'Nama','Absensi');
@@ -1464,7 +1464,7 @@ class LaporanController
                 foreach($ret as $kRet => $vRet)
                 {
                     $pdf->setHeaderData();
-                    $pdf->setHeaderData('ij.jpg', 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
+                    $pdf->setHeaderData(config('global.img_laporan'), 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
                     $pdf->AddPage();
                                         
                     $headTbl1 = array('No', 'Tanggal', 'PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kode Alasan','Nama Alasan', 'Waktu', 'Hitung');
@@ -1740,7 +1740,7 @@ class LaporanController
             if(count($ret))
             {
                 $pdf->setHeaderData();
-                $pdf->setHeaderData('ij.jpg', 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+                $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
                 $pdf->AddPage();
                 
                 $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
