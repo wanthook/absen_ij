@@ -991,9 +991,10 @@ trait TraitProses
             if($jadwal)
             {
                 $in = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
+                
                 if($sf == 1)
                 {
-                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS2))
+                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
@@ -1004,7 +1005,7 @@ trait TraitProses
                 }
                 else if($sf == 2)
                 {
-                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS3))
+                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
@@ -1015,7 +1016,7 @@ trait TraitProses
                 }
                 else if($sf == 3)
                 {
-                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addDay()))
+                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
