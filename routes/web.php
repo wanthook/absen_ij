@@ -51,6 +51,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('proses-absensi', ['as' => 'tprosesabsen', 'uses' => 'ProsesabsenController@index']);
             Route::get('absen-manual', ['as' => 'tabsenmanual', 'uses' => 'ActivityManualController@index']);
             Route::get('divisi', ['as' => 'tdivisi', 'uses' => 'KaryawanController@indexDivisi']);
+            Route::get('golongan', ['as' => 'tgolongan', 'uses' => 'KaryawanController@indexGolongan']);
         });
 
 
@@ -131,19 +132,22 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'KaryawanController@storeAlasanKaryawan']);
             Route::post('karyawansavemanual', ['as' => 'savejadwalmanual', 'uses' => 'KaryawanController@manualStore']);
             Route::post('karyawansavedivisi', ['as' => 'savedivisikaryawan', 'uses' => 'KaryawanController@storeDivisi']);
+            Route::post('karyawansavegolongan', ['as' => 'savegolongankaryawan', 'uses' => 'KaryawanController@storeGolongan']);
             Route::post('karyawansavestatus/{kode}', ['as' => 'savestatuskaryawan', 'uses' => 'KaryawanController@storeStatusKaryawan']);
             Route::post('karyawanupload', ['as' => 'uploadkaryawan', 'uses' => 'KaryawanController@storeUpload']);
             Route::post('karyawanalasanupload', ['as' => 'uploadalasankaryawan', 'uses' => 'KaryawanController@storeUploadAlasan']);
             Route::post('karyawanjadwalupload', ['as' => 'uploadjadwalkaryawan', 'uses' => 'KaryawanController@storeUploadJadwal']);
             Route::post('karyawanjadwalmanualupload', ['as' => 'uploadjadwalmanualkaryawan', 'uses' => 'KaryawanController@storeUploadJadwalManual']);
             Route::post('karyawandivisiupload', ['as' => 'uploaddivisikaryawan', 'uses' => 'KaryawanController@storeUploadDivisi']);
+            Route::post('karyawangolonganupload', ['as' => 'uploadgolongankaryawan', 'uses' => 'KaryawanController@storeUploadGolongan']);
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
             Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'KaryawanController@destroyAlasanKaryawan']);
             Route::post('karyawansel', ['as' => 'selkaryawan', 'uses' => 'KaryawanController@select2']);
             Route::post('karyawanstatussel', ['as' => 'selkaryawanstatus', 'uses' => 'MasterOptionController@select2karyawanstatus']);       
             Route::post('karyawanjadwalsetdt', ['as' => 'dtjadwalset', 'uses' => 'KaryawanController@dtJadwal']);    
             Route::post('karyawanjadwalsetdelete', ['as' => 'deljadwalkaryawan', 'uses' => 'KaryawanController@destroyJadwalKaryawan']); 
-            Route::post('karyawandivisisetdt', ['as' => 'dtdivisiset', 'uses' => 'KaryawanController@dtSetDivisi']);    
+            Route::post('karyawandivisisetdt', ['as' => 'dtdivisiset', 'uses' => 'KaryawanController@dtSetDivisi']);
+            Route::post('karyawangolongansetdt', ['as' => 'dtgolonganset', 'uses' => 'KaryawanController@dtSetGolongan']);
             //deljadwalkaryawan
 
             Route::post('karyawankeluargasave', ['as' => 'savekeluargakaryawan', 'uses' => 'KaryawanController@storeKeluarga']);
@@ -181,6 +185,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('kawinselect', ['as' => 'selkawin', 'uses' => 'MasterOptionController@select2kawin']);
             Route::post('relasiselect', ['as' => 'selrelasi', 'uses' => 'MasterOptionController@select2relasi']);
             Route::post('keteranganstatusselect', ['as' => 'selketeranganstatus', 'uses' => 'MasterOptionController@select2keteranganstatus']);
+            Route::post('golongankaryawanselect', ['as' => 'selgolongankaryawan', 'uses' => 'MasterOptionController@select2golongankaryawan']);
 
             Route::post('absenproses', ['as' => 'prosesabsen', 'uses' => 'ProsesabsenController@proses']);
 
@@ -283,6 +288,9 @@ Route::group(['middleware' => 'auth'],function()
                 break;
             case "file_temp_set_divisi":
                 $path = storage_path('app').'/public/setdivisi.xlsx';
+                break;
+            case "file_temp_set_golongan":
+                $path = storage_path('app').'/public/setgolongan.xlsx';
                 break;
             default:
                 $path = "";

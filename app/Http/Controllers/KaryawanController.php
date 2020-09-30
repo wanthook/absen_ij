@@ -76,6 +76,16 @@ class KaryawanController extends Controller
     {
         return view('admin.transaksi.divisi.index');
     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexGolongan()
+    {
+        return view('admin.transaksi.golongan.index');
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -234,13 +244,13 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
                 
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadKaryawan','r');
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
@@ -250,7 +260,7 @@ class KaryawanController extends Controller
                 }
                 else
                 {
-                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadKaryawan');
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
@@ -602,13 +612,13 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
                 
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadAlasanKaryawan','r');
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
@@ -618,7 +628,7 @@ class KaryawanController extends Controller
                 }
                 else
                 {
-                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadAlasanKaryawan');
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
@@ -730,13 +740,13 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalKaryawan');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalKaryawan');
                 
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalKaryawan','r');
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
@@ -745,7 +755,7 @@ class KaryawanController extends Controller
                 }
                 else
                 {
-                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalKaryawan');
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
@@ -931,6 +941,119 @@ class KaryawanController extends Controller
         }
     }
     
+    public function storeUploadGolongan(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                foreach($sheetData as $sD)
+                {
+                    if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
+                    
+                    if($karyawan->count())
+                    {
+                        
+                        $karId = $karyawan->first()->id;
+                        $kar = Karyawan::find($karId);
+                        
+                        $tgl = Carbon::now();
+                        
+                        $golongan = MasterOption::where('nama', trim($sD[$arrKey->golongan]))->where('kode', 'GOLKAR')->first();
+
+                        $attach = ['tanggal' => $tgl->toDateString(), 
+                        'keterangan' => trim($sD[$arrKey->catatan]),
+                        'created_by' => Auth::user()->id,
+                        'updated_by' => Auth::user()->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()];
+                        
+                        $kar->log_golongan()->attach($golongan->id, $attach);
+
+                        $kar->fill(['golongan_id' => $golongan->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
+            ));
+        }
+    }
+    
     public function storeUploadJadwalManual(Request $request)
     {
         try
@@ -956,12 +1079,12 @@ class KaryawanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalManualKaryawan');
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
@@ -971,7 +1094,7 @@ class KaryawanController extends Controller
                 }
                 else
                 {
-                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan');
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
@@ -1528,7 +1651,7 @@ class KaryawanController extends Controller
                 'sDivisi'   => 'required'
             ],
             [
-                'sDivisi.required'  => 'Tanggal harus diisi.',
+                'sDivisi.required'  => 'Divisi harus diisi.',
                 'sKar.required'  => 'Karyawan harus dipilih.',
             ]);
 
@@ -1559,6 +1682,74 @@ class KaryawanController extends Controller
                     ]);
                     
                     $karyawan->fill(['divisi_id' => $req['sDivisi'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                    
+                    echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Data gagal disimpan'
+                    ));
+                }
+                
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+
+    public function storeGolongan(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sKar'   => 'required',
+                'sGolongan'   => 'required'
+            ],
+            [
+                'sGolongan.required'  => 'Golongan harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $karyawan = Karyawan::find($req['sKar']);
+                
+                if($karyawan->id)
+                {
+                    $tgl = Carbon::now();
+                    
+                    $karyawan->log_golongan()->attach($req['sGolongan'], [
+                        'tanggal' => $tgl->toDateString(), 
+                        'keterangan' => $req['sKeterangan'],
+                        'created_by' => Auth::user()->id,
+                        'updated_by' => Auth::user()->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+                    
+                    $karyawan->fill(['golongan_id' => $req['sGolongan'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
                     
                     echo json_encode(array(
                         'status' => 1,
@@ -1935,6 +2126,28 @@ class KaryawanController extends Controller
         if(isset($req['sDivisi']))
         {
             $datas->where('divisi_id', $req['sDivisi']);
+        }
+        
+        return  Datatables::of($datas)
+                ->make(true);
+    }
+    
+    public function dtSetGolongan(Request $request)
+    {
+        $req    = $request->all();
+                        
+        $datas = Karyawan::with(['log_golongan' => function($q){
+            $q->orderBy('created_at', 'desc');
+        },'golongan'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        
+        if(isset($req['sKar']))
+        {
+            $datas->where('id', $req['sKar']);
+        }
+        
+        if(isset($req['sGolongan']))
+        {
+            $datas->where('golongan_id', $req['sGolongan']);
         }
         
         return  Datatables::of($datas)

@@ -13,7 +13,8 @@ class CreateDivisiKaryawanLogTable extends Migration
      */
     public function up()
     {
-        Schema::create('divisi_karyawan_log', function (Blueprint $table) {   
+        Schema::create('divisi_karyawan_log', function (Blueprint $table) { 
+            $table->date('tanggal');
             $table->integer('karyawan_id')->unsigned();
             $table->integer('divisi_id')->unsigned();
             $table->string('keterangan', 200)->nullable();

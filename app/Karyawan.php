@@ -47,6 +47,7 @@ class Karyawan extends Model
         'darah_id',
         'jabatan_id',
         'divisi_id',
+        'golongan_id',
         'jadwal_id',
         'perusahaan_id',
         'agama_id',
@@ -71,6 +72,13 @@ class Karyawan extends Model
     public function log_divisi()
     {
         return $this->belongsToMany('App\Divisi','divisi_karyawan_log','karyawan_id','divisi_id')
+                    ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                    ->orderBy('tanggal', 'desc');
+    }
+    
+    public function log_golongan()
+    {
+        return $this->belongsToMany('App\MasterOption','golongan_karyawan_log','karyawan_id','golongan_id')
                     ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
                     ->orderBy('tanggal', 'desc');
     }
@@ -120,6 +128,11 @@ class Karyawan extends Model
     public function divisi()
     {
         return $this->belongsTo("App\Divisi", "divisi_id");
+    }
+    
+    public function golongan()
+    {
+        return $this->belongsTo("App\MasterOption", "golongan_id");
     }
     
     public function perusahaan()
