@@ -12,4 +12,6 @@ return [
     
     'perusahaan' => 'PT. Indah Jaya Textile Industry',
     'perusahaan_short' => 'Indah Jaya',
+    
+    'img_laporan' => 'ij.jpg'
 ];
