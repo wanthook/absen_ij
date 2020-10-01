@@ -256,6 +256,7 @@
             <div class="card-footer">
                 <button class="btn btn-success btn-submit" name="btnSubmit" value="preview"><i class="fa fa-search"></i>Preview</button>
                 <button class="btn btn-success btn-submit" name="btnSubmit" value="pdf"><i class="fa fa-file-pdf"></i>PDF</button>
+                <button class="btn btn-success btn-submit" name="btnSubmit" value="excel"><i class="fa fa-file-excel"></i>Excel</button>
                 <button type="reset" class="btn btn-success btn-reset" name="btnReset" value="reset"><i class="fa fa-refresh"></i>Reset</button>
             </div>
         </div>

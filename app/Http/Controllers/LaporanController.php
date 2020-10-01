@@ -1744,7 +1744,7 @@ class LaporanController
                 $pdf->AddPage();
                 
                 $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
-                $headW = array(10,20,65,20,20,20,20,35,20,50);
+                $headW = array(10,15,50,20,20,20,40,20,20,50);
                 foreach($headTbl1 as $kH => $vH)
                 {
                     $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
@@ -1765,6 +1765,145 @@ class LaporanController
                 }
             }
             $pdf->Output('Laporan Rekap Log Jam Masuk Karyawan.pdf', 'I');
+        }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan Absen Log Jam Masuk Karyawan')
+                ->setSubject('Laporan Log Jam Masuk Karyawan')
+                ->setDescription('Laporan Log Jam Masuk Karyawan')
+                ->setKeywords('laporan '.config('global.perusahaan_short').' karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Transaksi Log Jam Masuk');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan Log Jam Masuk');
+            $ss->getActiveSheet()->setCellValue('A2', "Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+            $mergeHead = 10;
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('No','PIN', 'Nama', 'Kode Jam', 'Jadwal Masuk', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen', 'Lokasi Mesin');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+            foreach($ret['data'] as $kRet => $vRet)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+                foreach($vRet as $v)
+                {
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $v);
+                }
+                $colStat = 1;
+                $rowStart++;
+                
+            }
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="Transaksi Log Masuk Karyawan.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
         }
         else
         {
