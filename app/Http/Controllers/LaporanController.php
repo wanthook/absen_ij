@@ -1309,7 +1309,10 @@ class LaporanController
                         $als = Alasan::whereIn('id', $proses->alasan_id)->get();
                         foreach($als as $vAls)
                         {
-                            $abs[$vAls->kode] += 1;
+                            if(isset($abs[$vAls->kode]))
+                            {
+                                $abs[$vAls->kode] += 1;
+                            }
                         }
                         
                     }
