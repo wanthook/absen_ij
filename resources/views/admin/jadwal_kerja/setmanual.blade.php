@@ -70,11 +70,12 @@
             plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
             themeSystem: 'bootstrap',
             locale: 'id',
+            'firstDay': 1,
+            showNonCurrentDates: false,
             header    : {
                 left  : 'prev,next today',
                 center: 'title',
                 right : 'dayGridMonth',
-                weekText: 'Bulan',
                 // right : 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             dateClick: function(info) {
@@ -692,7 +693,7 @@
             </div>
             <div class="col-12">
                 <div class="card card-primary">
-                    <div class="card-body"> 
+                    <div class="card-body bg-gray"> 
                         <div id="calendar"></div>
                     </div>
                 </div>

@@ -73,6 +73,8 @@
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
                 locale: 'id',
+                firstDay: 1,
+                showNonCurrentDates: false,
                 header    : {
                     left  : 'prev,next today',
                     center: 'title',
@@ -86,6 +88,9 @@
             let calendarCopy = new Calendar(calendarElCopy, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
+                locale: 'id',
+                firstDay: 1,
+                showNonCurrentDates: false,
                 header    : {
                     left  : 'prev,next today',
                     center: 'title',
@@ -99,6 +104,9 @@
             plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
             // defaultView: 'dayGridMonth',
             themeSystem: 'bootstrap',
+            locale: 'id',
+            firstDay: 1,
+            showNonCurrentDates: false,
             header    : {
                 left  : 'prev,next today',
                 center: 'title',
@@ -788,7 +796,7 @@
                                 <button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>
                             </div>
                         </div>       
-                        <div class="col-12 bg-white">
+                        <div class="col-12 bg-gray">
                             <div id="calendar"></div>
                             <!-- /.card -->
                         </div>                 
@@ -849,7 +857,7 @@
                     <div class="col-12 d-flex justify-content-center">
                         <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
                     </div>
-                    <div class="col-12 d-flex justify-content-center bg-white">
+                    <div class="col-12 d-flex justify-content-center bg-gray">
                          <div id="calendar-copy"></div>
                     </div>
                 </div>
@@ -871,7 +879,7 @@
             </button>
         </div>
         <div class="modal-body">  
-            <div class="row bg-white">
+            <div class="row bg-gray">
                 <div id="calendar-show"></div>        
             </div>
         </div>    
