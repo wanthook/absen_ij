@@ -42,6 +42,7 @@
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-timegrid/main.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-interaction/main.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-bootstrap/main.min.js')}}"></script>
+    <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar/locales/id.js')}}"></script>
     <script src="{{asset('js/json2.js')}}"></script>
     <script src="{{asset('js/jsonSerialize.js')}}"></script>
     
@@ -68,10 +69,12 @@
             let calendar = new Calendar(calendarEl, {
             plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
             themeSystem: 'bootstrap',
+            locale: 'id',
             header    : {
                 left  : 'prev,next today',
                 center: 'title',
-                right : 'dayGridMonth'
+                right : 'dayGridMonth',
+                weekText: 'Bulan',
                 // right : 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             dateClick: function(info) {

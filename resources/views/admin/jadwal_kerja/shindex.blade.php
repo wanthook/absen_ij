@@ -42,6 +42,7 @@
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-timegrid/main.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-interaction/main.min.js')}}"></script>
     <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar-bootstrap/main.min.js')}}"></script>
+    <script src="{{asset('bower_components/admin-lte/plugins/fullcalendar/locales/id.js')}}"></script>
     
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
     <script src="{{asset('js/json2.js')}}"></script>
@@ -71,6 +72,7 @@
             let calendarShow = new Calendar(calendarElShow, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
+                locale: 'id',
                 header    : {
                     left  : 'prev,next today',
                     center: 'title',
@@ -88,7 +90,6 @@
                     left  : 'prev,next today',
                     center: 'title',
                     right : 'dayGridMonth'
-                    // right : 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 editable  : true,
                 selectable: true
@@ -787,14 +788,8 @@
                                 <button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>
                             </div>
                         </div>       
-                        <div class="col-12">
-                            <div class="card  bg-gradient-primary">
-                                <div class="card-body p-0">
-                                    <!-- THE CALENDAR -->
-                                    <div id="calendar"></div>
-                                </div>
-                                <!-- /.card-body -->
-                            </div>
+                        <div class="col-12 bg-white">
+                            <div id="calendar"></div>
                             <!-- /.card -->
                         </div>                 
                     </div>
@@ -854,12 +849,8 @@
                     <div class="col-12 d-flex justify-content-center">
                         <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
                     </div>
-                    <div class="col-12 d-flex justify-content-center">
-                         <div class="card  bg-gradient-primary">
-                            <div class="card-body p-0">
-                                <div id="calendar-copy"></div>
-                            </div>
-                         </div>
+                    <div class="col-12 d-flex justify-content-center bg-white">
+                         <div id="calendar-copy"></div>
                     </div>
                 </div>
             </div> 
@@ -880,17 +871,8 @@
             </button>
         </div>
         <div class="modal-body">  
-            <div class="row">
-                <div class="col-12">
-                    <div class="card  bg-gradient-primary">
-                        <div class="card-body p-0">
-                            <!-- THE CALENDAR -->
-                            <div id="calendar-show"></div>
-                        </div>
-                        <!-- /.card-body -->
-                    </div>
-                    <!-- /.card -->
-                </div>                 
+            <div class="row bg-white">
+                <div id="calendar-show"></div>        
             </div>
         </div>    
         <div class="modal-footer justify-content-between">
