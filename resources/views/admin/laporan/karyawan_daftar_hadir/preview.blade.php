@@ -129,7 +129,7 @@
         <tr>
             <td>Unit Kerja</td>
             <td>:</td>
-            <td>{{$rVar['kode_bagian'].' - '.$rVar['nama_bagian']}}</td>
+            <td>{{$rVar['bagian']}}</td>
         </tr>
     </table>
     <table class="detail">

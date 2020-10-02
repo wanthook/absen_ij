@@ -56,7 +56,7 @@
                 }
             });
             
-            $('#divisi').select2({
+            $('#divisi, #divisi_akhir').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
                 allowClear: true,
@@ -167,6 +167,12 @@
                         <div class="form-group">
                             {{ Form::label('divisi', 'Divisi') }}
                             {{ Form::select('divisi', [], null, ['id' => 'divisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            {{ Form::label('divisi_akhir', 'Divisi Akhir') }}
+                            {{ Form::select('divisi_akhir', [], null, ['id' => 'divisi_akhir', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
                     <div class="col-6">
