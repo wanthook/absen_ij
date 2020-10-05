@@ -65,7 +65,7 @@
                 minimumInputLength: 0,
                 delay: 250,
                 ajax: {
-                    url: "{{route('seldivisi')}}",
+                    url: "{{route('seldivisiparent')}}",
                     dataType    : 'json',
                     type : 'post',
                     data: function (params) 
@@ -197,12 +197,12 @@
         <div class="card card-primary card-outline card-tabs">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-6">
+<!--                    <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('pin', 'Karyawan') }}
                             {{ Form::select('pin', [], null, ['id' => 'pin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
-                    </div>
+                    </div>-->
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('divisi', 'Divisi') }}

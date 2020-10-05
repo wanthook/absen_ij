@@ -179,32 +179,57 @@ scratch. This page gets rid of all links and provides the needed markup only.
             @foreach($vVal['absen'] as $kabs => $vabs)            
             <tr>
                 <td class="dc">{{$kabs}}</td>
-                @if($vabs)
+                @if(!isset($vabs->inout))
                 @php
-                $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                if(isset($vabs->hitung_lembur) && isset($vabs->hitung_lembur_ln))
+                {
+                    $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                }
+                else
+                {
+                    $tLembur = 0;
+                }
                 
-                $lemburAktual += $vabs->lembur_aktual;
-                $hitungLembur += $vabs->hitung_lembur;
-                $shiftMalam += $vabs->shift3;
-                $lemburLn += $vabs->lembur_ln;
-                $hitungLn += $vabs->hitung_lembur_ln;
+                $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
+                $hitungLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
+                $shiftMalam += (isset($vabs->shift3)?$vabs->shift3:null);
+                $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
+                $hitungLn += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
                 
                 $totLem += $tLembur;
                 @endphp
-                <td class="dc">{{substr($vabs->jadwal_jam_masuk,0,5)}}</td>
-                <td class="dc">{{substr($vabs->jadwal_jam_keluar,0,5)}}</td>
-                <td class="dc">{{substr($vabs->jam_masuk,0,5)}}</td>
-                <td class="dc">{{substr($vabs->jam_keluar,0,5)}}</td>
-                <td class="dc">{{($vabs->n_masuk < 0)?abs($vabs->n_masuk):''}}</td>
-                <td class="dc">{{($vabs->n_masuk > 0)?abs($vabs->n_masuk):''}}</td>
-                <td class="dc">{{($vabs->n_keluar > 0)?abs($vabs->n_keluar):''}}</td>
-                <td class="dc">{{($vabs->n_keluar < 0)?abs($vabs->n_keluar):''}}</td>
-                <td>{{$vabs->keterangan}}</td>
-                <td>{{$vabs->lembur_aktual}}</td>
-                <td>{{$vabs->hitung_lembur}}</td>
-                <td class="dc">{{$vabs->shift3}}</td>
-                <td>{{$vabs->lembur_ln}}</td>
-                <td>{{$vabs->hitung_lembur_ln}}</td>
+                <td class="dc">{{substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5)}}</td>
+                <td class="dc">{{substr((isset($vabs->jadwal_jam_keluar)?$vabs->jadwal_jam_keluar:null),0,5)}}</td>
+                <td class="dc">{{substr((isset($vabs->jam_masuk)?$vabs->jam_masuk:null),0,5)}}</td>
+                <td class="dc">{{substr((isset($vabs->jam_keluar)?$vabs->jam_keluar:null),0,5)}}</td>
+                @if(isset($vabs->n_masuk))
+                    <td class="dc">{{($vabs->n_masuk < 0)?abs($vabs->n_masuk):''}}</td>
+                    <td class="dc">{{($vabs->n_masuk > 0)?abs($vabs->n_masuk):''}}</td>
+                @else
+                    <td class="dc"></td>
+                    <td class="dc"></td>
+                @endif
+                @if(isset($vabs->n_keluar))
+                    <td class="dc">{{($vabs->n_keluar > 0)?abs($vabs->n_keluar):''}}</td>
+                    <td class="dc">{{($vabs->n_keluar < 0)?abs($vabs->n_keluar):''}}</td>
+                @else
+                    <td class="dc"></td>
+                    <td class="dc"></td>
+                @endif
+                
+                <td>
+                    @php
+                    if(isset($vabs->inout))
+                        echo $vabs->inout;
+                    else if(isset($vabs->keterangan))
+                        echo $vabs->keterangan;
+                    @endphp
+                </td>
+                <td>{{(isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null)}}</td>
+                <td>{{(isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null)}}</td>
+                <td class="dc">{{(isset($vabs->shift3)?$vabs->shift3:null)}}</td>
+                <td>{{(isset($vabs->lembur_ln)?$vabs->lembur_ln:null)}}</td>
+                <td>{{(isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null)}}</td>
                 <td>{{($tLembur)?$tLembur:''}}</td>
                 @else
                 <td></td>

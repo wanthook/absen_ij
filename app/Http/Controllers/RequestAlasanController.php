@@ -436,7 +436,7 @@ class RequestAlasanController extends Controller
             $req = $request->only(['id']);
             try 
             {
-//                $this->send_email($req['id']);
+                $this->send_email($req['id']);
                 RequestAlasan::find($req['id'])->fill(['status' => 'send', 'updated_by' => Auth::user()->id])->save();
 
                 echo json_encode(array(

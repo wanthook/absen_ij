@@ -335,4 +335,22 @@ class DivisiController extends Controller
         }
         echo json_encode(array('items' => $formatted_tags));
     }
+    
+    public function select2parent(Request $request)
+    {
+        $tags = null;
+        
+        $term = trim($request->input('q'));
+        $tags = Divisi::where(function($q) use($term)
+        {
+            $q->where('kode','like','%'.$term.'%')
+              ->orWhere('deskripsi','like','%'.$term.'%')
+              ->orWhere('id',$term);
+        })->whereNull('parent')->limit(100)->get();
+        $formatted_tags = [];
+        foreach ($tags as $tag) {
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode.' - '.$tag->deskripsi];
+        }
+        echo json_encode(array('items' => $formatted_tags));
+    }
 }

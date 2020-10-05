@@ -2094,7 +2094,7 @@ class KaryawanController extends Controller
                         
         $datas = Karyawan::with(['jadwals' => function($q){
             $q->orderBy('tanggal', 'desc');
-        },'divisi'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        },'divisi'])->author()->orderBy('updated_at', 'desc');        
         
         if(isset($req['sKar']))
         {
@@ -2138,7 +2138,7 @@ class KaryawanController extends Controller
                         
         $datas = Karyawan::with(['log_golongan' => function($q){
             $q->orderBy('created_at', 'desc');
-        },'golongan'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        },'golongan'])->author()->orderBy('updated_at', 'desc');        
         
         if(isset($req['sKar']))
         {
