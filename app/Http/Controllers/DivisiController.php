@@ -346,7 +346,7 @@ class DivisiController extends Controller
             $q->where('kode','like','%'.$term.'%')
               ->orWhere('deskripsi','like','%'.$term.'%')
               ->orWhere('id',$term);
-        })->whereNull('parent')->limit(100)->get();
+        })->whereNull('parent_id')->limit(100)->get();
         $formatted_tags = [];
         foreach ($tags as $tag) {
             $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode.' - '.$tag->deskripsi];
