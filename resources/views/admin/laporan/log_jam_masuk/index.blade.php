@@ -65,7 +65,7 @@
                 minimumInputLength: 0,
                 delay: 250,
                 ajax: {
-                    url: "{{route('seldivisiparent')}}",
+                    url: "{{route('seldivisi')}}",
                     dataType    : 'json',
                     type : 'post',
                     data: function (params) 
