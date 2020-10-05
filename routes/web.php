@@ -83,6 +83,11 @@ Route::group(['middleware' => 'auth'],function()
         {
             Route::get('salary-master', ['as' => 'salarymaster', 'uses' => 'SalaryController@index']);
         });
+        
+        Route::group(['prefix' => 'proses'], function()
+        {
+            Route::get('proses-gaji', ['as' => 'preosesgaji', 'uses' => 'ProsesgajiController@index']);
+        });
     });
     
     Route::group(['prefix' => 'request'], function()
@@ -105,6 +110,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('divisisave', ['as' => 'savedivisi', 'uses' => 'DivisiController@store']);
             Route::post('divisidel', ['as' => 'deldivisi', 'uses' => 'DivisiController@destroy']);
             Route::post('divisisel', ['as' => 'seldivisi', 'uses' => 'DivisiController@select2']);
+            Route::post('divisiparentsel', ['as' => 'seldivisiparent', 'uses' => 'DivisiController@select2parent']);
             Route::post('divisiupload', ['as' => 'uploaddivisi', 'uses' => 'DivisiController@storeUpload']);
 
             Route::post('jabatandt', ['as' => 'dtjabatan', 'uses' => 'JabatanController@dt']);
@@ -215,6 +221,8 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('salaryuploadsave', ['as' => 'savesalaryupload', 'uses' => 'SalaryController@storeUploadSalary']);
             Route::post('salarydelete', ['as' => 'deletesalary', 'uses' => 'SalaryController@destroy']);
             Route::post('salarydt', ['as' => 'dtsalary', 'uses' => 'SalaryController@dtMaster']);
+            
+            Route::post('salaryprosesgajisave', ['as' => 'prosesgajisave', 'uses' => 'ProsesgajiController@proses']);
         });
         
         Route::group(['prefix' => 'request'], function()
