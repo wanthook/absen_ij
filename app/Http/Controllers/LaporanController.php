@@ -2307,6 +2307,7 @@ class LaporanController
                         {
                             if($tmk->diffInDays($per, false) < 0)
                             {
+                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
                                 $arrTgl[$per->format('d/m/Y')]->inout = 'IN';
                             }
                         }
@@ -2315,6 +2316,7 @@ class LaporanController
                         {
                             if($active->diffInDays($per, false)>=0)
                             {
+                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
                                 $arrTgl[$per->format('d/m/Y')]->inout = 'OUT';
                             }
                         }
@@ -2345,6 +2347,7 @@ class LaporanController
                         {
                             if($tmk->diffInDays($per, false) < 0)
                             {
+                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
                                 $arrTgl[$per->format('d/m/Y')]->inout = 'IN';
                             }
                         }
@@ -2353,6 +2356,7 @@ class LaporanController
                         {
                             if($active->diffInDays($per, false)>=0)
                             {
+                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
                                 $arrTgl[$per->format('d/m/Y')]->inout = 'OUT';
                             }
                         }
