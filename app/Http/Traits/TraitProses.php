@@ -701,6 +701,16 @@ trait TraitProses
                             $lemburAktual += 2;
                             $hitungLembur = $this->hitungLembur($lemburAktual);
                         }
+                        else if(substr($val->kode,0,1) == "S")
+                        {
+                            $lemburAktual += 0.5;
+                            $hitungLembur = 0.75;
+                        }
+                        else if(substr($val->kode,0,1) == "P")
+                        {
+                            $lemburAktual += 2;
+                            $hitungLembur = 4.5;
+                        }
                     }
 
                     if(isset($alasan))
@@ -1101,6 +1111,13 @@ trait TraitProses
     private function hitungLembur($nilai)
     {
         $ret = (float) ((2*$nilai) - 0.5);
+        
+        return $ret;
+    }
+    
+    private function hitungLemburIstirahat($nilai)
+    {
+        $ret = (float) ($nilai * 0.5);
         
         return $ret;
     }
