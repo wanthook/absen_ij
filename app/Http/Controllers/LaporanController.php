@@ -238,31 +238,60 @@ class LaporanController
                             $pdf->Cell($Width2[0], 4.5, $tgl, '1', 0, 'C');
                             if($vabs)
                             {
-                                $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                                if(isset($vabs->hitung_lembur) && isset($vabs->hitung_lembur_ln))
+                                {
+                                    $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                                }
+                                else
+                                {
+                                    $tLembur = 0;
+                                }
 
 
-                                $lemburAktual += $vabs->lembur_aktual;
-                                $hitLembur += $vabs->hitung_lembur;
-                                $sMalam += $vabs->shift3;
-                                $lemburLn += $vabs->lembur_ln;
-                                $hitNas += $vabs->hitung_lembur_ln;
+                                $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
+                                $hitLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
+                                $sMalam += (isset($vabs->shift3)?$vabs->shift3:null);
+                                $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
+                                $hitNas += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
 
                                 $totLem += $tLembur;
 
-                                $pdf->Cell($Width2[1], 4.5, substr($vabs->jadwal_jam_masuk,0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[2], 4.5, substr($vabs->jadwal_jam_keluar,0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[3], 4.5, substr($vabs->jam_masuk,0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[4], 4.5, substr($vabs->jam_keluar,0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[5], 4.5, ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                                $pdf->Cell($Width2[6], 4.5, ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                                $pdf->Cell($Width2[7], 4.5, ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                                $pdf->Cell($Width2[8], 4.5, ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                                $pdf->Cell($Width2[9], 4.5, $vabs->keterangan, '1', 0, 'C');
-                                $pdf->Cell($Width2[10], 4.5, $vabs->lembur_aktual, '1', 0, 'C');
-                                $pdf->Cell($Width2[11], 4.5, $vabs->hitung_lembur, '1', 0, 'C');
-                                $pdf->Cell($Width2[12], 4.5, $vabs->shift3, '1', 0, 'C');
-                                $pdf->Cell($Width2[13], 4.5, $vabs->lembur_ln, '1', 0, 'C');
-                                $pdf->Cell($Width2[14], 4.5, $vabs->hitung_lembur_ln, '1', 0, 'C');
+                                $pdf->Cell($Width2[1], 4.5, substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[2], 4.5, substr((isset($vabs->jadwal_jam_keluar)?$vabs->jadwal_jam_keluar:null),0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[3], 4.5, substr((isset($vabs->jam_masuk)?$vabs->jam_masuk:null),0,5), '1', 0, 'C');
+                                $pdf->Cell($Width2[4], 4.5, substr((isset($vabs->jam_keluar)?$vabs->jam_keluar:null),0,5), '1', 0, 'C');
+                                if(isset($vabs->n_masuk))
+                                {
+                                    $pdf->Cell($Width2[5], 4.5, ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
+                                    $pdf->Cell($Width2[6], 4.5, ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
+                                }
+                                else
+                                {
+                                    $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
+                                    $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
+                                }
+                                if(isset($vabs->n_keluar))
+                                {
+                                    $pdf->Cell($Width2[7], 4.5, ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
+                                    $pdf->Cell($Width2[8], 4.5, ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
+                                }
+                                else
+                                {
+                                    $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
+                                    $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
+                                }
+                                if(isset($vabs->inout))
+                                    $pdf->Cell($Width2[9], 4.5, $vabs->inout, '1', 0, 'C');
+                                else if(isset($vabs->keterangan))
+                                    $pdf->Cell($Width2[9], 4.5, $vabs->keterangan, '1', 0, 'C');
+                                else
+                                    $pdf->Cell($Width2[9], 4.5, '', '1', 0, 'C');
+
+                                $pdf->Cell($Width2[10], 4.5, (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null), '1', 0, 'C');
+                                $pdf->Cell($Width2[11], 4.5, (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null), '1', 0, 'C');
+                                $pdf->Cell($Width2[12], 4.5, (isset($vabs->shift3)?$vabs->shift3:null), '1', 0, 'C');
+                                $pdf->Cell($Width2[13], 4.5, (isset($vabs->lembur_ln)?$vabs->lembur_ln:null), '1', 0, 'C');
+                                $pdf->Cell($Width2[14], 4.5, (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null), '1', 0, 'C');
                                 $pdf->Cell($Width2[15], 4.5, ($tLembur)?$tLembur:'', '1', 0, 'C');
                             }
                             else
@@ -1649,6 +1678,277 @@ class LaporanController
         
     }
         
+    public function laporanLogJamMasukNew(Request $request)
+    {
+        $req = $request->all();
+        
+        $ret = [];
+        
+        $periode = null;
+        $sf = null;
+        
+        $action = [];
+        
+        $divisi = Divisi::with(['karyawan' => function($query) use ($req)
+        {
+            if(Auth::user()->type->nama == 'REKANAN')
+            {
+                $query->where('perusahaan_id', Auth::user()->perusahaan_id);
+            }
+            else
+            {
+                if(isset($req['perusahaan']))
+                {
+                    $query->where('perusahaan_id', $req['perusahaan']);
+                }
+            }
+        }]);
+                                 
+        if(isset($req['divisi']))
+        {
+//            $kar = Karyawan::where('divisi_id',$req['divisi'])->pluck('key');
+            $divisi->where('id',$req['divisi']);
+        }
+//        
+        if(isset($req['tanggal']))
+        {            
+            $periode = CarbonPeriod::create($req['tanggal'], $req['tanggal'])->toArray();
+        }
+//        
+        if(isset($req['tanggalRange']))
+        {            
+            $tgl = explode(' - ', $req['tanggalRange']);
+            $periode = CarbonPeriod::create($tgl[0], $tgl[1])->toArray();
+        }
+        
+        if(isset($req['shift']))
+        {
+            $sf = $req['shift'];
+        }
+        
+//        foreach($divisi->get())
+//        {
+//            
+//        }
+        
+        foreach($karyawan->KaryawanAktif()->get() as $kar)
+        {
+//            dd($kar->id);
+            foreach($periode as $per)
+            {
+                $abs = $this->absenMasuk($per, $kar->id,$sf);
+                if($abs)
+                {
+                    $action[] = [
+                        'pin' => $kar->pin,
+                        'nama' => $kar->nama,
+                        'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
+                        'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                        'kode_divisi' => $kar->divisi->kode,
+                        'nama_divisi' => $kar->divisi->deskripsi,
+                        'tanggal_absen' => $per->format('d-m-Y'),
+                        'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                        'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
+                    ];
+                }
+            }
+        }
+        
+        $ret = [
+            'periode' => $periode,
+            'data' => $action
+        ];
+        
+        if($req['btnSubmit'] == "preview")
+        {
+            return view('admin.laporan.log_jam_masuk.preview', ['var' => $ret, 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
+            );
+        }
+        else if($req['btnSubmit'] == "pdf")
+        {
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(6, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            if(count($ret))
+            {
+                $pdf->setHeaderData();
+                $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+                $pdf->AddPage();
+                
+                $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
+                $headW = array(10,15,50,20,20,20,40,20,20,50);
+                foreach($headTbl1 as $kH => $vH)
+                {
+                    $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
+                }
+                $pdf->Ln();
+                
+                foreach($ret['data'] as $kRet => $vRet)
+                {      
+                    $sizeCell = 4;
+                    $pdf->Cell($headW[0], $sizeCell, $kRet+1, 1, 0, 'C');
+                    $i = 1;
+                    foreach($vRet as $v)
+                    {
+                        $pdf->Cell($headW[$i++], $sizeCell, $v, 1, 0, 'C');
+                        
+                    }
+                    $pdf->Ln();
+                }
+            }
+            $pdf->Output('Laporan Rekap Log Jam Masuk Karyawan.pdf', 'I');
+        }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan Absen Log Jam Masuk Karyawan')
+                ->setSubject('Laporan Log Jam Masuk Karyawan')
+                ->setDescription('Laporan Log Jam Masuk Karyawan')
+                ->setKeywords('laporan '.config('global.perusahaan_short').' karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Transaksi Log Jam Masuk');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan Log Jam Masuk');
+            $ss->getActiveSheet()->setCellValue('A2', "Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+            $mergeHead = 10;
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('No','PIN', 'Nama', 'Kode Jam', 'Jadwal Masuk', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen', 'Lokasi Mesin');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+            foreach($ret['data'] as $kRet => $vRet)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+                foreach($vRet as $v)
+                {
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $v);
+                }
+                $colStat = 1;
+                $rowStart++;
+                
+            }
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="Transaksi Log Masuk Karyawan.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
+        }
+        else
+        {
+            return abort(404,'Not Found');
+        }
+        
+    }
+        
     public function laporanLogJamMasuk(Request $request)
     {
         $req = $request->all();
@@ -2029,7 +2329,39 @@ class LaporanController
                 }
                 else
                 {
-                    continue;
+//                    continue;
+                    foreach ($periode as $per)
+                    {
+                        $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                        
+                        if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
+                        {
+//                            $alasanId = json_decode($arrTgl[$per->format('d/m/Y')]->alasan_id, true);
+                            $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
+                            $arrTgl[$per->format('d/m/Y')]->alasan = $alasan;
+                        }
+                        
+                        if($tmk)
+                        {
+                            if($tmk->diffInDays($per, false) < 0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]->inout = 'IN';
+                            }
+                        }
+                        
+                        if($active)
+                        {
+                            if($active->diffInDays($per, false)>=0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]->inout = 'OUT';
+                            }
+                        }
+                        
+                    }
+                    $ret[] = array('karyawan' => $kar,
+                                   'periodeStart' => reset($periode)->toDateString(),
+                                   'periodeEnd' => end($periode)->toDateString(),
+                                   'absen' => $arrTgl);
                 }
             }
             return array(
