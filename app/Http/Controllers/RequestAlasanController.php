@@ -106,7 +106,7 @@ class RequestAlasanController extends Controller
      */
     public function approval($kode, Request $request)
     {
-       if(Auth::user()->type->nama == 'ADMIN' || Auth::user()->type == 'PAYROLL' || Auth::user()->type == 'HRD')
+       if(Auth::user()->type->nama == 'ADMIN' || Auth::user()->type->nama == 'PAYROLL' || Auth::user()->type->nama == 'HRD')
        {
         
             if($datas = RequestAlasan::where('uid_dokumen', $kode)->where('status', 'send')->first())
