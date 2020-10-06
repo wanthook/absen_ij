@@ -42,6 +42,7 @@ class Prosesabsen extends Model
         'keterangan',
         'jam_masuk_random',
         'jam_keluar_random',
+        'is_off',
         'created_at',
         'updated_at',
         'created_by'

@@ -18,6 +18,7 @@ class Alasan extends Model
         'kode',
         'warna',
         'libur',
+        'show',
         'deleted_at',
         'created_by', 
         'created_at',

@@ -42,6 +42,9 @@
     <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
     <!-- date-range-picker -->
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
+    
+    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
+    
     <script>
         let dTableKar = null;
         let dTableKarJad = null;
@@ -49,6 +52,7 @@
         
         $(function(e)
         {
+            bsCustomFileInput.init();
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -410,7 +414,7 @@
         {
             if(dt.log_golongan.length > 0)
             {
-                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Jadwal</th><th>Keterangan</th></tr>';
+                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Golongan</th><th>Keterangan</th></tr>';
             
                 dt.log_golongan.forEach(function(i,x)
                 {

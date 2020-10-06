@@ -47,13 +47,14 @@
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
     <script src="{{asset('js/json2.js')}}"></script>
     <script src="{{asset('js/jsonSerialize.js')}}"></script>
-    
+    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
     <script>
         let dTable = null;
         let objJadwal = [];
         let sMaster, eMaster, sTarget, eTarget;
         $(function(e)
         {
+            bsCustomFileInput.init();
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

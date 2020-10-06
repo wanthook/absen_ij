@@ -169,6 +169,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         {
                             $lbl = $vabs->inout;
                         }
+                        else if(isset($vabs->is_off))
+                        {
+                            $lbl = $vabs->keterangan;
+                        }
                         else if(isset($vabs->mangkir))
                         {
                             $lbl = 'M';

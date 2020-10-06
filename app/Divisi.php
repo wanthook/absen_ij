@@ -36,7 +36,7 @@ class Divisi extends Model
     
     public function karyawan()
     {
-        return $this->hasMany('App\Karyawan', 'divisi_id')->where('active_status', 1);
+        return $this->hasMany('App\Karyawan', 'divisi_id')->where('active_status', 1)->where('off_status', 'N');
     }
     
     public function getCreatedAtAttribute($value)

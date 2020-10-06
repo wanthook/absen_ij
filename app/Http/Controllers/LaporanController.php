@@ -671,7 +671,7 @@ class LaporanController
     {
         $req = $request->all();
         
-        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',1)->author();
+        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals')->karyawanOn()->author();
         $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author();
         
         $tanggal = Carbon::now()->toDateString();
@@ -1997,7 +1997,7 @@ class LaporanController
             $sf = $req['shift'];
         }
         
-        foreach($karyawan->KaryawanAktif()->get() as $kar)
+        foreach($karyawan->scopeKaryawanOn()->get() as $kar)
         {
 //            dd($kar->id);
             foreach($periode as $per)
@@ -2269,6 +2269,7 @@ class LaporanController
                 
                 $tmk = null;
                 $active = null;
+                $off = null;
                 
                 if($kar->tanggal_masuk)
                 {
@@ -2279,6 +2280,11 @@ class LaporanController
                 {
                     $active = Carbon::createFromFormat('Y-m-d', $kar->active_status_date);
                 }
+                
+//                if($kar->off_date)
+//                {
+//                    $off = Carbon::createFromFormat('Y-m-d', $kar->off_date);
+//                }
                 
                 $pAbsen = Prosesabsen::where('karyawan_id', $kId)
                         ->whereBetween('tanggal',
@@ -2300,15 +2306,15 @@ class LaporanController
                         {
 //                            $alasanId = json_decode($arrTgl[$per->format('d/m/Y')]->alasan_id, true);
                             $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
-                            $arrTgl[$per->format('d/m/Y')]->alasan = $alasan;
+                            $arrTgl[$per->format('d/m/Y')]['alasan'] = $alasan;
                         }
                         
                         if($tmk)
                         {
                             if($tmk->diffInDays($per, false) < 0)
                             {
-                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
-                                $arrTgl[$per->format('d/m/Y')]->inout = 'IN';
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'IN';
                             }
                         }
                         
@@ -2316,13 +2322,24 @@ class LaporanController
                         {
                             if($active->diffInDays($per, false)>=0)
                             {
-                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
-                                $arrTgl[$per->format('d/m/Y')]->inout = 'OUT';
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'OUT';
                             }
                         }
                         
+                        if($off)
+                        {
+                            if($off->diffInDays($per, false)>=0)
+                            {
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = Alasan::find($kar->off_id)->kode;
+                            }
+                        }
+                        
+                        $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
+                        
                     }
-                    
+//                    dd($arrTgl);
                     $ret[] = array('karyawan' => $kar,
                                    'periodeStart' => reset($periode)->toDateString(),
                                    'periodeEnd' => end($periode)->toDateString(),
@@ -2334,21 +2351,21 @@ class LaporanController
 //                    continue;
                     foreach ($periode as $per)
                     {
-                        $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+//                        $arrTgl[$per->format('d/m/Y')] = new \stdClass();
                         
                         if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
                         {
 //                            $alasanId = json_decode($arrTgl[$per->format('d/m/Y')]->alasan_id, true);
                             $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
-                            $arrTgl[$per->format('d/m/Y')]->alasan = $alasan;
+                            $arrTgl[$per->format('d/m/Y')]['alasan'] = $alasan;
                         }
                         
                         if($tmk)
                         {
                             if($tmk->diffInDays($per, false) < 0)
                             {
-                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
-                                $arrTgl[$per->format('d/m/Y')]->inout = 'IN';
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'IN';
                             }
                         }
                         
@@ -2356,12 +2373,23 @@ class LaporanController
                         {
                             if($active->diffInDays($per, false)>=0)
                             {
-                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
-                                $arrTgl[$per->format('d/m/Y')]->inout = 'OUT';
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'OUT';
                             }
                         }
                         
+                        if($off)
+                        {
+                            if($off->diffInDays($per, false)>=0)
+                            {
+//                                $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = Alasan::where('kode', $kar->off_id)->first()->kode;
+                            }
+                        }
+                        
+                        $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
                     }
+//                    dd($arrTgl);
                     $ret[] = array('karyawan' => $kar,
                                    'periodeStart' => reset($periode)->toDateString(),
                                    'periodeEnd' => end($periode)->toDateString(),

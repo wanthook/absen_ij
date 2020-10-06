@@ -54,6 +54,10 @@ class Karyawan extends Model
         'active_status',
         'active_comment',
         'active_status_date',
+        'off_status',
+        'off_id',
+        'off_comment',
+        'off_date',
         'jumlah_anak',
         'deleted_at',
         'created_by',
@@ -83,6 +87,18 @@ class Karyawan extends Model
                     ->orderBy('tanggal', 'desc');
     }
     
+    public function log_off()
+    {
+        return $this->belongsToMany('App\Alasan','off_karyawan_log','karyawan_id','off_id')
+                    ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                    ->orderBy('tanggal', 'desc');
+    }
+    
+    public function logOffTanggal($tanggal)
+    {
+        return $this->log_off()->wherePivot('tanggal','<=', $tanggal);
+    }
+    
     public function prosesabsen()
     {
         return $this->hasMany('App\Prosesabsen');
@@ -93,6 +109,8 @@ class Karyawan extends Model
         return $this->belongsToMany('App\JamKerja')
                     ->withPivot('tanggal','created_by','created_at');
     }
+    
+    
     
     public function jadwals()
     {
@@ -118,6 +136,20 @@ class Karyawan extends Model
                 ->using(SubTransaction::class)
                 ->withPivot('tanggal', 'nilai', 'tipe', 'created_by', 'created_at')
                 ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
+    }
+    
+    public function gapok()
+    {
+        return $this->belongsToMany('App\MasterOption','salaries','karyawan_id','jenis_id')
+                ->using(SubTransaction::class)
+                ->withPivot('tanggal', 'nilai', 'tipe', 'created_by', 'created_at')
+                ->where('master_options.nama','GAPOK')
+                ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
+    }
+    
+    public function salaryGapokTanggal($tanggal)
+    {
+        return $this->gapok()->wherePivot('tanggal', '<=', $tanggal);
     }
     
     public function jabatan()
@@ -245,6 +277,25 @@ class Karyawan extends Model
         $query->where('active_status', 1);
         
         return $query;
+    }
+
+    public function scopeKaryawanOn($query)
+    {
+        $query->where('active_status', 1)->where('off_status', 'N');
+        
+        return $query;
+    }
+
+    public function scopeKaryawanOff($query)
+    {
+        $query->where('active_status', 1)->where('off_status', 'Y');
+        
+        return $query;
+    }
+    
+    public function offAlasan()
+    {
+        return $this->belongsTo('App\Alasan', 'off_id');
     }
 
     public function scopeAuthor($query)

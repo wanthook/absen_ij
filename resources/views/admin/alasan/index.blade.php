@@ -23,7 +23,7 @@
     <script src="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
     <!-- bootstrap color picker -->
     <script src="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js')}}"></script>
-    
+    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
     <script>
         var dTable = null;
         $(function(e)
@@ -42,7 +42,7 @@
             });
             
             $('#warna').colorpicker();
-            
+            bsCustomFileInput.init();
             $('#cmdSearch').on('click',function(e)
             {
                 dTable.ajax.reload();
@@ -187,9 +187,15 @@
                     {
                         var _this	= $(this);
                         var datas = dTable.row(_this.parents('tr')).data();
+//                        console.log(datas);
                         $('#id').val(datas.id);
                         $('#kode').val(datas.kode);
                         $('#deskripsi').val(datas.deskripsi);
+                        $('#warna').val(datas.warna);
+                        if(datas.libur == 'Y')
+                            $('#libur').prop('checked');
+                        if(datas.show == 'N')
+                            $('#show').prop('checked');
                     });
                     
                     
@@ -220,12 +226,24 @@
                     <input type="text" class="form-control" id="kode" name="kode" placeholder="Kode Alasan">
                 </div>
                 <div class="form-group">
-                    <label for="kode">Nama Alasan</label>
+                    <label for="deskripsi">Nama Alasan</label>
                     <input type="text" class="form-control" id="deskripsi" name="deskripsi" placeholder="Nama Alasan">
                 </div>
                 <div class="form-group">
                     <label for="warna">Warna</label>
                     <input type="text" class="form-control" id="warna" name="warna" readonly>
+                </div>  
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="libur" name="libur" value="Y">
+                        <label class="custom-control-label" for="libur">Libur</label>
+                    </div>
+                </div>   
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="show" name="show" value="N">
+                        <label class="custom-control-label" for="show">Tidak Tampil</label>
+                    </div>
                 </div>  
         </div>
         <div class="modal-footer justify-content-between">

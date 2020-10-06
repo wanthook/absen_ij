@@ -208,7 +208,7 @@ class AlasanController extends Controller
         {
             $data = Alasan::where('kode','like','%'.$request->input('q').'%')->limit(20);
         }
-        $datas = $data->get();
+        $datas = $data->where('show','Y')->get();
         
         foreach($datas as $tags)
         {

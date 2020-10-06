@@ -67,6 +67,7 @@ trait TraitProses
                     
         $tmk = null;
         $active = null;
+        $off = null;
 
         if($karyawan->tanggal_masuk)
         {
@@ -77,6 +78,7 @@ trait TraitProses
         {
             $active = Carbon::createFromFormat('Y-m-d', $karyawan->active_status_date);
         }
+                
 
         $jadwal = $this->jadwals($tanggal, $karyawan);
 
@@ -104,7 +106,8 @@ trait TraitProses
         {
             $arrProses = [];
             foreach($jadwalArr as $key => $val)
-            {        
+            {    
+                
 
                 $alasanId = null;
 
@@ -129,6 +132,8 @@ trait TraitProses
                 $isMangkir = null;
                 $isLibur = null;
                 $isTa = null;
+                $isInOut = null;
+                $isOff = null;
 
                 $lemburAktual = null;
                 $hitungLembur = null;
@@ -164,6 +169,8 @@ trait TraitProses
                     if($tmk->diffInDays($key, false) < 0)
                     {
                         $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                        $isInOut = 'IN';
+                        $keterangan[] = 'IN';
                         goto proses_simpan;
                     }
                 }
@@ -172,7 +179,22 @@ trait TraitProses
                 {
                     if($active->diffInDays($key, false)>=0)
                     {
-                        $alasanId[] = Alasan::where('kode','OUT')->first()->id;
+                        $alasanId[] = Alasan::where('kode','OUT')->first()->id;                        
+                        $isInOut = 'OUT';
+                        $keterangan[] = 'OUT';
+                        goto proses_simpan;
+                    }
+                }
+                              
+                
+                $off = $karyawan->logOffTanggal($key)->first();
+                if($off)
+                {
+                    if($off->kode != 'AKT')
+                    {
+                        $alasanId[] = $off->id;
+                        $isOff = 'Y';
+                        $keterangan[] = $off->kode;
                         goto proses_simpan;
                     }
                 }
@@ -843,7 +865,7 @@ trait TraitProses
 
                 if(!$jMasuk && !$jKeluar)
                 {
-                    if(!$isLibur)
+                    if(!$isLibur && !$isInOut && !$isOff)
                     {
                         $isMangkir = 1;
                         $alasanId[] = Alasan::where('kode', 'M')->first()->id;
@@ -909,6 +931,7 @@ trait TraitProses
                     'gp' => $nilaiGp,
                     'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
                     'keterangan' => $keterangan,
+                    'is_off' => $isOff,
                     'created_by' => Auth::user()->id
                 ];
 

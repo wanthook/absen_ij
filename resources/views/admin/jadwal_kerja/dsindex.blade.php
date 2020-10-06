@@ -30,7 +30,7 @@
     <!-- select2 -->
     <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
     <script src="{{asset('js/myjs.js')}}"></script>
-    
+    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
     <script>
         let dTable = null;
         $(function(e)
@@ -40,7 +40,7 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-                        
+            bsCustomFileInput.init();          
             
             $('#cmdSearch').on('click',function(e)
             {
