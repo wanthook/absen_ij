@@ -86,12 +86,12 @@ trait TraitProses
 
         $proses = Prosesabsen::where('karyawan_id', $karId)
                 ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
-
+        
         if($proses->count()>0)
         {
             $proses->delete();
         }
-
+//        dd($proses);
         if(!$jadwal)
         {
             ExceptionLog::create(['file_target' => 'ProsesabsenController.php', 'message_log' => json_encode(['karyawan_id' => $karyawan->id, 
@@ -260,7 +260,7 @@ trait TraitProses
                 /*
                  * Buat Variable Carbon untuk tanggal current
                  */
-                $carbonTgl = Carbon::createFromFormat("Y-m-d", $key);
+                $curDate = Carbon::createFromFormat("Y-m-d", $key);
                 /*
                  * End
                  */
@@ -273,13 +273,13 @@ trait TraitProses
                  * Jika Tidak, kode Jadwal adalah S / Shift
                  * Ambil Jadwal sebelumnya berdasarkan tanggal kemarin
                  */
-                if(isset($jadwalArr[$carbonTgl->copy()->subDays(1)->toDateString()]))
+                if(isset($jadwalArr[$curDate->copy()->subDays(1)->toDateString()]))
                 {
-                    $jadwalBefore = $jadwalArr[$carbonTgl->copy()->subDays(1)->toDateString()];
+                    $jadwalBefore = $jadwalArr[$curDate->copy()->subDays(1)->toDateString()];
                 }
                 else
                 {
-                    $jadwalBeforeArr = $this->jadwals([$carbonTgl->copy()->subDays(1)], $karyawan);
+                    $jadwalBeforeArr = $this->jadwals([$curDate->copy()->subDays(1)], $karyawan);
                     if($jadwalArr)
                     {
                         $jadwalBefore = reset($jadwalBeforeArr);
@@ -505,8 +505,7 @@ trait TraitProses
 
                     $actIn = null;
                     $actOut = null;
-
-                    $curDate    = Carbon::createFromFormat("Y-m-d", $key);
+                    
                     $tglBefore  = $curDate->copy()->subDay();
 
                     $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
@@ -867,8 +866,12 @@ trait TraitProses
                 {
                     if(!$isLibur && !$isInOut && !$isOff)
                     {
-                        $isMangkir = 1;
-                        $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                        $today = Carbon::now();
+                        if($today->greaterThanOrEqualTo($curDate))
+                        {
+                            $isMangkir = 1;
+                            $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                        }
                     }
                 }
                 else if(!$jMasuk || !$jKeluar)
