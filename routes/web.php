@@ -151,7 +151,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawanjadwalmanualupload', ['as' => 'uploadjadwalmanualkaryawan', 'uses' => 'KaryawanController@storeUploadJadwalManual']);
             Route::post('karyawandivisiupload', ['as' => 'uploaddivisikaryawan', 'uses' => 'KaryawanController@storeUploadDivisi']);
             Route::post('karyawangolonganupload', ['as' => 'uploadgolongankaryawan', 'uses' => 'KaryawanController@storeUploadGolongan']);
-            Route::post('karyawanstatusoffupload', ['as' => 'uploadstatusoffkaryawan', 'uses' => 'KaryawanController@storestoreUploadOff']);
+            Route::post('karyawanstatusoffupload', ['as' => 'uploadstatusoffkaryawan', 'uses' => 'KaryawanController@storeUploadOff']);
             
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
             Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'KaryawanController@destroyAlasanKaryawan']);
