@@ -148,6 +148,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <td>{{$vVal['karyawan']->nik}}</td>
         </tr>
     </table>
+    
     <table class="detail">
         <thead>
             <tr>
@@ -179,6 +180,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
             @foreach($vVal['absen'] as $kabs => $vabs)            
             <tr>
                 <td class="dc">{{$kabs}}</td>
+                @php
+                //if($vVal['karyawan']->pin == '100095')
+                //   dd($vabs);
+
+                @endphp
                 @if(!isset($vabs->inout))
                 @php
                 if(isset($vabs->hitung_lembur) && isset($vabs->hitung_lembur_ln))
@@ -240,7 +246,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
+                <td>
+                    @php
+                    if(isset($vabs->inout))
+                        echo $vabs->inout;
+                    else if(isset($vabs->keterangan))
+                        echo $vabs->keterangan;
+                    @endphp
+                </td>
                 <td></td>
                 <td></td>
                 <td></td>
