@@ -406,6 +406,10 @@ class LaporanController
                         {
                             $lbl = $vabs->inout;
                         }
+                        else if(isset($vabs->is_off))
+                        {
+                            $lbl = $vabs->keterangan;
+                        }
                         else if(isset($vabs->mangkir))
                         {
                             $lbl = 'M';
@@ -588,6 +592,10 @@ class LaporanController
                     if(isset($vabs->inout))
                     {
                         $lbl = $vabs->inout;
+                    }
+                    else if(isset($vabs->is_off))
+                    {
+                        $lbl = $vabs->keterangan;
                     }
                     else if(isset($vabs->mangkir))
                     {
