@@ -394,12 +394,13 @@
                         data: function(data)
                         {
                             if(data.log_off.length > 0)
-                                return data.log_off[0].keterangan;
+                                return data.log_off[0].pivot.keterangan;
                             else
                                 return '';
                         }
                 }]
             });
+            
             $('#dTableKar tbody').on('click', 'td.details-control', function () 
             {
                 var tr = $(this).closest('tr');

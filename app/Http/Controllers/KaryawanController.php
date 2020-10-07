@@ -2323,7 +2323,7 @@ class KaryawanController extends Controller
 //            $datas->where('off_date', $req['sTanggal']);
 //        }
         
-        $datas->author()->orderBy('id','desc');
+        $datas->karyawanAktif()->author()->orderBy('id','desc');
         
         return  Datatables::of($datas)
                 ->make(true);
