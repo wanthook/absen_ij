@@ -160,7 +160,7 @@ class RequestAlasanController extends Controller
         {
             $req = $request->only(['id','file_dokumen_upload', 'tanggal', 'catatan', 'no_dokumen']);
             
-            $cnt = RequestAlasan::where('tanggal', Carbon::now()->toDateString())->count() + 1;
+            $cnt = RequestAlasan::withTrashed()->where('tanggal', Carbon::now()->toDateString())->count() + 1;
             $fileName = null;
             
             if(isset($req['file_dokumen_upload']))
