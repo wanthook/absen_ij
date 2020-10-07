@@ -59,19 +59,18 @@
                 }
             });
             
-            var Toast = Swal.mixin({
+            let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });   
+                showConfirmButton: false
+            });
             
             var toastOverlay = Swal.mixin({
-                background: '#000',
                 position: 'center',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                allowEnterKey: false
+                allowEnterKey: false,
+                showConfirmButton: false
             });
             
             $('#sKar').on('change', function(e)
@@ -116,6 +115,7 @@
                     },
                     success(result,status,xhr)
                     {
+                        toastOverlay.close();
                         if(result.status == 1)
                         {
                             Toast.fire({
@@ -170,6 +170,7 @@
                     },
                     success(result,status,xhr)
                     {
+                        toastOverlay.close();
                         if(result.status == 1)
                         {
                             Toast.fire({

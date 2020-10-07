@@ -1030,17 +1030,19 @@ class KaryawanController extends Controller
                         $tgl = Carbon::now();
                         
                         $golongan = MasterOption::where('nama', trim($sD[$arrKey->golongan]))->where('kode', 'GOLKAR')->first();
+                        if($golongan)
+                        {
+                            $attach = ['tanggal' => $tgl->toDateString(), 
+                            'keterangan' => trim($sD[$arrKey->catatan]),
+                            'created_by' => Auth::user()->id,
+                            'updated_by' => Auth::user()->id,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()];
 
-                        $attach = ['tanggal' => $tgl->toDateString(), 
-                        'keterangan' => trim($sD[$arrKey->catatan]),
-                        'created_by' => Auth::user()->id,
-                        'updated_by' => Auth::user()->id,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()];
-                        
-                        $kar->log_golongan()->attach($golongan->id, $attach);
+                            $kar->log_golongan()->attach($golongan->id, $attach);
 
-                        $kar->fill(['golongan_id' => $golongan->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                            $kar->fill(['golongan_id' => $golongan->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        }
                         
                     }
                     else
