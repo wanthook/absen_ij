@@ -58,19 +58,18 @@
                 }
             });
             bsCustomFileInput.init();
-            var Toast = Swal.mixin({
+            let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });   
+                showConfirmButton: false
+            });
             
             var toastOverlay = Swal.mixin({
-                background: '#000',
                 position: 'center',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                allowEnterKey: false
+                allowEnterKey: false,
+                showConfirmButton: false
             });
             
             $('#sTanggal').daterangepicker({
@@ -109,6 +108,7 @@
                     },
                     success(result,status,xhr)
                     {
+                        toastOverlay.close();
                         if(result.status == 1)
                         {
                             Toast.fire({
@@ -165,6 +165,7 @@
                         },
                         success(result,status,xhr)
                         {
+                            toastOverlay.close();
                             if(result.status == 1)
                             {
 //                                document.getElementById("form_data").reset(); 
@@ -249,6 +250,7 @@
                     },
                     success(result,status,xhr)
                     {
+                        toastOverlay.close();
                         if(result.status == 1)
                         {
                             Toast.fire({
@@ -537,7 +539,7 @@
             </button>
         </div>
 <!--        <form id="form_data" action="{{route('savejadwalday')}}" accept-charset="UTF-8" >-->
-            {{ Form::open(['route' => ['uploadalasankaryawan'], 'id' => 'form_data_upload', 'files' => true]) }}
+            {{ Form::open(['route' => ['uploadstatusoffkaryawan'], 'id' => 'form_data_upload', 'files' => true]) }}
             {{ Form::hidden('id',null, ['id' => 'uploadId']) }}
             <input type="hidden" name="id" id="id">
             <div class="modal-body">   
