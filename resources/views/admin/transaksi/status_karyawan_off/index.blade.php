@@ -391,7 +391,13 @@
                 },
                 {
                         targets : 'tketerangan',
-                        data: "off_comment"
+                        data: function(data)
+                        {
+                            if(data.log_off.length > 0)
+                                return data.log_off[0].keterangan;
+                            else
+                                return '';
+                        }
                 }]
             });
             $('#dTableKar tbody').on('click', 'td.details-control', function () 
