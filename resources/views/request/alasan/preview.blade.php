@@ -19,15 +19,6 @@
 <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
 <!-- daterange picker -->
 <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.css')}}">
-<style>
-    td.details-control {
-        background: url('{{asset('images/details_open.png')}}') no-repeat center center;
-        cursor: pointer;
-    }
-    tr.shown td.details-control {
-        background: url('{{asset('images/details_close.png')}}') no-repeat center center;
-    }
-</style>
 @endsection
 
 @section('add_js')
@@ -53,309 +44,8 @@ $(function(e)
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-            
-    $('#tanggal, #dtanggal').daterangepicker({
-        singleDatePicker: true,
-        locale: {
-            format: 'YYYY-MM-DD'
-        }
-    });
-
-    $('#dtanggalAkhir').daterangepicker({
-        singleDatePicker: true,
-        autoUpdateInput: false,
-        locale: {
-            format: 'YYYY-MM-DD'
-        }
-    }).on('apply.daterangepicker', function (ev, picker) {
-        $(this).val(picker.startDate.format('YYYY-MM-DD'));
-    });
-    @if($var->status == 'send')
-    $('#cmdSimpanDetail').on('click', function(e)
-    {
-        e.preventDefault();
-        
-        var obj = {
-            did : $('#did').val(),
-            dtanggal : $('#dtanggal').val(),
-            dtanggalAkhir : $('#dtanggalAkhir').val(),
-            dwaktu : $('#dwaktu').val(),
-            dpin : $('#dkaryawanid').val(),
-            dalasan : $('#dalasan').val(),
-            dcatatan : $('#dcatatan').val()
-        };
-        
-        $.ajax(
-        {
-            url         : '{{route('saverequestalasandet')}}',
-            dataType    : 'JSON',
-            type        : 'POST',
-            data        : obj,
-            beforeSend  : function(xhr)
-            {
-                callToastOverlay('warning', 'Loading');
-            },
-            success(result,status,xhr)
-            {
-                toastOverlay.close();
-                if (result.status == 1)
-                {
-                    callToast('success', result.msg);
-                    location.reload();
-                } else
-                {
-                    if (Array.isArray(result.msg))
-                    {
-                        var str = "";
-                        for (var i = 0; i < result.msg.length; i++)
-                        {
-                            str += result.msg[i] + "<br>";
-                        }
-                        callToast('error', str);
-                    }
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) { 
-                toastOverlay.close();
-                console.log(jqXHR.responseText);
-            }
-        });
-    });
-    $('#btnApp').on('click', function(e)
-    {
-        e.preventDefault();
-        
-        var ids = $('#id').val();
-        $.ajax(
-        {
-            url         : '{{route('apirequestalasanapp')}}',
-            dataType    : 'JSON',
-            type        : 'POST',
-            data        : { id : ids},
-            beforeSend  : function(xhr)
-            {
-                callToastOverlay('warning', 'Loading');
-            },
-            success(result,status,xhr)
-            {
-                toastOverlay.close();
-                if (result.status == 1)
-                {
-                    callToast('success', result.msg);
-                    window.open("{{route('alasanrequest')}}", '_self');
-                } 
-                else
-                {
-                    if (Array.isArray(result.msg))
-                    {
-                        var str = "";
-                        for (var i = 0; i < result.msg.length; i++)
-                        {
-                            str += result.msg[i] + "<br>";
-                        }
-                        callToast('error', str);
-                    }
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) { 
-                toastOverlay.close();
-                console.log(jqXHR.responseText);
-            }
-        });
-    });
-    $('#btnDec').on('click', function(e)
-    {
-        e.preventDefault();
-        
-        if($conf = prompt('Silakan masukkan alasan penolakan'))
-        {
-            var ids = $('#id').val();
-            $.ajax(
-            {
-                url         : '{{route('apirequestalasandec')}}',
-                dataType    : 'JSON',
-                type        : 'POST',
-                data        : { id : ids,
-                                catatan : $conf},
-                beforeSend  : function(xhr)
-                {
-                    callToastOverlay('warning', 'Loading');
-                },
-                success(result,status,xhr)
-                {
-                    toastOverlay.close();
-                    if (result.status == 1)
-                    {
-                        callToast('success', result.msg);
-                        location.reload();
-                    } 
-                    else
-                    {
-                        if (Array.isArray(result.msg))
-                        {
-                            var str = "";
-                            for (var i = 0; i < result.msg.length; i++)
-                            {
-                                str += result.msg[i] + "<br>";
-                            }
-                            callToast('error', str);
-                        }
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) { 
-                    toastOverlay.close();
-                    console.log(jqXHR.responseText);
-                }
-            });
-        }
-    });
-    
-    $('.btndetdec').on('click', function(e)
-    {
-        e.preventDefault();
-        
-        if($conf = prompt('Silakan masukkan alasan penolakan'))
-        {
-            var ids = $(this).val();
-            $.ajax(
-            {
-                url         : '{{route('apirequestalasandetdec')}}',
-                dataType    : 'JSON',
-                type        : 'POST',
-                data        : { id : ids,
-                                catatan : $conf},
-                beforeSend  : function(xhr)
-                {
-                    callToastOverlay('warning', 'Loading');
-                },
-                success(result,status,xhr)
-                {
-                    toastOverlay.close();
-                    if (result.status == 1)
-                    {
-                        callToast('success', result.msg);
-                        location.reload();
-                    } 
-                    else
-                    {
-                        if (Array.isArray(result.msg))
-                        {
-                            var str = "";
-                            for (var i = 0; i < result.msg.length; i++)
-                            {
-                                str += result.msg[i] + "<br>";
-                            }
-                            callToast('error', str);
-                        }
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) { 
-                    toastOverlay.close();
-                    console.log(jqXHR.responseText);
-                }
-            });
-        }
-    });
-    
-    $('.btnedit').on('click', function(e)
-    {
-        e.preventDefault();
-        var ids = $(this).val();
-        $.ajax(
-        {
-            url         : '{{route('apirequestalasandet')}}',
-            dataType    : 'JSON',
-            type        : 'POST',
-            data        : { id : ids },
-            beforeSend  : function(xhr)
-            {
-                callToastOverlay('warning', 'Loading');
-            },
-            success(result,status,xhr)
-            {
-                toastOverlay.close();
-                if(result.tanggal)
-                {
-                    var option = new Option($(strSel(result.alasan)).html(), result.alasan.id, true, true);
-                    var dalasan = $('#dalasan').append(option).trigger('change');
-                    
-                    $('#dkaryawan').val(result.karyawan.pin+' - '+result.karyawan.nama);
-                    $('#dkaryawanid').val(result.karyawan.id);
-
-                    $('#dcatatan').val(result.catatan);
-                    $('#dtanggal').val(result.tanggal);
-                    $('#dtanggalAkhir').val(result.tanggal_akhir);
-                    $('#dwaktu').val(result.waktu);
-                    $('#did').val(result.id);
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) { 
-                toastOverlay.close();
-                console.log(jqXHR.responseText);
-            }
-        });
-    });
-    @endif
-    $('#dalasan').select2({
-        minimumInputLength: 0,
-        allowClear: true,
-        delay: 250,
-        placeholder: {
-            id: "",
-            placeholder: ""
-        },
-        ajax: {
-            url: "{{route('selalasan')}}",
-            dataType: 'json',
-            type: 'post',
-            data: function (params)
-            {
-                let query = {
-                    q: params.term
-                }
-
-                return query;
-            },
-            processResults: function (data)
-            {
-                return {
-                    results: data.items
-                };
-            },
-            cache: true
-        },
-        templateResult: function (par)
-        {
-            return par.name || $(strSel(par));
-        },
-        templateSelection: function (par)
-        {
-            if (par.text == "")
-            {
-                return par.name || $(strSel(par));
-            }
-            return par.name || par.text;
-        }
-    });
     
 });
-
-
-function resetDetail()
-{
-    $('#dpin').val(null).trigger('change');
-    $('#dalasan').val(null).trigger('change');
-    $('#dcatatan').val(null);
-    $('#did').val(null);
-    $('#dtanggalAkhir').val(null);
-    $('#dwaktu').val(null);
-}
-
-
-var strSel = function (par)
-{
-    return '<span class="badge" style="background-color:' + par.warna + '">' + par.kode + ' - ' + par.deskripsi + '</span>';
-}
 </script>
 @endsection
 
@@ -404,14 +94,6 @@ var strSel = function (par)
                             </table>
                         </div>
                     </div>  
-                    <div class="card-footer">
-                        <div class="row">
-                            @if($var->status=='send')
-                            <button class="btn btn-outline-success btn-sm col-sm-6 d-inline" id="btnApp"><i class="fa fa-check"></i> Approve</button>
-                            <button class="btn btn-outline-danger btn-sm col-sm-6 d-inline" id="btnDec"><i class="fa fa-check"></i> Decline</button>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -426,7 +108,6 @@ var strSel = function (par)
                             <div class="col-12">
                                 <table class="table table-hover table-sm">
                                     <thead>
-                                        <th></th>
                                         <th class='ttanggal'>Tanggal</th>
                                         <th class='tpin'>PIN</th>
                                         <th class='tnama'>Nama</th>
@@ -441,15 +122,8 @@ var strSel = function (par)
                                             $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->where('request_alasan_id', $var->id)->get();
                                             foreach($dataKar as $rKar)
                                             {
-                                                $btn = null;
-                                                if(!$rKar->status && $var->status == 'send')
-                                                {
-                                                    $btn = '<button class="btn btn-danger btn-sm btndetdec" value="'.$rKar->id.'"><i class="fa fa-user-times"></i></button>'.
-                                                    '<button class="btn btn-primary btn-sm btnedit" value="'.$rKar->id.'"><i class="fa fa-edit"></i></button>';
-                                                }
-                                            
+                                                                                            
                                                 $arr = [
-                                                $btn,
                                                 $rKar->tanggal.(($rKar->tanggal_akhir)?' - '.$rKar->tanggal_akhir:''),
                                                 $rKar->karyawan->pin,
                                                 $rKar->karyawan->nama,
