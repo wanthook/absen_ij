@@ -2458,7 +2458,8 @@ class LaporanController
                             }
                         }
                         
-                        $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
+                        if(isset($arrTgl[$per->format('d/m/Y')]))
+                            $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
                     }
                     
                     $ret[] = array('karyawan' => $kar,
