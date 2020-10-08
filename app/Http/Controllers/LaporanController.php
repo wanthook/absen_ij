@@ -689,7 +689,8 @@ class LaporanController
     {
         $req = $request->all();
         
-        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals')->karyawanOn()->author();
+        
+        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->author();
         $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author();
         
         $tanggal = Carbon::now()->toDateString();
@@ -719,6 +720,16 @@ class LaporanController
         
         foreach($karAktif->get() as $kA)
         {
+            $off = $kA->logOffTanggal($req['tanggal'])->first();      
+            
+            if($off)
+            {
+                if($off->kode != 'AKT')
+                {
+                    continue;
+                }
+            }
+            
             $jadwal = $kA->jadwals;
             $karyawan[] = ['nik' => ((isset($kA->nik))?$kA->nik:''),
                            'pin' => ((isset($kA->pin))?$kA->pin:''),
@@ -729,6 +740,7 @@ class LaporanController
                            'nama_jabatan' => ((isset($kA->jabatan->deskripsi))?$kA->jabatan->deskripsi:''),
                            'tmk' => ((isset($kA->tanggal_masuk))?$kA->tanggal_masuk:''),
                            'jadwal' =>((isset($jadwal[0]))?$jadwal[0]->kode.' - '.$jadwal[0]->tipe:'') ];
+            
         }
         
         foreach($karNonAktif->get() as $kA)
@@ -1744,11 +1756,6 @@ class LaporanController
             $sf = $req['shift'];
         }
         
-//        foreach($divisi->get())
-//        {
-//            
-//        }
-        
         foreach($karyawan->KaryawanAktif()->get() as $kar)
         {
 //            dd($kar->id);
@@ -2015,7 +2022,9 @@ class LaporanController
             $sf = $req['shift'];
         }
         
-        foreach($karyawan->scopeKaryawanOn()->get() as $kar)
+        
+        
+        foreach($karyawan->get() as $kar)
         {
 //            dd($kar->id);
             foreach($periode as $per)
@@ -2023,17 +2032,24 @@ class LaporanController
                 $abs = $this->absenMasuk($per, $kar->id,$sf);
                 if($abs)
                 {
-                    $action[] = [
-                        'pin' => $kar->pin,
-                        'nama' => $kar->nama,
-                        'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
-                        'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
-                        'kode_divisi' => $kar->divisi->kode,
-                        'nama_divisi' => $kar->divisi->deskripsi,
-                        'tanggal_absen' => $per->format('d-m-Y'),
-                        'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
-                        'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
-                    ];
+                    if(isset($abs['activity']))
+                    {
+                        $action[] = [
+                            'pin' => $kar->pin,
+                            'nama' => $kar->nama,
+                            'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
+                            'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                            'kode_divisi' => $kar->divisi->kode,
+                            'nama_divisi' => $kar->divisi->deskripsi,
+                            'tanggal_absen' => $per->format('d-m-Y'),
+                            'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                            'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
+                        ];
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
             }
         }

@@ -278,20 +278,6 @@ class Karyawan extends Model
         
         return $query;
     }
-
-    public function scopeKaryawanOn($query)
-    {
-        $query->where('active_status', 1)->where('off_status', 'N');
-        
-        return $query;
-    }
-
-    public function scopeKaryawanOff($query)
-    {
-        $query->where('active_status', 1)->where('off_status', 'Y');
-        
-        return $query;
-    }
     
     public function offAlasan()
     {
