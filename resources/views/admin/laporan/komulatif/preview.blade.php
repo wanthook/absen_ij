@@ -212,24 +212,33 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         }
                         
                         
-                        if($vabs->shift3)
+                        if(isset($vabs->shift3))
                         {
-                            $s3x += 1;
-                            
-                            if($vabs->libur)
+                            if($vabs->shift3)
                             {
-                                if($vabs->keterangan == 'CUTI')
+                                $s3x += 1;
+
+                                if(isset($vabs->libur))
                                 {
-                                    $s3 += 1;
+                                    if($vabs->libur)
+                                    {
+                                        if(isset($vabs->keterangan))
+                                        {
+                                            if($vabs->keterangan == 'CUTI')
+                                            {
+                                                $s3 += 1;
+                                            }
+                                            else
+                                            {
+                                                $s3v += 1;
+                                            }
+                                        }
+                                    }                                    
+                                    else
+                                    {
+                                        $s3 += 1;
+                                    }
                                 }
-                                else
-                                {
-                                    $s3v += 1;
-                                }
-                            }
-                            else
-                            {
-                                $s3 += 1;
                             }
                         }
                     @endphp
