@@ -242,6 +242,15 @@ trait TraitProses
                     {
                         $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
                         $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                        
+                        /*
+                         * cek jadwal shift3
+                         */
+                        if($in->greaterThan($out))
+                        {
+                            $out->addDay();
+                            $shift3 = 1;
+                        }
                     }
                     else
                     {
@@ -396,15 +405,7 @@ trait TraitProses
                 if(!$isLnOff && !$isSpo)
                 {
                     if($val->kode != 'L')
-                    {
-                        /*
-                         * cek jadwal shift3
-                         */
-                        if($in->greaterThan($out))
-                        {
-                            $out->addDay();
-                            $shift3 = 1;
-                        }
+                    {                        
 
                         $jadMasuk = $in;
                         $jadKeluar = $out;
@@ -897,10 +898,10 @@ trait TraitProses
                     $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
                 }
 
-                if($isLibur || $isMangkir)
-                {
-                    $shift3 = null;
-                }
+//                if($isLibur || $isMangkir)
+//                {
+//                    $shift3 = null;
+//                }
 
                 if($alasanId)
                 {
