@@ -143,6 +143,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>S3</th>
                 <th>GP</th>
                 <th>JK</th>
+                <th>S3V</th>
             </tr>
         </thead>
         <tbody>
@@ -152,6 +153,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     $s3 = 0;
                     $jGp = 0;
                     $jJk = 0;
+                    $s3x = 0;
+                    $s3v = 0;
                 @endphp
             <tr>
                 <td class="dc">{{$kVar+1}}</td>
@@ -207,13 +210,57 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         {
                             $lbl = '0';
                         }
+                        
+                        
+                        if($vabs->shift3)
+                        {
+                            $s3x += 1;
+                            
+                            if($vabs->libur)
+                            {
+                                if($vabs->keterangan == 'CUTI')
+                                {
+                                    $s3 += 1;
+                                }
+                                else
+                                {
+                                    $s3v += 1;
+                                }
+                            }
+                            else
+                            {
+                                $s3 += 1;
+                            }
+                        }
                     @endphp
                     <td class="dc">{{$lbl}}</td>
                 @endforeach
+                @php
+                if($s3x >= 3)
+                {
+                    if($s3v == 1)
+                    {
+                        $s3v = 0.5;
+                    }
+                    else if($s3v > 1)
+                    {
+                        $s3v = 0;
+                    }
+                    else
+                    {
+                        $s3v = 1;
+                    }
+                }
+                else
+                {
+                    $s3v = 0;
+                }
+                @endphp
                 <td class="dc">{{$tLembur}}</td>
                 <td class="dc">{{$s3}}</td>
                 <td class="dc">{{$jGp/60}}</td>
                 <td class="dc">{{$jJk}}</td>
+                <td class="dc">{{$s3v}}</td>
             </tr>
             @endforeach
         </tbody>

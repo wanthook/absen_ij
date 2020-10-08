@@ -260,10 +260,12 @@ class LaporanController
 
                                 $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
                                 $hitLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
-                                $sMalam += (isset($vabs->shift3)?$vabs->shift3:null);
+//                                $sMalam += (isset($vabs->shift3)?$vabs->shift3:null);
                                 $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
                                 $hitNas += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
-
+                                
+                                $tLembur += $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                                
                                 $totLem += $tLembur;
 
                                 $pdf->Cell($Width2[1], 4.5, substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5), '1', 0, 'C');
@@ -299,7 +301,25 @@ class LaporanController
 
                                 $pdf->Cell($Width2[10], 4.5, (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null), '1', 0, 'C');
                                 $pdf->Cell($Width2[11], 4.5, (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null), '1', 0, 'C');
-                                $pdf->Cell($Width2[12], 4.5, (isset($vabs->shift3)?$vabs->shift3:null), '1', 0, 'C');
+                                
+                                if(isset($vabs->shift3))
+                                {
+                                    if(!$vabs->libur)
+                                    {
+                                        $pdf->Cell($Width2[12], 4.5, (isset($vabs->shift3)?$vabs->shift3:null), '1', 0, 'C');
+                                        $sMalam += 1;
+                                    }
+                                    else
+                                    {
+                                        $pdf->Cell($Width2[12], 4.5, null, '1', 0, 'C');
+                                    }
+                                }
+                                else 
+                                {
+                                    $pdf->Cell($Width2[12], 4.5, null, '1', 0, 'C');
+                                }
+                                
+                                
                                 $pdf->Cell($Width2[13], 4.5, (isset($vabs->lembur_ln)?$vabs->lembur_ln:null), '1', 0, 'C');
                                 $pdf->Cell($Width2[14], 4.5, (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null), '1', 0, 'C');
                                 $pdf->Cell($Width2[15], 4.5, ($tLembur)?$tLembur:'', '1', 0, 'C');
@@ -361,7 +381,7 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf = new TCPDF('L', PDF_UNIT, 'F4', true, 'UTF-8', true);
             $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
             $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
             $pdf->SetMargins(3, 23, 5);
@@ -370,8 +390,8 @@ class LaporanController
             
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
-            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 8, 'Divisi' => 15, 'Nama' => 40);
-            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7);
+            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
+            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 10);
             
             foreach($headTbl1 as $kH => $vH)
             {
@@ -394,8 +414,10 @@ class LaporanController
             {
                 $tLembur = 0;
                 $s3 = 0;
+                $s3x = 0;
                 $jGp = 0;
                 $jJk = 0;
+                $s3v = 0;
                 
                 $pdf->Cell($headTbl1['No'], 4, $kRet+1, $line, 0, 'C');
                 $pdf->Cell($headTbl1['PIN'], 4, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'', $line, 0, 'C');
@@ -454,13 +476,58 @@ class LaporanController
                         {
                             $lbl = '0';
                         }
-
+                        
+                        if($vabs->shift3)
+                        {
+                            $s3x += 1;
+                            
+                            if($vabs->libur)
+                            {
+                                if($vabs->keterangan == 'CUTI')
+                                {
+                                    $s3 += 1;
+                                }
+                                else
+                                {
+                                    $s3v += 1;
+                                }
+                            }
+                            else
+                            {
+                                $s3 += 1;
+                            }
+                        }                        
+                       
+                        
                         $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
                     }
+                    
+                    
+                    if($s3x >= 3)
+                    {
+                        if($s3v == 1)
+                        {
+                            $s3v = 0.5;
+                        }
+                        else if($s3v > 1)
+                        {
+                            $s3v = 0;
+                        }
+                        else
+                        {
+                            $s3v = 1;
+                        }
+                    }
+                    else
+                    {
+                        $s3v = 0;
+                    }
+                    
                     $pdf->Cell($headTbl2['Lbr'], 4, $tLembur, 1, 0, 'C');
                     $pdf->Cell($headTbl2['S3'], 4, $s3, 1, 0, 'C');
                     $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
                     $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['S3V'], 4, $s3v, 1, 0, 'C');
                     $pdf->Ln();
                 }
                 
