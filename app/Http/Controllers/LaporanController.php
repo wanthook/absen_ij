@@ -144,6 +144,16 @@ class LaporanController
         return view('admin.laporan.log_jam_masuk.index');
     }
     
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexLogMesinKaryawan()
+    {
+        return view('admin.laporan.log_mesin_karyawan.index');
+    }
+    
     public function laporanDetail(Request $request)
     {
         try

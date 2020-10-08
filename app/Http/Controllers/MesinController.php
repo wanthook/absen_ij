@@ -122,6 +122,57 @@ class MesinController extends Controller
             ));
         }
     }
+    
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function editActivity(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+                [
+                    'id'   => 'required',
+                    'tanggal'   => 'required',
+                ],
+                [
+                    'id.required'  => 'Data tidak dipilih.',
+                    'tanggal.required'  => 'Tanggal harus diisi.',
+                ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->only(['id', 'tanggal']);
+
+                if(!empty($req['id']))
+                {
+                    Activity::find($req['id'])->fill(['tanggal' => $req['tanggal']])->save();
+                    
+                    echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+                }
+            }
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'
+            ));
+        }
+    }
 
     /**
      * Display the specified resource.
@@ -389,6 +440,72 @@ class MesinController extends Controller
                 ->editColumn('id', '{{$id}}')
                 ->rawColumns(['action'])
                 ->make(true);
+    }
+    
+    public function dtActivity(Request $request)
+    {
+        $req    = $request->all();
+        
+        $datas   = null;  
+        
+        $datas = Activity::with('mesin', 'karyawan');
+        
+        $pin = Karyawan::find($req['sPin']);
+        
+        if($pin)
+        {
+            $datas->where('pin', $pin->pin);
+        }
+        else
+        {
+            $datas->where('pin', '');
+        }
+        
+
+        if(!empty($req['sTanggal']))
+        {
+            $tgl = explode(' - ', $req['sTanggal']);
+
+            $datas->whereBetween('tanggal', [reset($tgl).' 00:00:00', end($tgl).' 23:59:59']);
+        }
+
+        $datas->orderBy('id','desc');
+
+        return  Datatables::of($datas)
+            ->addColumn('action',function($datas)
+            {
+                $str    = '<div class="btn-group">';
+                $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fas fa-pencil-alt"></i></button>';
+//                $str    .= '<button class="delrow btn btn-danger btn-sm" title="Hapus"><i class="fas fa-eraser"></i></button>';
+                $str    .= '</div>';
+
+                return $str;
+            })
+            ->addColumn('ping_status', function($datas)
+            {
+                if(!empty($datas->api_address))
+                {
+                    $req = new Client();   
+                    $res = $req->request('GET', $datas->api_address.'/api/v1/ping?ip='.$datas->ip);
+                    sleep(1);
+                    $status = json_decode($res->getBody()->getContents())->status;
+
+                    if($status)
+                    {
+                        return 0;
+                    }
+                    return 1;
+                }
+                else
+                {
+                    return $this->pingIp($datas->ip);
+                }
+
+            })
+            ->editColumn('id', '{{$id}}')
+            ->rawColumns(['action'])
+            ->make(true);
+        
     }
     
     public function select2(Request $request)

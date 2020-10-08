@@ -67,6 +67,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('laporan-karyawan-rekap-absen', ['as' => 'lkaryawanrekapabsen', 'uses' => 'LaporanController@indexKaryawanRekapAbsen']);
             Route::get('laporan-transaksi-alasan', ['as' => 'ltransaksialasan', 'uses' => 'LaporanController@indexTransaksiAlasan']);
             Route::get('laporan-log-jam-masuk', ['as' => 'llogjammasuk', 'uses' => 'LaporanController@indexLogJamMasuk']);
+            Route::get('laporan-log-mesin-karyawan', ['as' => 'llogmesinkaryawan', 'uses' => 'LaporanController@indexLogMesinKaryawan']);
         });
 
         Route::group(['prefix' => 'administrator'], function()
@@ -218,6 +219,10 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('absenmanualuploadsave', ['as' => 'saveabsenmanualupload', 'uses' => 'ActivityManualController@storeUploadAbsenManual']);
             Route::post('absenmanualdelete', ['as' => 'deleteabsenmanual', 'uses' => 'ActivityManualController@destroy']);
             Route::post('absenmanualdt', ['as' => 'dttabsenmanual', 'uses' => 'ActivityManualController@dt']);
+            
+            Route::post('logmesinkaryawanedit', ['as' => 'editlogmesinkaryawan', 'uses' => 'MesinController@editActivity']);
+            Route::post('logmesinkaryawandt', ['as' => 'dtlogmesinkaryawan', 'uses' => 'MesinController@dtActivity']);
+            
         
             
             
