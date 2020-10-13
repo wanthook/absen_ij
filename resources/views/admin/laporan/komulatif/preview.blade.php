@@ -144,6 +144,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>GP</th>
                 <th>JK</th>
                 <th>S3V</th>
+                <th>PM</th>      <!-- Panggil Malam -->          
+                <th>JM</th> <!-- Jumlah Masuk -->
             </tr>
         </thead>
         <tbody>
@@ -155,6 +157,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     $jJk = 0;
                     $s3x = 0;
                     $s3v = 0;
+                    $pm = 0;
+                    $jm = 0;
                 @endphp
             <tr>
                 <td class="dc">{{$kVar+1}}</td>
@@ -189,6 +193,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             $lbl = 'GP';
                             $jGp+=$vabs->gp;
                             $jJk += $vabs->jumlah_jam_kerja;
+                            $jm++;
                         }
                         else if(isset($vabs->libur))
                         {
@@ -209,8 +214,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                         {
                             $lbl = '0';
+                            $jm++;
                         }
-                        
                         
                         if(isset($vabs->shift3))
                         {
@@ -218,29 +223,52 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             {
                                 $s3x += 1;
 
-                                if(isset($vabs->libur))
+                                if($vabs->libur)
                                 {
-                                    if($vabs->libur)
+                                    if(isset($vabs->alasan))
                                     {
-                                        if(isset($vabs->keterangan))
+                                        $ada = false;
+                                        foreach($vabs->alasan as $als)
                                         {
-                                            if($vabs->keterangan == 'CUTI')
-                                            {
-                                                $s3 += 1;
-                                            }
-                                            else
-                                            {
-                                                $s3v += 1;
-                                            }
+                                            if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
+                                                $ada = true;
                                         }
-                                    }                                    
-                                    else
-                                    {
-                                        $s3 += 1;
+                                        if($ada)
+                                        {
+                                            $s3 += 1;
+                                        }
+                                        else
+                                        {
+                                            $s3v += 1;
+                                        }
                                     }
+                                }
+                                else
+                                {
+                                    $s3 += 1;
                                 }
                             }
                         }
+                        /*
+                        *
+                        *   panggil malam
+                        */
+                        if(isset($vabs->alasan))
+                        {
+                            $ada = false;
+                            foreach($vabs->alasan as $als)
+                            {
+                                if($als->kode == 'PM')
+                                    $ada = true;
+                            }
+                            
+                            if($ada)
+                            {
+                                $pm += 1;
+                            }
+                        }
+                        
+                        
                     @endphp
                     <td class="dc">{{$lbl}}</td>
                 @endforeach
@@ -270,6 +298,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$jGp/60}}</td>
                 <td class="dc">{{$jJk}}</td>
                 <td class="dc">{{$s3v}}</td>
+                <td class="dc">{{$pm}}</td>
+                <td class="dc">{{$jm}}</td>
             </tr>
             @endforeach
         </tbody>

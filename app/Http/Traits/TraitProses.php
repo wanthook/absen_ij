@@ -399,6 +399,10 @@ trait TraitProses
                         {
                             $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
                         }
+                        else
+                        {
+                            $keterangan[] = $vAlasan->kode;
+                        }
                     }
                 }
 
@@ -735,11 +739,11 @@ trait TraitProses
                             $hitungLembur = 4.5;
                         }
                     }
-
                     if(isset($alasan))
                     {
                         if($alasan->count())
                         {
+                           
                             foreach($alasan->get() as $vAlasan)
                             {
                                 $lAkt = null;

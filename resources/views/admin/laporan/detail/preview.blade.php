@@ -182,20 +182,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$kabs}}</td>
                 @if(!isset($vabs->inout))
                     @php
-                    if(isset($vabs->hitung_lembur) && isset($vabs->hitung_lembur_ln))
-                    {
-                        $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
-                    }
-                    else
-                    {
-                        $tLembur = 0;
-                    }
-
+                    
                     $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
                     $hitungLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
                     $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
                     $hitungLn += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
-                    $tLembur += $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                    $tLembur = (isset($vabs->total_lembur)?$vabs->total_lembur:null);
 
                     $totLem += $tLembur;
                     @endphp
@@ -251,7 +243,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </td>
                     <td>{{(isset($vabs->lembur_ln)?$vabs->lembur_ln:null)}}</td>
                     <td>{{(isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null)}}</td>
-                    <td>{{($tLembur)?$tLembur:''}}</td>
+                    <td>{{str_replace('0.00',null,$tLembur)}}</td>
                 @else
                     <td></td>
                     <td></td>

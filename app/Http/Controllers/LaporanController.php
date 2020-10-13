@@ -2400,7 +2400,9 @@ class LaporanController
                         
                         if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
                         {
+                            
                             $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
+//                            dd($alasan);
                             $arrTgl[$per->format('d/m/Y')]['alasan'] = $alasan;
                         }
                         
@@ -2420,10 +2422,11 @@ class LaporanController
                             }
                         }
                         
-                        $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
+                        if(isset($arrTgl[$per->format('d/m/Y')]))
+                            $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
                         
                     }
-                    
+//                    dd($arrTgl);
                     $ret[] = array('karyawan' => $kar,
                                    'periodeStart' => reset($periode)->toDateString(),
                                    'periodeEnd' => end($periode)->toDateString(),
@@ -2431,7 +2434,6 @@ class LaporanController
                 }
                 else
                 {
-//                    continue;
                     $arrTgl = [];
                     foreach ($periode as $per)
                     {        
