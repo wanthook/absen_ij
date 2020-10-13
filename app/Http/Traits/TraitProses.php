@@ -182,7 +182,7 @@ trait TraitProses
                         $alasanId[] = Alasan::where('kode','OUT')->first()->id;                        
                         $isInOut = 'OUT';
                         $keterangan[] = 'OUT';
-                        goto proses_simpan;
+//                        goto proses_simpan;
                     }
                 }
                               
@@ -195,7 +195,7 @@ trait TraitProses
                         $alasanId[] = $off->id;
                         $isOff = 'Y';
                         $keterangan[] = $off->kode;
-                        goto proses_simpan;
+//                        goto proses_simpan;
                     }
                 }
 
@@ -930,7 +930,7 @@ trait TraitProses
                     'hitung_lembur' => $hitungLembur,
                     'lembur_ln' => $lemburLN,
                     'hitung_lembur_ln' => $hitungLemburLN,
-                    'total_lembur' => $totalLembur,
+                    'total_lembur' => ($hitungLembur+$hitungLemburLN) || null,
                     'shift3' => (!empty($shift3))?$shift3:null,
                     'gp' => $nilaiGp,
                     'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
