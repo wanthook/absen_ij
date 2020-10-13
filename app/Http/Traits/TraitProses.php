@@ -907,7 +907,14 @@ trait TraitProses
                 {
                     $alasanId = json_encode($alasanId);
                 }
-
+                
+                $tLembur = null;
+                
+                if($hitungLembur+$hitungLemburLN)
+                {
+                    $tLembur = $hitungLembur+$hitungLemburLN;
+                }
+                
                 $arrProses[] = [
                     'karyawan_id' => $karId,
                     'alasan_id' => $alasanId,
@@ -930,7 +937,7 @@ trait TraitProses
                     'hitung_lembur' => $hitungLembur,
                     'lembur_ln' => $lemburLN,
                     'hitung_lembur_ln' => $hitungLemburLN,
-                    'total_lembur' => ($hitungLembur+$hitungLemburLN) || null,
+                    'total_lembur' => $tLembur,
                     'shift3' => (!empty($shift3))?$shift3:null,
                     'gp' => $nilaiGp,
                     'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
