@@ -125,12 +125,26 @@ class ActivityManualController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadAbsenManualKaryawan');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadAbsenManualKaryawan');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
-                //                $fileStorage = fopen(storage_path('tmp').'/tempFileUploadJadwalManualKaryawan','r');
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;    
                 $arrKey = null;
