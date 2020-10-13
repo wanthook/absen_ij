@@ -391,7 +391,7 @@ class LaporanController
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
             $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
-            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 10);
+            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 7, 'PM' => 7, 'JM' => 7);
             
             foreach($headTbl1 as $kH => $vH)
             {
@@ -418,6 +418,8 @@ class LaporanController
                 $jGp = 0;
                 $jJk = 0;
                 $s3v = 0;
+                $pm = 0;
+                $jm = 0;
                 
                 $pdf->Cell($headTbl1['No'], 4, $kRet+1, $line, 0, 'C');
                 $pdf->Cell($headTbl1['PIN'], 4, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'', $line, 0, 'C');
@@ -455,6 +457,7 @@ class LaporanController
                             $lbl = 'GP';
                             $jGp+=$vabs->gp;
                             $jJk += $vabs->jumlah_jam_kerja;
+                            $jm++;
                         }
                         else if(isset($vabs->libur))
                         {
@@ -475,28 +478,60 @@ class LaporanController
                         else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                         {
                             $lbl = '0';
+                            $jm++;
                         }
                         
-                        if($vabs->shift3)
+                        if(isset($vabs->shift3))
                         {
-                            $s3x += 1;
-                            
-                            if($vabs->libur)
+                            if($vabs->shift3)
                             {
-                                if($vabs->keterangan == 'CUTI')
+                                $s3x += 1;
+
+                                if($vabs->libur)
                                 {
-                                    $s3 += 1;
+                                    if(isset($vabs->alasan))
+                                    {
+                                        $ada = false;
+                                        foreach($vabs->alasan as $als)
+                                        {
+                                            if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
+                                                $ada = true;
+                                        }
+                                        if($ada)
+                                        {
+                                            $s3 += 1;
+                                        }
+                                        else
+                                        {
+                                            $s3v += 1;
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    $s3v += 1;
+                                    $s3 += 1;
                                 }
                             }
-                            else
+                        }
+                        
+                        /*
+                        *
+                        *   panggil malam
+                        */
+                        if(isset($vabs->alasan))
+                        {
+                            $ada = false;
+                            foreach($vabs->alasan as $als)
                             {
-                                $s3 += 1;
+                                if($als->kode == 'PM')
+                                    $ada = true;
                             }
-                        }                        
+                            
+                            if($ada)
+                            {
+                                $pm += 1;
+                            }
+                        }        
                        
                         
                         $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
@@ -528,6 +563,8 @@ class LaporanController
                     $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
                     $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
                     $pdf->Cell($headTbl2['S3V'], 4, $s3v, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['PM'], 4, $pm, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['JM'], 4, $jm, 1, 0, 'C');
                     $pdf->Ln();
                 }
                 
@@ -603,7 +640,7 @@ class LaporanController
             $rowStart = 4;
             $colStat = 1;
             $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
-            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK');
+            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK', 'S3V', 'PM', 'JM');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -651,6 +688,9 @@ class LaporanController
                 $s3 = 0;
                 $jGp = 0;
                 $jJk = 0;
+                $s3v = 0;
+                $pm = 0;
+                $jm = 0;
                 
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'');
@@ -687,6 +727,7 @@ class LaporanController
                         $lbl = 'GP';
                         $jGp+=$vabs->gp;
                         $jJk += $vabs->jumlah_jam_kerja;
+                        $jm++;
                     }
                     else if(isset($vabs->libur))
                     {
@@ -707,6 +748,59 @@ class LaporanController
                     else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                     {
                         $lbl = '0';
+                        $jm++;
+                    }
+                        
+                    if(isset($vabs->shift3))
+                    {
+                        if($vabs->shift3)
+                        {
+                            $s3x += 1;
+
+                            if($vabs->libur)
+                            {
+                                if(isset($vabs->alasan))
+                                {
+                                    $ada = false;
+                                    foreach($vabs->alasan as $als)
+                                    {
+                                        if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
+                                            $ada = true;
+                                    }
+                                    if($ada)
+                                    {
+                                        $s3 += 1;
+                                    }
+                                    else
+                                    {
+                                        $s3v += 1;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $s3 += 1;
+                            }
+                        }
+                    }
+
+                    /*
+                    *
+                    *   panggil malam
+                    */
+                    if(isset($vabs->alasan))
+                    {
+                        $ada = false;
+                        foreach($vabs->alasan as $als)
+                        {
+                            if($als->kode == 'PM')
+                                $ada = true;
+                        }
+
+                        if($ada)
+                        {
+                            $pm += 1;
+                        }
                     }
                     
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $lbl);
@@ -715,6 +809,10 @@ class LaporanController
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $s3);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jGp/60);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jJk);
+                
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $s3v);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $pm);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jm);
                 
                 $rowStart++;
                 
