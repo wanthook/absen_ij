@@ -264,7 +264,7 @@ class LaporanController
                                 $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
                                 $hitNas += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
                                 
-                                $tLembur += $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
+                                $tLembur += (isset($vabs->total_lembur)?$vabs->total_lembur:null);
                                 
                                 $totLem += $tLembur;
 
