@@ -534,6 +534,7 @@ class LaporanController
                     
                     if($gapok)
                     {
+                        $gapok = $gapok->pivot->nilai;
                         if($gapok >= 2350000)
                         {
                             if($lemburAktual)
