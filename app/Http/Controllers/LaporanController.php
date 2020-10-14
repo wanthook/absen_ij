@@ -547,7 +547,8 @@ class LaporanController
             
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
-            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
+//            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
+            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kd Div' => 15, 'Nama' => 40);
             $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 7, 'PM' => 7, 'JM' => 7);
             
             foreach($headTbl1 as $kH => $vH)
@@ -575,7 +576,7 @@ class LaporanController
                 $pdf->Cell($headTbl1['TMK'], 4, $vVar['tmk'], $line, 0, 'C');
                 $pdf->Cell($headTbl1['SEX'], 4, $vVar['jenkel'], $line, 0, 'C');
                 $pdf->Cell($headTbl1['Kode'], 4, $vVar['kd_divisi'], $line, 0, 'C');
-                $pdf->Cell($headTbl1['Divisi'], 4, $vVar['nm_divisi'], $line, 0, 'C');
+//                $pdf->Cell($headTbl1['Divisi'], 4, $vVar['nm_divisi'], $line, 0, 'C');
                 $pdf->Cell($headTbl1['Nama'], 4, $vVar['nama'], $line, 0, 'C');
                 
                 if(count($vVar['detail']))
@@ -666,7 +667,8 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
+//            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
+            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kd. Div',  'Nama');
             $headTbl2 = array('Lbr', 'S3', 'GP', 'JK', 'S3V', 'PM', 'JM');
             foreach($headTbl1 as $rHead)
             {

@@ -133,8 +133,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>PIN</th>
                 <th>TMK</th>
                 <th>SEX</th>
-                <th>Kode</th>
-                <th>Divisi</th>
+                <th>Kd. Div</th>
+                <!--<th>Divisi</th>-->
                 <th>Nama</th>
                 @foreach($periode as $per)
                 <th>{{$per->format('d')}}</th>
@@ -156,7 +156,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td>{{$vVar['tmk']}}</td>
                 <td class="dc">{{$vVar['jenkel']}}</td>
                 <td class="dc">{{$vVar['kd_divisi']}}</td>
-                <td class="dc">{{$vVar['nm_divisi']}}</td>
+                <!--<td class="dc">{{$vVar['nm_divisi']}}</td>-->
                 <td>{{$vVar['nama']}}</td>
                 @foreach($vVar['detail'] as $kabs => $vabs)                     
                     <td class="dc">{{$vabs}}</td>
