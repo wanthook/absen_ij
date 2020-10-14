@@ -525,9 +525,11 @@ class LaporanController
                 $sendTemp['s3v'] = $s3v;
                 $sendTemp['pm'] = $pm;
                 $sendTemp['jm'] = $jm;
+                
+                $send[] = $sendTemp;
             }
             
-            $send[] = $sendTemp;
+            
         }
         
         if($req['btnSubmit'] == "preview")
@@ -558,7 +560,7 @@ class LaporanController
 
             foreach($ret['periode'] as $per)
             {
-                $pdf->Cell(5, 4, $per->format('d'), 1, 0, 'C');
+                $pdf->Cell(5.5, 4, $per->format('d'), 1, 0, 'C');
             }
 
             foreach($headTbl2 as $kH => $vH)
@@ -583,7 +585,7 @@ class LaporanController
                 {
                     foreach($vVar['detail'] as $kabs => $vabs)
                     {                        
-                        $pdf->Cell(5, 4, $vabs, $line, 0, 'C');
+                        $pdf->Cell(5.5, 4, $vabs, $line, 0, 'C');
                     }
                     
                     $pdf->Cell($headTbl2['Lbr'], 4, $vVar['tLembur'], 1, 0, 'C');
@@ -2386,7 +2388,7 @@ class LaporanController
                     $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
             }            
-            
+//            dd($karyawanId);
             foreach ($karyawanId as $kId)
             {
                 $kar = Karyawan::find($kId);
