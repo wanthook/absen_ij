@@ -388,6 +388,10 @@ class LaporanController
                 $s3Total = 0;
                 $pm = 0;
                 $jm = 0;
+                $ins = 0; //insentif
+                
+                $lemburAktual = 0;
+                
                 
                 $sendTemp['no'] = $kVar+1;
                 $sendTemp['pin'] = isset($vVar['karyawan']->pin)?$vVar['karyawan']->pin:'';
@@ -511,11 +515,33 @@ class LaporanController
                         }
                     }
                     
+                    if(isset($vabs->lembur_aktual))
+                    {
+                        $lemburAktual += $vabs->lembur_aktual;
+                    }
+                    
                     if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                     {
                         $jm++;
                     }
                     $sendTemp['detail'][] = $lbl;
+                }
+                
+                
+                if(isset($vVar['karyawan']))
+                {
+                    $gapok = $vVar['karyawan']->salaryGapokTanggal(end($ret['periode'])->toDateString())->first();
+                    
+                    if($gapok)
+                    {
+                        if($gapok >= 2350000)
+                        {
+                            if($lemburAktual)
+                            {
+                                $ins = floor($lemburAktual/2);
+                            }
+                        }
+                    }
                 }
                 
                 $sendTemp['tLembur'] = $tLembur;
@@ -525,6 +551,7 @@ class LaporanController
                 $sendTemp['s3v'] = $s3v;
                 $sendTemp['pm'] = $pm;
                 $sendTemp['jm'] = $jm;
+                $sendTemp['ins'] = $ins;
                 
                 $send[] = $sendTemp;
             }
@@ -551,7 +578,7 @@ class LaporanController
             $pdf->AddPage();
 //            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
             $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Nama' => 40);
-            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 7, 'PM' => 7, 'JM' => 7);
+            $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 7, 'PM' => 7, 'JM' => 7, 'INS' => 7);
             
             foreach($headTbl1 as $kH => $vH)
             {
@@ -595,6 +622,7 @@ class LaporanController
                     $pdf->Cell($headTbl2['S3V'], 4, $vVar['s3v'], 1, 0, 'C');
                     $pdf->Cell($headTbl2['PM'], 4, $vVar['pm'], 1, 0, 'C');
                     $pdf->Cell($headTbl2['JM'], 4, $vVar['jm'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['INS'], 4, $vVar['ins'], 1, 0, 'C');
                     $pdf->Ln();
                 }
                 
@@ -671,7 +699,7 @@ class LaporanController
             $colStat = 1;
 //            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
             $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kd. Div',  'Nama');
-            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK', 'S3V', 'PM', 'JM');
+            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK', 'S3V', 'PM', 'JM', 'INS');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -740,6 +768,7 @@ class LaporanController
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['s3v']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['pm']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jm']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['ins']);
                 
                 $rowStart++;
                 
@@ -2396,6 +2425,7 @@ class LaporanController
                 $tmk = null;
                 $active = null;
                 $off = null;
+                $gapok = null;
                 
                 if($kar->tanggal_masuk)
                 {
@@ -2413,6 +2443,7 @@ class LaporanController
                                     reset($periode)->toDateString(), 
                                     end($periode)->toDateString()
                                 ]);
+                
                 
                 if($pAbsen->count()>0)
                 {

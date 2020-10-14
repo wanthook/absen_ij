@@ -146,6 +146,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>S3V</th>
                 <th>PM</th>      <!-- Panggil Malam -->          
                 <th>JM</th> <!-- Jumlah Masuk -->
+                <th>INS</th> 
             </tr>
         </thead>
         <tbody>
@@ -158,9 +159,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$vVar['kd_divisi']}}</td>
                 <!--<td class="dc">{{$vVar['nm_divisi']}}</td>-->
                 <td>{{$vVar['nama']}}</td>
+                @if(isset($vVar['detail']))
                 @foreach($vVar['detail'] as $kabs => $vabs)                     
                     <td class="dc">{{$vabs}}</td>
                 @endforeach
+                @else
+                @foreach($periode as $per)
+                    <td class="dc"></td>
+                @endforeach
+                @endif
                 <td class="dc">{{$vVar['tLembur']}}</td>
                 <td class="dc">{{$vVar['s3']}}</td>
                 <td class="dc">{{$vVar['gp']}}</td>
@@ -168,6 +175,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$vVar['s3v']}}</td>
                 <td class="dc">{{$vVar['pm']}}</td>
                 <td class="dc">{{$vVar['jm']}}</td>
+                <td class="dc">{{$vVar['ins']}}</td>
             </tr>
             @endforeach
         </tbody>
