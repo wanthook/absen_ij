@@ -150,157 +150,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </thead>
         <tbody>
             @foreach($var as $kVar => $vVar)
-                @php
-                    $tLembur = 0;
-                    $s3 = 0;
-                    $jGp = 0;
-                    $jJk = 0;
-                    $s3x = 0;
-                    $s3v = 0;
-                    $pm = 0;
-                    $jm = 0;
-                @endphp
             <tr>
                 <td class="dc">{{$kVar+1}}</td>
-                <td class="dc">{{isset($vVar['karyawan']->pin)?$vVar['karyawan']->pin:''}}</td>
-                <td>{{isset($vVar['karyawan']->tanggal_masuk)?$vVar['karyawan']->tanggal_masuk:''}}</td>
-                <td class="dc">{{isset($vVar['karyawan']->jeniskelamin->nama)?$vVar['karyawan']->jeniskelamin->nama:''}}</td>
-                <td class="dc">{{isset($vVar['karyawan']->divisi->kode)?$vVar['karyawan']->divisi->kode:''}}</td>
-                <td class="dc">{{isset($vVar['karyawan']->divisi->deskripsi)?$vVar['karyawan']->divisi->deskripsi:''}}</td>
-                <td>{{isset($vVar['karyawan']->nama)?$vVar['karyawan']->nama:''}}</td>
-                @foreach($vVar['absen'] as $kabs => $vabs) 
-                    @php
-                        $lbl = '';
-                        
-                        if(isset($vabs->inout))
-                        {
-                            $lbl = $vabs->inout;
-                        }
-                        else if(isset($vabs->is_off))
-                        {
-                            $lbl = $vabs->keterangan;
-                        }
-                        else if(isset($vabs->mangkir))
-                        {
-                            $lbl = 'M';
-                        }
-                        else if(isset($vabs->ta))
-                        {
-                            $lbl = 'TA';
-                        }
-                        else if(isset($vabs->gp))
-                        {
-                            $lbl = 'GP';
-                            $jGp+=$vabs->gp;
-                            $jJk += $vabs->jumlah_jam_kerja;
-                            $jm++;
-                        }
-                        else if(isset($vabs->libur))
-                        {
-                            if(isset($vabs->alasan))
-                            {
-                                $lbl = $vabs->alasan[0]->kode;
-                            }
-                            else
-                            {
-                                $lbl = '0';
-                            }
-                        }
-                        else if(isset($vabs->total_lembur))
-                        {
-                            $lbl = $vabs->total_lembur;
-                            $tLembur += $vabs->total_lembur;
-                        }
-                        else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                        {
-                            $lbl = '0';
-                            $jm++;
-                        }
-                        
-                        if(isset($vabs->shift3))
-                        {
-                            if($vabs->shift3)
-                            {
-                                $s3x += 1;
-
-                                if($vabs->libur)
-                                {
-                                    if(isset($vabs->alasan))
-                                    {
-                                        $ada = false;
-                                        foreach($vabs->alasan as $als)
-                                        {
-                                            if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
-                                                $ada = true;
-                                        }
-                                        if($ada)
-                                        {
-                                            $s3 += 1;
-                                        }
-                                        else
-                                        {
-                                            $s3v += 1;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    $s3 += 1;
-                                }
-                            }
-                        }
-                        
-                        /*
-                        *
-                        *   panggil malam
-                        */
-                        if(isset($vabs->alasan))
-                        {
-                            $ada = false;
-                            foreach($vabs->alasan as $als)
-                            {
-                                if($als->kode == 'PM')
-                                    $ada = true;
-                            }
-                            
-                            if($ada)
-                            {
-                                $pm += 1;
-                            }
-                        }
-                        
-                        
-                    @endphp
-                    <td class="dc">{{$lbl}}</td>
+                <td class="dc">{{$vVar['pin']}}</td>
+                <td>{{$vVar['tmk']}}</td>
+                <td class="dc">{{$vVar['jenkel']}}</td>
+                <td class="dc">{{$vVar['kd_divisi']}}</td>
+                <td class="dc">{{$vVar['nm_divisi']}}</td>
+                <td>{{$vVar['nama']}}</td>
+                @foreach($vVar['detail'] as $kabs => $vabs)                     
+                    <td class="dc">{{$vabs}}</td>
                 @endforeach
-                @php
-                if($s3x >= 3)
-                {
-                    if($s3v == 1)
-                    {
-                        $s3v = 0.5;
-                    }
-                    else if($s3v > 1)
-                    {
-                        $s3v = 0;
-                    }
-                    else
-                    {
-                        $s3v = 1;
-                    }
-                }
-                else
-                {
-                    $s3v = 0;
-                }
-                @endphp
-                <td class="dc">{{$tLembur}}</td>
-                <td class="dc">{{$s3}}</td>
-                <td class="dc">{{$jGp/60}}</td>
-                <td class="dc">{{$jJk}}</td>
-                <td class="dc">{{$s3v}}</td>
-                <td class="dc">{{$pm}}</td>
-                <td class="dc">{{$jm}}</td>
+                <td class="dc">{{$vVar['tLembur']}}</td>
+                <td class="dc">{{$vVar['s3']}}</td>
+                <td class="dc">{{$vVar['gp']}}</td>
+                <td class="dc">{{$vVar['jk']}}</td>
+                <td class="dc">{{$vVar['s3v']}}</td>
+                <td class="dc">{{$vVar['pm']}}</td>
+                <td class="dc">{{$vVar['jm']}}</td>
             </tr>
             @endforeach
         </tbody>

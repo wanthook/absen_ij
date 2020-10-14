@@ -373,9 +373,166 @@ class LaporanController
         
         $ret = $this->lDet($req);
         
+        $send = [];
+        
+        if(isset($ret['msg']))
+        {
+            foreach($ret['msg'] as $kVar => $vVar)
+            {
+                $sendTemp = [];
+                $tLembur = 0;
+                $jGp = 0;
+                $jJk = 0;
+                $shift3Real = 0;
+                $s3v = 0;
+                $s3Total = 0;
+                $pm = 0;
+                $jm = 0;
+                
+                $sendTemp['no'] = $kVar+1;
+                $sendTemp['pin'] = isset($vVar['karyawan']->pin)?$vVar['karyawan']->pin:'';
+                $sendTemp['tmk'] = isset($vVar['karyawan']->tanggal_masuk)?$vVar['karyawan']->tanggal_masuk:'';
+                $sendTemp['jenkel'] = isset($vVar['karyawan']->jeniskelamin->nama)?$vVar['karyawan']->jeniskelamin->nama:'';
+                $sendTemp['kd_divisi'] = isset($vVar['karyawan']->divisi->kode)?$vVar['karyawan']->divisi->kode:'';
+                $sendTemp['nm_divisi'] = isset($vVar['karyawan']->divisi->deskripsi)?$vVar['karyawan']->divisi->deskripsi:'';
+                $sendTemp['nama'] = isset($vVar['karyawan']->nama)?$vVar['karyawan']->nama:'';
+                
+                foreach($vVar['absen'] as $kabs => $vabs) 
+                {
+                    $lbl = '';
+                        
+                    if(isset($vabs->inout))
+                    {
+                        $lbl = $vabs->inout;
+                    }
+                    else if(isset($vabs->is_off))
+                    {
+                        $lbl = $vabs->keterangan;
+                    }
+                    else if(isset($vabs->mangkir))
+                    {
+                        $lbl = 'M';
+                    }
+                    else if(isset($vabs->ta))
+                    {
+                        $lbl = 'TA';
+                    }
+                    else if(isset($vabs->gp))
+                    {
+                        $lbl = 'GP';
+                        $jGp+=$vabs->gp;
+                        $jJk += $vabs->jumlah_jam_kerja;
+                    }
+                    else if(isset($vabs->libur))
+                    {
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = '0';
+                        }
+                    }
+                    else if(isset($vabs->total_lembur))
+                    {
+                        $lbl = $vabs->total_lembur;
+                        $tLembur += $vabs->total_lembur;
+                    }
+                    else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                    {
+                        $lbl = '0';
+                    }
+                    
+                    if(isset($vabs->shift3))
+                    {
+                        if($vabs->shift3)
+                        {
+                            $s3Total++;
+                            if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                            {
+                                $shift3Real++;
+                            }
+                            else if(isset($vabs->libur))
+                            {
+                                if($vabs->libur)
+                                {
+                                    if(isset($vabs->alasan))
+                                    {
+                                        $ada = false;
+                                        foreach($vabs->alasan as $als)
+                                        {
+                                            if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
+                                            {
+                                                $ada = true;
+                                            }
+                                        }
+                                        
+                                        if($ada)
+                                        {
+                                            $shift3Real++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if($s3Total)
+                    {
+                        if($s3Total == $s3v)
+                        {
+                            $s3v = 1;
+                        }
+                        else if(($s3Total - $s3v) == 1)
+                        {
+                            $s3v = 0.5;
+                        }
+                        else if(($s3Total - $s3v) > 1)
+                        {
+                            $s3v = 0;
+                        }
+                    }
+                    
+                    if(isset($vabs->alasan))
+                    {
+                        $ada = false;
+                        foreach($vabs->alasan as $als)
+                        {
+                            if($als->kode == 'PM')
+                            {
+                                $ada = true;
+                            }
+                        }
+
+                        if($ada)
+                        {
+                            $pm += 1;
+                        }
+                    }
+                    
+                    if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                    {
+                        $jm++;
+                    }
+                    $sendTemp['detail'][] = $lbl;
+                }
+                
+                $sendTemp['tLembur'] = $tLembur;
+                $sendTemp['s3'] = $shift3Real;
+                $sendTemp['gp'] = ($jGp/60);
+                $sendTemp['jk'] = $jJk;
+                $sendTemp['s3v'] = $s3v;
+                $sendTemp['pm'] = $pm;
+                $sendTemp['jm'] = $jm;
+            }
+            
+            $send[] = $sendTemp;
+        }
+        
         if($req['btnSubmit'] == "preview")
         {
-            return view('admin.laporan.komulatif.preview', ['var' => $ret['msg'], 
+            return view('admin.laporan.komulatif.preview', ['var' => $send, 
                 'periode' => $ret['periode'], 
                 'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
         }
@@ -410,161 +567,31 @@ class LaporanController
             $pdf->Ln();
             
             $line = 'LRB';
-            foreach($ret['msg'] as $kRet => $rRet)
+            foreach($send as $kVar => $vVar)
             {
-                $tLembur = 0;
-                $s3 = 0;
-                $s3x = 0;
-                $jGp = 0;
-                $jJk = 0;
-                $s3v = 0;
-                $pm = 0;
-                $jm = 0;
                 
-                $pdf->Cell($headTbl1['No'], 4, $kRet+1, $line, 0, 'C');
-                $pdf->Cell($headTbl1['PIN'], 4, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'', $line, 0, 'C');
-                $pdf->Cell($headTbl1['TMK'], 4, isset($rRet['karyawan']->tanggal_masuk)?$rRet['karyawan']->tanggal_masuk:'', $line, 0, 'C');
-                $pdf->Cell($headTbl1['SEX'], 4, isset($rRet['karyawan']->jeniskelamin->nama)?$rRet['karyawan']->jeniskelamin->nama:'', $line, 0, 'C');
-                $pdf->Cell($headTbl1['Kode'], 4, isset($rRet['karyawan']->divisi->kode)?$rRet['karyawan']->divisi->kode:'', $line, 0, 'C');
-                $pdf->Cell($headTbl1['Divisi'], 4, isset($rRet['karyawan']->divisi->deskripsi)?$rRet['karyawan']->divisi->deskripsi:'', $line, 0, 'C');
-                $pdf->Cell($headTbl1['Nama'], 4, isset($rRet['karyawan']->nama)?$rRet['karyawan']->nama:'', $line, 0, 'C');
+                $pdf->Cell($headTbl1['No'], 4, $kVar+1, $line, 0, 'C');
+                $pdf->Cell($headTbl1['PIN'], 4, $vVar['pin'], $line, 0, 'C');
+                $pdf->Cell($headTbl1['TMK'], 4, $vVar['tmk'], $line, 0, 'C');
+                $pdf->Cell($headTbl1['SEX'], 4, $vVar['jenkel'], $line, 0, 'C');
+                $pdf->Cell($headTbl1['Kode'], 4, $vVar['kd_divisi'], $line, 0, 'C');
+                $pdf->Cell($headTbl1['Divisi'], 4, $vVar['nm_divisi'], $line, 0, 'C');
+                $pdf->Cell($headTbl1['Nama'], 4, $vVar['nama'], $line, 0, 'C');
                 
-                if(count($rRet['absen']))
+                if(count($vVar['detail']))
                 {
-                    foreach($rRet['absen'] as $tgl => $vabs)
-                    {
-
-                        $lbl = '';
-
-                        if(isset($vabs->inout))
-                        {
-                            $lbl = $vabs->inout;
-                        }
-                        else if(isset($vabs->is_off))
-                        {
-                            $lbl = $vabs->keterangan;
-                        }
-                        else if(isset($vabs->mangkir))
-                        {
-                            $lbl = 'M';
-                        }
-                        else if(isset($vabs->ta))
-                        {
-                            $lbl = 'TA';
-                        }
-                        else if(isset($vabs->gp))
-                        {
-                            $lbl = 'GP';
-                            $jGp+=$vabs->gp;
-                            $jJk += $vabs->jumlah_jam_kerja;
-                            $jm++;
-                        }
-                        else if(isset($vabs->libur))
-                        {
-                            if(isset($vabs->alasan))
-                            {
-                                $lbl = $vabs->alasan[0]->kode;
-                            }
-                            else
-                            {
-                                $lbl = '0';
-                            }
-                        }
-                        else if(isset($vabs->total_lembur))
-                        {
-                            $lbl = $vabs->total_lembur;
-                            $tLembur += $vabs->total_lembur;
-                        }
-                        else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                        {
-                            $lbl = '0';
-                            $jm++;
-                        }
-                        
-                        if(isset($vabs->shift3))
-                        {
-                            if($vabs->shift3)
-                            {
-                                $s3x += 1;
-
-                                if($vabs->libur)
-                                {
-                                    if(isset($vabs->alasan))
-                                    {
-                                        $ada = false;
-                                        foreach($vabs->alasan as $als)
-                                        {
-                                            if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
-                                                $ada = true;
-                                        }
-                                        if($ada)
-                                        {
-                                            $s3 += 1;
-                                        }
-                                        else
-                                        {
-                                            $s3v += 1;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    $s3 += 1;
-                                }
-                            }
-                        }
-                        
-                        /*
-                        *
-                        *   panggil malam
-                        */
-                        if(isset($vabs->alasan))
-                        {
-                            $ada = false;
-                            foreach($vabs->alasan as $als)
-                            {
-                                if($als->kode == 'PM')
-                                    $ada = true;
-                            }
-                            
-                            if($ada)
-                            {
-                                $pm += 1;
-                            }
-                        }        
-                       
-                        
-                        $pdf->Cell(5, 4, $lbl, $line, 0, 'C');
+                    foreach($vVar['detail'] as $kabs => $vabs)
+                    {                        
+                        $pdf->Cell(5, 4, $vabs, $line, 0, 'C');
                     }
                     
-                    
-                    if($s3x >= 3)
-                    {
-                        if($s3v == 1)
-                        {
-                            $s3v = 0.5;
-                        }
-                        else if($s3v > 1)
-                        {
-                            $s3v = 0;
-                        }
-                        else
-                        {
-                            $s3v = 1;
-                        }
-                    }
-                    else
-                    {
-                        $s3v = 0;
-                    }
-                    
-                    $pdf->Cell($headTbl2['Lbr'], 4, $tLembur, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['S3'], 4, $s3, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['GP'], 4, $jGp/60, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['JK'], 4, $jJk, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['S3V'], 4, $s3v, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['PM'], 4, $pm, 1, 0, 'C');
-                    $pdf->Cell($headTbl2['JM'], 4, $jm, 1, 0, 'C');
+                    $pdf->Cell($headTbl2['Lbr'], 4, $vVar['tLembur'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['S3'], 4, $vVar['s3'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['GP'], 4, $vVar['gp'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['JK'], 4, $vVar['jk'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['S3V'], 4, $vVar['s3v'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['PM'], 4, $vVar['pm'], 1, 0, 'C');
+                    $pdf->Cell($headTbl2['JM'], 4, $vVar['jm'], 1, 0, 'C');
                     $pdf->Ln();
                 }
                 
@@ -681,138 +708,34 @@ class LaporanController
             
             $rowStart++;
             $colStat = 1;
-            foreach($ret['msg'] as $kRet => $rRet)
-            {
-                $colStat = 1;
-                $tLembur = 0;
-                $s3 = 0;
-                $jGp = 0;
-                $jJk = 0;
-                $s3v = 0;
-                $pm = 0;
-                $jm = 0;
-                
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->pin)?$rRet['karyawan']->pin:'');
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->tanggal_masuk)?$rRet['karyawan']->tanggal_masuk:'');
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->jeniskelamin->nama)?$rRet['karyawan']->jeniskelamin->nama:'');
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->divisi->kode)?$rRet['karyawan']->divisi->kode:'');
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->divisi->deskripsi)?$rRet['karyawan']->divisi->deskripsi:'');
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet['karyawan']->nama)?$rRet['karyawan']->nama:'');
+            foreach($send as $kVar => $vVar)
+            {                
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kVar+1);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['pin']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['tmk']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jenkel']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['kd_divisi']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nm_divisi']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nama']);
                 
                 
-                foreach($rRet['absen'] as $tgl => $vabs)
+                if(count($vVar['detail']))
                 {
+                    foreach($vVar['detail'] as $kabs => $vabs)
+                    {             
                     
-                    $lbl = '';
-                        
-                    if(isset($vabs->inout))
-                    {
-                        $lbl = $vabs->inout;
+                        $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vabs);
                     }
-                    else if(isset($vabs->is_off))
-                    {
-                        $lbl = $vabs->keterangan;
-                    }
-                    else if(isset($vabs->mangkir))
-                    {
-                        $lbl = 'M';
-                    }
-                    else if(isset($vabs->ta))
-                    {
-                        $lbl = 'TA';
-                    }
-                    else if(isset($vabs->gp))
-                    {
-                        $lbl = 'GP';
-                        $jGp+=$vabs->gp;
-                        $jJk += $vabs->jumlah_jam_kerja;
-                        $jm++;
-                    }
-                    else if(isset($vabs->libur))
-                    {
-                        if(isset($vabs->alasan))
-                        {
-                            $lbl = $vabs->alasan[0]->kode;
-                        }
-                        else
-                        {
-                            $lbl = '0';
-                        }
-                    }
-                    else if(isset($vabs->total_lembur))
-                    {
-                        $lbl = $vabs->total_lembur;
-                        $tLembur += $vabs->total_lembur;
-                    }
-                    else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                    {
-                        $lbl = '0';
-                        $jm++;
-                    }
-                        
-                    if(isset($vabs->shift3))
-                    {
-                        if($vabs->shift3)
-                        {
-                            $s3x += 1;
-
-                            if($vabs->libur)
-                            {
-                                if(isset($vabs->alasan))
-                                {
-                                    $ada = false;
-                                    foreach($vabs->alasan as $als)
-                                    {
-                                        if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
-                                            $ada = true;
-                                    }
-                                    if($ada)
-                                    {
-                                        $s3 += 1;
-                                    }
-                                    else
-                                    {
-                                        $s3v += 1;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                $s3 += 1;
-                            }
-                        }
-                    }
-
-                    /*
-                    *
-                    *   panggil malam
-                    */
-                    if(isset($vabs->alasan))
-                    {
-                        $ada = false;
-                        foreach($vabs->alasan as $als)
-                        {
-                            if($als->kode == 'PM')
-                                $ada = true;
-                        }
-
-                        if($ada)
-                        {
-                            $pm += 1;
-                        }
-                    }
-                    
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $lbl);
                 }
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $tLembur);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $s3);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jGp/60);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jJk);
                 
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $s3v);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $pm);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $jm);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['tLembur']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['s3']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['gp']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jk']);
+                
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['s3v']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['pm']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jm']);
                 
                 $rowStart++;
                 
