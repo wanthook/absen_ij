@@ -224,7 +224,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <?php
                         if(isset($vabs->shift3))
                         {
-                            if(!$vabs->libur)
+                            if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                             {
                                 echo $vabs->shift3;
                                 $shiftMalam += 1;

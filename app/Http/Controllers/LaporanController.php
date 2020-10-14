@@ -304,7 +304,7 @@ class LaporanController
                                 
                                 if(isset($vabs->shift3))
                                 {
-                                    if(!$vabs->libur)
+                                    if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                                     {
                                         $pdf->Cell($Width2[12], 4.5, (isset($vabs->shift3)?$vabs->shift3:null), '1', 0, 'C');
                                         $sMalam += 1;

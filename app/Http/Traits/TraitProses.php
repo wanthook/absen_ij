@@ -662,18 +662,17 @@ trait TraitProses
                     $isMangkir = null;
                     $flagNotInOut = null;
 
-
                     if($jMasuk->greaterThan($jKeluar))
                     {
                         $jKeluar->addDay();
                         $shift3 = 1;
                     }
 
-                    if($jMasuk)
+                    if($jMasuk && $jadMasuk)
                     {
                         $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
                     }
-                    if($jKeluar)
+                    if($jKeluar && $jadKeluar)
                     {
                         $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
                     }
