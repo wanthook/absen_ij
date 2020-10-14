@@ -548,7 +548,7 @@ class LaporanController
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan Komulatif","Periode : ".reset($ret['periode'])->toDateString()." s/d ".end($ret['periode'])->toDateString());
             $pdf->AddPage();
 //            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Divisi' => 25, 'Nama' => 40);
-            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kd Div' => 15, 'Nama' => 40);
+            $headTbl1 = array('No' => 6,'PIN' => 13, 'TMK' => 18,'SEX' => 7, 'Kode' => 15, 'Nama' => 40);
             $headTbl2 = array('Lbr' => 7, 'S3' => 7, 'GP' => 7, 'JK' => 7, 'S3V' => 7, 'PM' => 7, 'JM' => 7);
             
             foreach($headTbl1 as $kH => $vH)
