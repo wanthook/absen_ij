@@ -715,7 +715,8 @@ trait TraitProses
                 /*
                  * Hitung Lembur otomatis
                  */
-                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
+//                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
+                if(!$isMangkir && !$isTa && $jMasuk && $jKeluar)
                 {
 
                     if(isset($val->kode))
@@ -723,19 +724,77 @@ trait TraitProses
 //                        dd($val->kode);
                         if(substr($val->kode,0,1) == "J")
                         {
+                            if(isset($jumlahActivityKerja))
+                            {
+                                if(isset($jumlahActivityKerja))
+                                {
+                                    $jAct = ($jumlahActivityKerja/60) - 5;
+                                    if($jAct > 0 && $jAct < 2)
+                                    {
+                                        $lemburAktual += 1;
+                                        $hitungLembur = 1.5;
+                                    }
+                                    else if($jAct >= 2)
+                                    {
+                                        $lemburAktual += 2;
+                                        $hitungLembur = 3.5;
+                                    }
+                                    else
+                                    {
+                                        $lemburAktual += 0;
+                                        $hitungLembur = 0;
+                                    }
+                                }
+//                                if(($jumlahActivityKerja/60) >= 7)
+//                                {
+//                                    $lemburAktual += 2;
+//                                    $hitungLembur = $this->hitungLembur($lemburAktual);
+//                                }
+                            }
                             //3.5 hitung lembur kalau gak telat sama gak gp
-                            $lemburAktual += 2;
-                            $hitungLembur = $this->hitungLembur($lemburAktual);
+                            
                         }
                         else if(substr($val->kode,0,1) == "S")
                         {
-                            $lemburAktual += 0.5;
-                            $hitungLembur = 0.75;
+                            if(isset($jumlahActivityKerja))
+                            {
+                                $jAct = ($jumlahActivityKerja/60) - 4;
+                                
+                                if($jAct > 0)
+                                {
+                                    $lemburAktual += 0.5;
+                                    $hitungLembur = 0.75;
+                                }
+                                else
+                                {
+                                    $lemburAktual += 0;
+                                    $hitungLembur = 0;
+                                }
+                            }
+//                            $lemburAktual += 0.5;
+//                            $hitungLembur = 0.75;
                         }
                         else if(substr($val->kode,0,1) == "P")
                         {
-                            $lemburAktual += 2;
-                            $hitungLembur = 4.5;
+                            if(isset($jumlahActivityKerja))
+                            {
+                                $jAct = ($jumlahActivityKerja/60) - 5;
+                                if($jAct > 0 && $jAct < 2)
+                                {
+                                    $lemburAktual += 2.5;
+                                    $hitungLembur = 2.5;
+                                }
+                                else if($jAct >= 2)
+                                {
+                                    $lemburAktual += 2.5;
+                                    $hitungLembur = 4.5;
+                                }
+                                else
+                                {
+                                    $lemburAktual += 0.5;
+                                    $hitungLembur = 0.75;
+                                }
+                            }
                         }
                     }
                     if(isset($alasan))
@@ -1095,6 +1154,220 @@ trait TraitProses
         }
         return null;
     }
+    
+    
+    
+    private function lDet($req)
+    {
+        try
+        {
+            $ret = [];
+            $karyawanId = array();
+            $periode = null;
+            
+            if(isset($req['tanggalRange']))
+            {
+                $tgl = explode(' - ', $req['tanggalRange']);
+                
+                $periode = CarbonPeriod::create($tgl[0], $tgl[1])->toArray();
+            }
+            else
+            {
+                $tgl = Carbon::createFromFormat('Y-m-d', $req['tanggal'].'-22')->subMonth();
+
+                $periode = CarbonPeriod::create($tgl, $tgl->copy()->addMonth(1)->subDay(1))->toArray();
+            }
+            
+            if(isset($req['pin']))
+            {
+                $karyawanId[] = $req['pin'];
+            }
+            else if(isset($req['divisi']))
+            {
+                if(isset($req['perusahaan']))
+                {
+                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                }
+                else
+                {
+                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                }
+            }
+            else
+            {
+                if(isset($req['perusahaan']))
+                {
+                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                }
+                else
+                {
+                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
+                }
+            }            
+//            dd($karyawanId);
+            foreach ($karyawanId as $kId)
+            {
+                $kar = Karyawan::find($kId);
+                
+                $tmk = null;
+                $active = null;
+                $off = null;
+                $gapok = null;
+                
+                if($kar->tanggal_masuk)
+                {
+                    $tmk = Carbon::createFromFormat('Y-m-d', $kar->tanggal_masuk);
+                }
+                
+                if($kar->active_status_date)
+                {
+                    $active = Carbon::createFromFormat('Y-m-d', $kar->active_status_date);
+                }
+                
+                $pAbsen = Prosesabsen::where('karyawan_id', $kId)
+                        ->whereBetween('tanggal',
+                                [
+                                    reset($periode)->toDateString(), 
+                                    end($periode)->toDateString()
+                                ]);
+                
+                
+                if($pAbsen->count()>0)
+                {
+                    $pAbsen = $pAbsen->get();
+                    $arrTgl = [];
+                    foreach ($periode as $per)
+                    {
+                        $arrTgl[$per->format('d/m/Y')] = new \stdClass();
+                        $arrTgl[$per->format('d/m/Y')] = $pAbsen->where('tanggal', $per->toDateString())->first();
+                        
+                        if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
+                        {
+                            
+                            $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
+//                            dd($alasan);
+                            $arrTgl[$per->format('d/m/Y')]['alasan'] = $alasan;
+                        }
+                        
+                        if($tmk)
+                        {
+                            if($tmk->diffInDays($per, false) < 0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'IN';
+                            }
+                        }
+                        
+                        if($active)
+                        {
+                            if($active->diffInDays($per, false)>=0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'OUT';
+                            }
+                        }
+                        
+                        if(isset($arrTgl[$per->format('d/m/Y')]))
+                            $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
+                        
+                    }
+//                    dd($arrTgl);
+                    $ret[] = array('karyawan' => $kar,
+                                   'periodeStart' => reset($periode)->toDateString(),
+                                   'periodeEnd' => end($periode)->toDateString(),
+                                   'absen' => $arrTgl);
+                }
+                else
+                {
+                    $arrTgl = [];
+                    foreach ($periode as $per)
+                    {        
+                        
+                        if(isset($arrTgl[$per->format('d/m/Y')]->alasan_id))
+                        {
+                            $alasan = Alasan::find($arrTgl[$per->format('d/m/Y')]->alasan_id);
+                            $arrTgl[$per->format('d/m/Y')]['alasan'] = $alasan;
+                        }
+                        
+                        if($tmk)
+                        {
+                            if($tmk->diffInDays($per, false) < 0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'IN';
+                            }
+                        }
+                        
+                        if($active)
+                        {
+                            if($active->diffInDays($per, false)>=0)
+                            {
+                                $arrTgl[$per->format('d/m/Y')]['inout'] = 'OUT';
+                            }
+                        }
+                        
+                        if(isset($arrTgl[$per->format('d/m/Y')]))
+                            $arrTgl[$per->format('d/m/Y')] = (object)$arrTgl[$per->format('d/m/Y')];
+                    }
+                    
+                    $ret[] = array('karyawan' => $kar,
+                                   'periodeStart' => reset($periode)->toDateString(),
+                                   'periodeEnd' => end($periode)->toDateString(),
+                                   'absen' => $arrTgl);
+                    
+                }
+            }
+            
+            
+            return array(
+                'status' => 1,
+                'periode' => $periode,
+                'msg'   => $ret
+                );
+//            dd($ret);
+        } 
+        catch (Exception $ex) 
+        {
+            $err = array('file_target' => 'LaporanController.php',
+                         'message_log' => $e->getMessage(),
+                         'created_by' => Auth::user()->id);
+            
+            ExceptionLog::create($err);
+            
+            return array(
+                'status' => 0,
+                'msg'   => 'Data gagal diproses'
+                );
+        }
+    }
+    
+    public function hitungSpl($val)
+    {
+        if(!$this->is_decimal($val))
+        {
+            if($val % 2 == 0)
+            {
+                return $val/2;
+            }
+            else
+            {
+                return floor($val/2);
+            }
+        }
+        else
+        {
+            if(($val-0.5) % 2 == 0)
+            {
+                return ($val-0.5)/2;
+            }
+            else
+            {
+                return ($val+0.5)/2;
+            }
+        }
+    }
+
+    public function is_decimal( $val )
+    {
+        return is_numeric( $val ) && floor( $val ) != $val;
+    } 
     
     private function jadwalShift($tanggal, $jadwal)
     {

@@ -27,6 +27,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
             margin-bottom: 0.5cm;
             box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
         }
+        page[size="F4"] {  
+            width: 21.59cm;
+            height: 33cm; 
+        }
+        page[size="F4"][layout="landscape"] {
+            width: 33cm;
+            height: auto;  
+        }
         page[size="A4"] {  
             width: 21cm;
             height: 29.7cm; 
@@ -123,7 +131,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 </head>
 <body>
 @if(isset($var))
-    <page size="A4" layout="landscape">
+    <page size="F4" layout="landscape">
     <div class="j1">Laporan Kehadiran Karyawan Komulatif</div>
     <div class="j2">Periode : {{reset($periode)->format('d/m/Y')}} s/d {{end($periode)->format('d/m/Y')}}</div>
     <table class="detail">
