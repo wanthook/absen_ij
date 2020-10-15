@@ -610,7 +610,7 @@
             </button>
         </div>
 <!--        <form id="form_data" action="{{route('savejadwalday')}}" accept-charset="UTF-8" >-->
-            {{ Form::open(['route' => ['uploadalasankaryawan'], 'id' => 'form_data_upload', 'files' => true]) }}
+            {{ Form::open(['route' => ['uploadstatuskaryawan'], 'id' => 'form_data_upload', 'files' => true]) }}
             {{ Form::hidden('id',null, ['id' => 'uploadId']) }}
             <input type="hidden" name="id" id="id">
             <div class="modal-body">   
@@ -631,7 +631,7 @@
                             </div>
                         </div>  
                         <div class="col-12">
-                            <a class="btn btn-info btn-xs" href="{{route('app.files', 'file_temp_karyawan_alasan')}}" target="_blank"><i class="fa fa-download"></i>Template Document</a>
+                            <a class="btn btn-info btn-xs" href="{{route('app.files', 'file_temp_karyawan_status')}}" target="_blank"><i class="fa fa-download"></i>Template Document</a>
                         </div>
                     </div>
                 </div>
@@ -682,6 +682,7 @@
                                         
                                         <button id="btnKembali" class="btn btn-success btn-xs"><i class="fa fa-eraser"></i>Aktifkan Karyawan</button>
                                         <button id="btnNonAktif" class="btn btn-danger btn-xs"><i class="fa fa-user-slash"></i>Non Aktifkan</button>
+                                        <button class="btn btn-xs btn-primary" alt="Upload" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i><br>Upload</button>
                                     </div>
                                 </div>
 <!--                                <div class="col-1">

@@ -1769,6 +1769,132 @@ class KaryawanController extends Controller
             ));
         }
     }
+    
+    public function storeUploadStatus(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+                        
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                
+                foreach($sheetData as $sD)
+                {
+                    if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {       
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $dS = array();
+                    
+                    $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
+                    
+                    if($karyawan->count())
+                    {
+                        
+                        $karId = $karyawan->first()->id;
+                        $kar = Karyawan::find($karId);
+                        
+                        if(trim($sD[$arrKey->status]) == 2 || trim($sD[$arrKey->status]) == 3 )
+                        {
+                            $kar->active_status = trim($sD[$arrKey->status]);
+                            $kar->active_comment = trim($sD[$arrKey->alasan]);
+                            $kar->active_status_date = trim($sD[$arrKey->tanggal]);
+
+
+                            $kar->updated_by = Auth::user()->id;
+                            $kar->updated_at = Carbon::now();
+
+                            $kar->save();
+                        }
+                        else if(trim($sD[$arrKey->status]) == 1)
+                        {
+                            $kar->active_status = trim($sD[$arrKey->status]);
+                            $kar->active_comment = null;
+                            $kar->active_status_date = null;
+
+                            $kar->updated_by = Auth::user()->id;
+                            $kar->updated_at = Carbon::now();
+
+                            $kar->save();
+                        }
+                        
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
+            ));
+        }
+    }
 
     public function storeStatusOffKaryawan($kode, Request $request)
     {

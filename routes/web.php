@@ -148,6 +148,7 @@ Route::group(['middleware' => 'auth'],function()
             
             Route::post('karyawanupload', ['as' => 'uploadkaryawan', 'uses' => 'KaryawanController@storeUpload']);
             Route::post('karyawanalasanupload', ['as' => 'uploadalasankaryawan', 'uses' => 'KaryawanController@storeUploadAlasan']);
+            Route::post('karyawanstatusupload', ['as' => 'uploadstatuskaryawan', 'uses' => 'KaryawanController@storeUploadStatus']);
             Route::post('karyawanjadwalupload', ['as' => 'uploadjadwalkaryawan', 'uses' => 'KaryawanController@storeUploadJadwal']);
             Route::post('karyawanjadwalmanualupload', ['as' => 'uploadjadwalmanualkaryawan', 'uses' => 'KaryawanController@storeUploadJadwalManual']);
             Route::post('karyawandivisiupload', ['as' => 'uploaddivisikaryawan', 'uses' => 'KaryawanController@storeUploadDivisi']);
@@ -317,6 +318,9 @@ Route::group(['middleware' => 'auth'],function()
             case "file_temp_set_off":
                 $path = storage_path('app').'/public/setOff.xlsx';
                 break;
+            case "file_temp_karyawan_status":
+                $path = storage_path('app').'/public/statusKaryawan.xlsx';
+                break;
             default:
                 $path = "";
         }
@@ -324,7 +328,7 @@ Route::group(['middleware' => 'auth'],function()
         if($path)
         {
             $header = ['Content-Type' => File::mimeType($path)];
-            return Response::download($path,'template.xlsx', $header);
+            return Response::download($path,$kode.'.xlsx', $header);
         }
         else 
         {

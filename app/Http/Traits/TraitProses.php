@@ -1186,22 +1186,22 @@ trait TraitProses
             {
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::author()->where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
                 }
             }
             else
             {
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::author()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
             }            
 //            dd($karyawanId);

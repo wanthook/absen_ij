@@ -278,6 +278,13 @@ class Karyawan extends Model
         
         return $query;
     }
+
+    public function scopeKaryawanTerlihat($query)
+    {
+        $query->whereIn('active_status', [1,2]);
+        
+        return $query;
+    }
     
     public function offAlasan()
     {

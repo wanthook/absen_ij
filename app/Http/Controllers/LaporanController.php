@@ -971,7 +971,7 @@ class LaporanController
         {
             $absen->whereHas('karyawan', function($q) use($req)
             {
-                $q->where('divisi_id', $req['divisi']);
+                $q->karyawanTerlihat()->where('divisi_id', $req['divisi']);
             });
         }
         
@@ -979,7 +979,7 @@ class LaporanController
         {
             $absen->whereHas('karyawan', function($q) use($req)
             {
-                $q->where('perusahaan_id', $req['perusahaan']);
+                $q->karyawanTerlihat()->where('perusahaan_id', $req['perusahaan']);
             });
         }  
         
@@ -987,7 +987,7 @@ class LaporanController
         {
             $absen->whereHas('karyawan', function($q) use($req)
             {
-                $q->where('perusahaan_id', Auth::user()->perusahaan->id);
+                $q->karyawanTerlihat()->where('perusahaan_id', Auth::user()->perusahaan->id);
             });
         }
         
@@ -1093,7 +1093,7 @@ class LaporanController
         $kar = Karyawan::with('divisi', 'jabatan')->whereHas('status', function($q)
         {
             $q->where('nama', 'K');
-        })->author();
+        })->karyawanTerlihat()->author();
         
         if(isset($req['tanggal']))
         {
@@ -1200,13 +1200,13 @@ class LaporanController
         {
             if(Auth::user()->type->nama == 'REKANAN')
             {
-                $query->where('perusahaan_id', Auth::user()->perusahaan_id);
+                $query->karyawanTerlihat()->where('perusahaan_id', Auth::user()->perusahaan_id);
             }
             else
             {
                 if(isset($req['perusahaan']))
                 {
-                    $query->where('perusahaan_id', $req['perusahaan']);
+                    $query->karyawanTerlihat()->where('perusahaan_id', $req['perusahaan']);
                 }
             }
         }]);
@@ -2161,7 +2161,7 @@ class LaporanController
         
         
         
-        foreach($karyawan->get() as $kar)
+        foreach($karyawan->karyawanTerlihat()->get() as $kar)
         {
 //            dd($kar->id);
             foreach($periode as $per)
