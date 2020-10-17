@@ -526,10 +526,12 @@ class LaporanController
                     {
                         $jm++;
                     }
-                    
-                    if(substr($vabs->kode_jam_kerja,0,1) == "J" || substr($vabs->kode_jam_kerja,0,1) == "S" || substr($vabs->kode_jam_kerja,0,1) == "P")
+                    if(isset($vabs->kode_jam_kerja))
                     {
-                        $siTukangLembur++;
+                        if(substr($vabs->kode_jam_kerja,0,1) == "J" || substr($vabs->kode_jam_kerja,0,1) == "S" || substr($vabs->kode_jam_kerja,0,1) == "P")
+                        {
+                            $siTukangLembur++;
+                        }
                     }
                     
                     $sendTemp['detail'][] = $lbl;
