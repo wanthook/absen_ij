@@ -773,15 +773,15 @@ class LaporanController
                 ]);
             
             $rowStart++;
-            $colStat = 1;
             foreach($send as $kVar => $vVar)
-            {                
+            {     
+                $colStat = 1;           
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kVar+1);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['pin']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['tmk']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jenkel']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['kd_divisi']);
-                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nm_divisi']);
+//                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nm_divisi']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nama']);
                 
                 if(isset($vVar['detail']))
