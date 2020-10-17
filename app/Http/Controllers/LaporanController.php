@@ -634,17 +634,21 @@ class LaporanController
                         {                        
                             $pdf->Cell(5.5, 4, $vabs, $line, 0, 'C');
                         }
-
-                        
                     }
                     else
                     {
-                        $pdf->Cell(5.5, 4, 'x', $line, 0, 'C');
+                        foreach($ret['periode'] as $per)
+                        {
+                            $pdf->Cell(5.5, 4, '', 1, 0, 'C');
+                        }
                     }
                 }
                 else
                 {
-                    $pdf->Cell(5.5, 4, 'x', $line, 0, 'C');
+                    foreach($ret['periode'] as $per)
+                    {
+                        $pdf->Cell(5.5, 4, '', 1, 0, 'C');
+                    }
                 }
                 $pdf->Cell($headTbl2['Lbr'], 4, $vVar['tLembur'], 1, 0, 'C');
                 $pdf->Cell($headTbl2['S3'], 4, $vVar['s3'], 1, 0, 'C');
@@ -789,6 +793,20 @@ class LaporanController
 
                             $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vabs);
                         }
+                    }
+                    else
+                    {
+                        foreach($ret['periode'] as $per)
+                        {
+                            $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, '');
+                        }
+                    }
+                }
+                else
+                {
+                    foreach($ret['periode'] as $per)
+                    {
+                        $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, '');
                     }
                 }
                 
