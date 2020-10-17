@@ -626,23 +626,35 @@ class LaporanController
 //                $pdf->Cell($headTbl1['Divisi'], 4, $vVar['nm_divisi'], $line, 0, 'C');
                 $pdf->Cell($headTbl1['Nama'], 4, $vVar['nama'], $line, 0, 'C');
                 
-                if(count($vVar['detail']))
+                if(isset($vVar['detail']))
                 {
-                    foreach($vVar['detail'] as $kabs => $vabs)
-                    {                        
-                        $pdf->Cell(5.5, 4, $vabs, $line, 0, 'C');
+                    if(count($vVar['detail']))
+                    {
+                        foreach($vVar['detail'] as $kabs => $vabs)
+                        {                        
+                            $pdf->Cell(5.5, 4, $vabs, $line, 0, 'C');
+                        }
+
+                        
                     }
-                    
-                    $pdf->Cell($headTbl2['Lbr'], 4, $vVar['tLembur'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['S3'], 4, $vVar['s3'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['GP'], 4, $vVar['gp'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['JK'], 4, $vVar['jk'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['S3V'], 4, $vVar['s3v'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['PM'], 4, $vVar['pm'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['JM'], 4, $vVar['jm'], 1, 0, 'C');
-                    $pdf->Cell($headTbl2['INS'], 4, $vVar['ins'], 1, 0, 'C');
-                    $pdf->Ln();
+                    else
+                    {
+                        $pdf->Cell(5.5, 4, 'x', $line, 0, 'C');
+                    }
                 }
+                else
+                {
+                    $pdf->Cell(5.5, 4, 'x', $line, 0, 'C');
+                }
+                $pdf->Cell($headTbl2['Lbr'], 4, $vVar['tLembur'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['S3'], 4, $vVar['s3'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['GP'], 4, $vVar['gp'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['JK'], 4, $vVar['jk'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['S3V'], 4, $vVar['s3v'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['PM'], 4, $vVar['pm'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['JM'], 4, $vVar['jm'], 1, 0, 'C');
+                $pdf->Cell($headTbl2['INS'], 4, $vVar['ins'], 1, 0, 'C');
+                $pdf->Ln();
                 
             }
             $pdf->Output('Laporan Absen Komulatif.pdf', 'I');
@@ -768,13 +780,15 @@ class LaporanController
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nm_divisi']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['nama']);
                 
-                
-                if(count($vVar['detail']))
+                if(isset($vVar['detail']))
                 {
-                    foreach($vVar['detail'] as $kabs => $vabs)
-                    {             
-                    
-                        $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vabs);
+                    if(count($vVar['detail']))
+                    {
+                        foreach($vVar['detail'] as $kabs => $vabs)
+                        {             
+
+                            $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vabs);
+                        }
                     }
                 }
                 
