@@ -374,6 +374,7 @@ class LaporanController
         $ret = $this->lDet($req);
         
         $send = [];
+        $curDate = Carbon::now();
         
         if(isset($ret['msg']))
         {
@@ -389,7 +390,7 @@ class LaporanController
                 $pm = 0;
                 $jm = 0;
                 $ins = 0; //insentif
-                
+                                
                 $siTukangLembur = 0; //rutin banget sih lemburnya
                 
                 $lemburAktual = 0;
@@ -402,11 +403,12 @@ class LaporanController
                 $sendTemp['kd_divisi'] = isset($vVar['karyawan']->divisi->kode)?$vVar['karyawan']->divisi->kode:'';
                 $sendTemp['nm_divisi'] = isset($vVar['karyawan']->divisi->deskripsi)?$vVar['karyawan']->divisi->deskripsi:'';
                 $sendTemp['nama'] = isset($vVar['karyawan']->nama)?$vVar['karyawan']->nama:'';
-                
+//                dd($vVar['absen']);
                 foreach($vVar['absen'] as $kabs => $vabs) 
                 {
                     $lbl = '';
-                        
+                    
+                    
                     if(isset($vabs->inout))
                     {
                         $lbl = $vabs->inout;
@@ -452,12 +454,18 @@ class LaporanController
                     
                     if(isset($vabs->shift3))
                     {
-                        if($vabs->shift3)
+                        if($vabs->shift3 == 1)
                         {
-                            $s3Total++;
+                            $dtProc = Carbon::createFromFormat('Y-m-d', $vabs->tanggal);
+                            
+                            if($curDate->diffInDays($dtProc, false) < 1)
+                            {
+                                $s3Total+=1;
+                            }
+                            
                             if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                             {
-                                $shift3Real++;
+                                $shift3Real+=1;
                             }
                             else if(isset($vabs->libur))
                             {
@@ -481,22 +489,6 @@ class LaporanController
                                     }
                                 }
                             }
-                        }
-                    }
-                    
-                    if($s3Total)
-                    {
-                        if($s3Total == $s3v)
-                        {
-                            $s3v = 1;
-                        }
-                        else if(($s3Total - $s3v) == 1)
-                        {
-                            $s3v = 0.5;
-                        }
-                        else if(($s3Total - $s3v) > 1)
-                        {
-                            $s3v = 0;
                         }
                     }
                     
@@ -561,6 +553,25 @@ class LaporanController
                         }
                     }
                 }
+                
+                
+                if($s3Total)
+                {
+                    if($s3Total == $shift3Real)
+                    {
+                        $s3v = 1;
+                    }
+                    else if(($s3Total - $shift3Real) == 1)
+                    {
+                        $s3v = 0.5;
+                    }
+                    else if(($s3Total - $shift3Real) > 1)
+                    {
+                        $s3v = 0;
+                    }
+                }
+                
+                
                 
                 $sendTemp['tLembur'] = $tLembur;
                 $sendTemp['s3'] = $shift3Real;
