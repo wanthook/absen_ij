@@ -72,19 +72,25 @@
             
             $('#sTanggal').daterangepicker({
                 singleDatePicker:true,
+                autoUpdateInput: false,
                 locale: {
-                    format: 'YYYY-MM-DD'
+                    format: 'YYYY-MM-DD',
+                    cancelLabel: 'Clear'
                 }
             });  
+            
+            $('#sTanggal').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD'));
+            });
             
             $('#sTanggal').on('change', function(e)
             {
                 dTableKar.ajax.reload();
             });            
-            $('#sWaktuIn, #sWaktuOut').datetimepicker({
-                format: 'HH:mm',
-                use24hours: true
-              });
+//            $('#sWaktuIn, #sWaktuOut').datetimepicker({
+//                format: 'HH:mm',
+//                use24hours: true
+//              });
             $('#cmdUpload').on('click', function(e)
             {
                 let frm = document.getElementById('form_data_upload');
@@ -236,10 +242,12 @@
                 "columnDefs"    :[
                     {
                         "targets": 0,
-                        "className":      'btndel',
                         "orderable":      false,
-                        "data"     :           null,
-                        "defaultContent": '<button class="btn btn-sm btn-danger"><i class="fa fa-eraser"></i></button>'
+                        "data"     :      function(d)
+                        {
+                            return '<button class="btn btn-sm btn-primary btnedit"><i class="fa fa-edit"></i></button>'+
+                                   '<button class="btn btn-sm btn-danger btndel"><i class="fa fa-eraser"></i></button>';
+                        }
                     },
                     {
                             targets : 'tpin',
@@ -317,6 +325,28 @@
                     return false;
                 }
             } );
+            
+            
+            
+            $('#dTableKar tbody').on('click', '.btnedit', function () 
+            {
+                var tr = $(this).closest('tr');
+                var row = dTableKar.row( tr );
+                var datas = row.data();
+                
+                $('#sTanggal').val(datas.tanggal);
+                
+//                var emptyOption = new Option(null, null, false, false);
+                
+                var newOption = new Option(datas.karyawan.pin+' - '+datas.karyawan.nama, datas.karyawan_id, true, true);
+//                $('#sKar').append(emptyOption).trigger('change'); 
+                $('#sKar').append(newOption).trigger('change'); 
+                
+                $('#sWaktuIn').val(datas.jam_masuk);
+                $('#sWaktuOut').val(datas.jam_keluar);
+                $('#sKeterangan').val(datas.keterangan);
+                console.log(datas.jam_masuk);
+            });
             
             $('#sKar').select2({
                 // placeholder: 'Silakan Pilih',
@@ -407,7 +437,7 @@
                                     <div class="form-group">
                                         {{ Form::label('sTanggal', 'Tanggal') }}
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('sTanggal', now(), ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Absen Manual']) }}
+                                            {{ Form::text('sTanggal', null, ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Absen Manual']) }}
                                             <div class="input-group-append" data-target="#tanggal_masuk">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
                                             </div>
@@ -430,9 +460,9 @@
                                 <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sWaktuIn', 'Waktu Masuk') }}
-                                        <div class="input-group date" id="sWaktuIn" data-target-input="nearest">
+                                        <div class="input-group">
                                             {{ Form::text('sWaktuIn',  null, ['id' => 'sWaktuIn', 'class' => 'form-control form-control-sm datetimepicker-input']) }}
-                                            <div class="input-group-append" data-target="#sWaktuIn" data-toggle="datetimepicker">
+                                            <div class="input-group-append" data-target="#sWaktuIn">
                                                 <div class="input-group-text"><i class="far fa-clock"></i></div>
                                             </div>
                                         </div>                                        
@@ -441,9 +471,9 @@
                                 <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sWaktuOut', 'Waktu Pulang') }}
-                                        <div class="input-group date" id="sWaktuOut" data-target-input="nearest">
+                                        <div class="input-group">
                                             {{ Form::text('sWaktuOut',  null, ['id' => 'sWaktuOut', 'class' => 'form-control form-control-sm datetimepicker-input']) }}
-                                            <div class="input-group-append" data-target="#sWaktuOut" data-toggle="datetimepicker">
+                                            <div class="input-group-append" data-target="#sWaktuOut">
                                                 <div class="input-group-text"><i class="far fa-clock"></i></div>
                                             </div>
                                         </div>

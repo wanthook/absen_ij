@@ -70,16 +70,9 @@
                 allowEscapeKey: false,
                 allowEnterKey: false,
                 showConfirmButton: false
-            });    
+            });
             
-            $('#sTanggal').daterangepicker({
-                singleDatePicker:true,
-                locale: {
-                    format: 'YYYY-MM-DD'
-                }
-            });  
-            
-            $('#sTanggalAkhir').daterangepicker({
+            $('#sTanggal, #sTanggalAkhir').daterangepicker({
                 singleDatePicker:true,
                 autoUpdateInput: false,
                 locale: {
@@ -88,7 +81,7 @@
                 }
             });
             
-            $('#sTanggalAkhir').on('apply.daterangepicker', function(ev, picker) {
+            $('#sTanggal, #sTanggalAkhir').on('apply.daterangepicker', function(ev, picker) {
                 $(this).val(picker.startDate.format('YYYY-MM-DD'));
             });
             
@@ -198,6 +191,8 @@
                                 type: 'success',
                                 title: result.msg
                             });
+                            
+                            $('#sAlasanOld').val(null);
                         }
                         else
                         {
@@ -212,7 +207,6 @@
                                     type: 'error',
                                     title: str
                                 });
-                                $('#tipe_exim').attr('disabled','disabled');
                             }
                             
                         }
@@ -256,10 +250,12 @@
                 "columnDefs"    :[
                 {
                     "targets": 0,
-                    "className":      'btndel',
                     "orderable":      false,
-                    "data"     :           null,
-                    "defaultContent": '<button class="btn btn-sm btn-danger"><i class="fa fa-eraser"></i></button>'
+                    "data"     :      function(d)
+                    {
+                        return '<button class="btn btn-sm btn-primary btnedit"><i class="fa fa-edit"></i></button>'+
+                            '<button class="btn btn-sm btn-danger btndel"><i class="fa fa-eraser"></i></button>';
+                    }
                 },
                 {
                     targets : 'ttanggalawal',
@@ -374,6 +370,29 @@
 
                     return false;
                 }
+            });
+            
+            $('#dTableKar tbody').on('click', '.btnedit', function () 
+            {
+                var tr = $(this).closest('tr');
+                var row = dTableKar.row( tr );
+                var datas = row.data();
+                
+                $('#sTanggal').val(datas.tanggal_awal);
+                $('#sTanggalAkhir').val(datas.tanggal_akhir);
+                
+                var newOption = new Option(datas.pin+' - '+datas.nama, datas.karyawan_id, true, true);
+                $('#sKar').append(newOption).trigger('change'); 
+                
+                $('#sAlasanOld').val(datas.alasan_id);
+                var newOption = new Option(datas.alasan_kode+' - '+datas.alasan_deskripsi, datas.alasan_id, true, true);
+                $('#sAlasan').append(newOption).trigger('change'); 
+                
+                $('#sWaktu').val(datas.waktu);
+                $('#sKeterangan').val(datas.keterangan);
+//                $('#sId').val(datas.id);
+//                
+//                console.log(datas);
             });
             
             
@@ -546,9 +565,9 @@
                 </div>
             </div>   
         {{ Form::close() }}
+        </div>
+        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-content -->
-</div>
     <!-- /.modal-dialog -->
 </div>
 @endsection
@@ -561,12 +580,13 @@
                 <div class="card card-primary card-outline">
                     <div class="card-header">
                         {{Form::open(['url' => route('savealasankaryawan'),'class'=>'form-data', 'id' => 'frmTransAlasan'])}}
+                        {{Form::hidden('sAlasanOld', null, ['id' => 'sAlasanOld'])}}
                             <div class="row">
                                 <div class="col-3">
                                     <div class="form-group">
                                         {{ Form::label('sTanggal', 'Tanggal') }}
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('sTanggal', now(), ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
+                                            {{ Form::text('sTanggal', null, ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
                                             <div class="input-group-append" data-target="#tanggal_masuk">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
                                             </div>

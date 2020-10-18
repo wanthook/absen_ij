@@ -69,6 +69,7 @@ class ActivityManualController extends Controller
                 $req['karyawan_id'] = $req['sKar'];
                 $req['jam_masuk'] = $req['sWaktuIn'];
                 $req['jam_keluar'] = $req['sWaktuOut'];
+                $req['keterangan'] = $req['sKeterangan'];
                 
                 if(!$act->count())
                 {
@@ -263,7 +264,12 @@ class ActivityManualController extends Controller
     {
         $req    = $request->all();
                         
-        $datas = ActivityManual::with(['karyawan'])->where('tanggal', $req['sTanggal']);        
+        $datas = ActivityManual::with(['karyawan']);     
+        
+        if($req['sTanggal'])
+        {
+            $datas->where('tanggal', $req['sTanggal']);
+        }
                 
         return  Datatables::of($datas)
                 ->make(true);

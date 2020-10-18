@@ -1443,7 +1443,15 @@ class KaryawanController extends Controller
 //                
                     if($par)
                     {
-                        $par->detach($req['sAlasan']);
+                        if($req['sAlasanOld'])
+                        {
+                            $par->detach($req['sAlasanOld']);
+                        }
+                        else
+                        {
+                            $par->detach($req['sAlasan']);
+                        }
+                        
                     }
 
                     if($req['sAlasan'])
