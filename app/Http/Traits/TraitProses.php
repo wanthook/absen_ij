@@ -653,14 +653,16 @@ trait TraitProses
                 
                 if($actMan)
                 {
+                    $isTa = null;
+                    $isMangkir = null;
+                    $flagNotInOut = null;
+                    
                     $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
                     $jMasukId = $actMan->id;
                     $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
                     $jKeluarId = $actMan->id;
-
-                    $isTa = null;
-                    $isMangkir = null;
-                    $flagNotInOut = null;
+                    
+                    $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
 
                     if($jMasuk->greaterThan($jKeluar))
                     {
