@@ -133,10 +133,8 @@
                     "type"      : 'POST',
                     data: function (d) 
                     {
-                        d.sNama     = $('#sNama').val();
-                        d.sJabatan     = $('#sJabatan').val();
-                        d.sDivisi     = $('#sDivisi').val();
-                        d.sPerusahaan     = $('#sPerusahaan').val();
+                        d.sDokumen     = $('#sDokumen').val();
+                        d.sTanggal     = $('#sTanggal').val();
                         d.sStatus     = $('#sStatus').val();
                     }
                 },
