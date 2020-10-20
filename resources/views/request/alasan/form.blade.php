@@ -69,10 +69,18 @@ $(function (e)
         singleDatePicker: true,
         autoUpdateInput: false,
         locale: {
+            cancelLabel: 'Clear',
             format: 'YYYY-MM-DD'
         }
     }).on('apply.daterangepicker', function (ev, picker) {
         $(this).val(picker.startDate.format('YYYY-MM-DD'));
+    });
+    
+    $('#btnClearTglAkhir').on('click', function(e)
+    {
+        e.preventDefault();
+        
+        $('#dtanggalAkhir').val(null);
     });
 
     $('#dpin').select2({
@@ -514,7 +522,7 @@ var strSel = function (par)
                                     {{ Form::label('dtanggal', 'Tgl Alasan', ['class' => 'col-sm-3 col-form-label']) }}
                                     <div class="col-sm-4">
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('dtanggal', null, ['id' => 'dtanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
+                                            {{ Form::text('dtanggal', null, ['id' => 'dtanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan', 'readonly' => 'readonly']) }}
                                             <div class="input-group-append" data-target="#dtanggal">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
                                             </div>
@@ -522,9 +530,10 @@ var strSel = function (par)
                                     </div>
                                     <div class="col-sm-4">
                                         <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('dtanggalAkhir', null, ['id' => 'dtanggalAkhir', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan Akhir']) }}
+                                            {{ Form::text('dtanggalAkhir', null, ['id' => 'dtanggalAkhir', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan Akhir', 'readonly' => 'readonly']) }}
                                             <div class="input-group-append" data-target="#dtanggalAkhir">
                                                 <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                                                <button class="input-group-btn btn btn-sm btn-success" id="btnClearTglAkhir">Clear</button>
                                             </div>
                                         </div>
                                     </div>
