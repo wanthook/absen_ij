@@ -476,6 +476,7 @@ class MesinController extends Controller
         return  Datatables::of($datas)
             ->addColumn('action',function($datas)
             {
+                $str = '';
                 if(Auth::user()->type->nama == 'ADMIN')
                 {
                     $str    = '<div class="btn-group">';
