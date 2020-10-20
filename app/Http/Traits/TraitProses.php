@@ -399,10 +399,10 @@ trait TraitProses
                         {
                             $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
                         }
-                        else
-                        {
-                            $keterangan[] = $vAlasan->kode;
-                        }
+//                        else
+//                        {
+//                            $keterangan[] = $vAlasan->kode;
+//                        }
                     }
                 }
 
@@ -797,6 +797,7 @@ trait TraitProses
                             }
                         }
                     }
+                    
                     if(isset($alasan))
                     {
                         if($alasan->count())
