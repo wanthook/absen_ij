@@ -528,7 +528,7 @@ var strSel = function (par)
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-5">
                                         <div class="input-group" data-target-input="nearest">
                                             {{ Form::text('dtanggalAkhir', null, ['id' => 'dtanggalAkhir', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan Akhir', 'readonly' => 'readonly']) }}
                                             <div class="input-group-append" data-target="#dtanggalAkhir">
