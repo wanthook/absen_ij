@@ -116,11 +116,14 @@
                         d.sTanggal   = $('#tanggal').val();
                     }
                 }, 
-                "columnDefs":[{
+                "columnDefs":[
+                @if(Auth::user()->type->nama == 'ADMIN')
+                {
                     targets : 'tact',
                     className :      'details-control',
                     data: "action"
                 },
+                @endif
                 {
                     targets : 'tpin',
                     data: "pin"
@@ -158,7 +161,7 @@
                     }
                 }]
             });
-            
+            @if(Auth::user()->type->nama == 'ADMIN')
             $('#dTable tbody').on('click', 'td.details-control', function () 
             {
                 var tr = $(this).closest('tr');
@@ -207,6 +210,7 @@
                     }
                 });
             });
+            @endif
         });
         
         let sD = function()
@@ -231,6 +235,7 @@
 @endsection
 
 @section('modal_form')
+@if(Auth::user()->type->nama == 'ADMIN')
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog">
         <div class="modal-content bg-secondary">
@@ -274,6 +279,7 @@
 </div>
     <!-- /.modal-dialog -->
 </div>
+@endif
 @endsection
 
 @section('content')
@@ -317,7 +323,7 @@
                 <table id="dTable" class="table table-hover">
                     <thead>
                         <tr>
-                            <th class="tact"></th>
+                            @if(Auth::user()->type->nama == 'ADMIN')<th class="tact"></th>@endif
                             <th class="tpin">PIN</th>
                             <th class="tnama">Nama</th>
                             <th class="twaktu">Waktu Absen</th>

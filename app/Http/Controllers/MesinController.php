@@ -131,6 +131,8 @@ class MesinController extends Controller
      */
     public function editActivity(Request $request)
     {
+        if(Auth::user()->type->nama != 'ADMIN')
+            abort (404);
         try
         {
             $validation = Validator::make($request->all(), 
@@ -474,11 +476,12 @@ class MesinController extends Controller
         return  Datatables::of($datas)
             ->addColumn('action',function($datas)
             {
-                $str    = '<div class="btn-group">';
-                $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fas fa-pencil-alt"></i></button>';
-//                $str    .= '<button class="delrow btn btn-danger btn-sm" title="Hapus"><i class="fas fa-eraser"></i></button>';
-                $str    .= '</div>';
-
+                if(Auth::user()->type->nama == 'ADMIN')
+                {
+                    $str    = '<div class="btn-group">';
+                    $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fas fa-pencil-alt"></i></button>';
+                    $str    .= '</div>';
+                }
                 return $str;
             })
             ->addColumn('ping_status', function($datas)
