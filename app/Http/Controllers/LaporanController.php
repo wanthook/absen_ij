@@ -161,10 +161,175 @@ class LaporanController
             $req = $request->all();
 
             $ret = $this->lDet($req);
+            
+            $send = [];
+            $curDate = Carbon::now();
 
+            if(isset($ret['msg']))            {
+                
+                if(count($ret['msg']))
+                {
+                    foreach($ret['msg'] as $kVar => $vVar)
+                    {
+                        $sendTemp = [];
+                        $lemburAktual = 0;
+                        $hitungLembur = 0;
+                        $shiftMalam = 0;
+                        $lemburLn = 0;
+                        $hitungLn = 0;
+                        $totLem = 0;
+                        $tLembur = 0;
+
+                        $siTukangLembur = 0; //rutin banget sih lemburnya
+
+                        $sendTemp['periodeStart'] = $vVar['periodeStart'];
+                        $sendTemp['periodeEnd'] = $vVar['periodeEnd'];
+                        $sendTemp['karyawan'] = $vVar['karyawan'];
+
+                        foreach($vVar['absen'] as $kabs => $vabs)
+                        {
+                            $tmpDet = [];
+                            $tmpDet['tanggal'] = $kabs;
+
+                            if(!isset($vabs->inout))
+                            {
+
+                                $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
+                                $hitungLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
+                                $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
+                                $hitungLn += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
+                                $tLembur = (isset($vabs->total_lembur)?$vabs->total_lembur:null);
+
+                                $totLem += $tLembur;
+
+                                $tmpDet['jadwal_jam_masuk'] = substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5);
+                                $tmpDet['jadwal_jam_keluar'] = substr((isset($vabs->jadwal_jam_keluar)?$vabs->jadwal_jam_keluar:null),0,5);
+                                $tmpDet['jam_masuk'] = substr((isset($vabs->jam_masuk)?$vabs->jam_masuk:null),0,5);
+                                $tmpDet['jam_keluar'] = substr((isset($vabs->jam_keluar)?$vabs->jam_keluar:null),0,5);
+                                if(isset($vabs->n_masuk))
+                                {
+                                   $tmpDet['n_masuk_c'] = ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'';
+                                   $tmpDet['n_masuk_t'] = ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'';
+                                }
+                                else
+                                {
+                                   $tmpDet['n_masuk_c'] = '';
+                                   $tmpDet['n_masuk_t'] = '';
+                                }
+
+                                if(isset($vabs->n_keluar))
+                                {
+                                   $tmpDet['n_keluar_c'] = ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'';
+                                   $tmpDet['n_keluar_t'] = ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'';
+                                }
+                                else
+                                {
+                                   $tmpDet['n_keluar_c'] = '';
+                                   $tmpDet['n_keluar_t'] = '';
+                                }
+
+                                if(isset($vabs->inout))
+                                {
+                                    $tmpDet['keterangan'] = $vabs->inout;
+                                }
+                                else if(isset($vabs->keterangan))
+                                {
+                                    $tmpDet['keterangan'] = $vabs->keterangan;
+                                }
+                                else if(isset($vabs->alasan))
+                                {
+                                    foreach($vabs->alasan as $als)
+                                    {
+                                        if($als->kode == 'PM')
+                                        {
+                                            if(!isset($tmpDet['keterangan']))
+                                            {
+                                                $tmpDet['keterangan'] = $als->kode;
+                                            }
+                                            else
+                                            {
+                                                $tmpDet['keterangan'] .= ', '.$als->kode;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+
+                                    $tmpDet['keterangan'] = null;
+                                }
+
+                                $tmpDet['lembur_aktual'] = (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
+                                $tmpDet['hitung_lembur'] = (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
+
+                                if(isset($vabs->shift3))
+                                {
+                                    if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                                    {
+                                        $tmpDet['shift3'] = $vabs->shift3;
+                                        $shiftMalam += 1;
+                                    }
+                                    else
+                                    {
+                                        $tmpDet['shift3'] =  '';
+                                    }
+                                }
+                                else 
+                                {
+                                    $tmpDet['shift3'] =  '';
+                                }
+
+                                $tmpDet['lembur_ln'] = (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
+                                $tmpDet['hitung_lembur_ln'] = (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
+                                $tmpDet['tLembur'] = str_replace('0.00',null,$tLembur);
+
+                            }
+                            else
+                            {
+                                $tmpDet['jadwal_jam_masuk'] = null;
+                                $tmpDet['jadwal_jam_keluar'] = null;
+                                $tmpDet['jam_masuk'] = null;
+                                $tmpDet['jam_keluar'] = null;
+                                $tmpDet['n_masuk_c'] = null;
+                                $tmpDet['n_masuk_t'] = null;
+                                $tmpDet['n_keluar_c'] = null;
+                                $tmpDet['n_keluar_t'] = null;
+
+                                if(isset($vabs->inout))
+                                {
+                                    $tmpDet['keterangan'] = $vabs->inout;
+                                }
+                                else if(isset($vabs->keterangan))
+                                {
+                                    $tmpDet['keterangan'] = $vabs->keterangan;
+                                }
+
+                                $tmpDet['lembur_aktual'] = null;
+                                $tmpDet['hitung_lembur'] = null;
+                                $tmpDet['shift3'] =  null;
+                                $tmpDet['lembur_ln'] = null;
+                                $tmpDet['hitung_lembur_ln'] = null;
+                                $tmpDet['tLembur'] = null;
+                            }
+
+                            $sendTemp['detail'][] = $tmpDet;
+                        }
+
+                        $sendTemp['lemburAktual'] = ($lemburAktual)?$lemburAktual:'0.0';
+                        $sendTemp['hitungLembur'] = ($hitungLembur)?$hitungLembur:'0.0';
+                        $sendTemp['shiftMalam'] = ($shiftMalam)?$shiftMalam:'0.0';
+                        $sendTemp['lemburLn'] = ($lemburLn)?$lemburLn:'0.0';
+                        $sendTemp['hitungLn'] = ($hitungLn)?$hitungLn:'0.0';
+                        $sendTemp['totLem'] = ($totLem)?$totLem:'0.0';
+                        $send[] = $sendTemp;
+                    }
+                    
+                }
+            }
+//            dd($send);
             if($req['btnSubmit'] == "preview")
             {
-                return view('admin.laporan.detail.preview', ['var' => $ret['msg'], 'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
+                return view('admin.laporan.detail.preview', ['var' => $send, 'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
             }
             else if($req['btnSubmit'] == "pdf")
             {
@@ -175,9 +340,9 @@ class LaporanController
                 $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
                 $pdf->setFontSubsetting(false);
                 $pdf->SetFont('dejavusans', '', 8);
-                if(count($ret['msg']))
+                if(count($send))
                 {
-                    foreach($ret['msg'] as $var)
+                    foreach($send as $var)
                     {
                         $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Kehadiran Karyawan","Periode : ".$var['periodeStart']." s/d ".$var['periodeEnd']);
                         $pdf->AddPage();
@@ -235,123 +400,23 @@ class LaporanController
                             $pdf->Cell($Width2[$kH], 4, $vH, $border, 0, 'C');
                         }
                         $pdf->Ln();
-                        $lemburAktual = 0;
-                        $hitLembur = 0;
-                        $hitNas = 0;
-                        $sMalam = 0;
-                        $lemburLn = 0;
-                        $totLem = 0;
 
-                        foreach($var['absen'] as $tgl => $vabs)
+                        foreach($var['detail'] as $kabs => $vabs)
                         {
-
-                            $pdf->Cell($Width2[0], 4.5, $tgl, '1', 0, 'C');
-                            if($vabs)
+                            $i = 0;
+                            foreach($vabs as $kdet => $vdet)
                             {
-                                if(isset($vabs->hitung_lembur) && isset($vabs->hitung_lembur_ln))
-                                {
-                                    $tLembur = $vabs->hitung_lembur + $vabs->hitung_lembur_ln;
-                                }
-                                else
-                                {
-                                    $tLembur = 0;
-                                }
-
-
-                                $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
-                                $hitLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
-//                                $sMalam += (isset($vabs->shift3)?$vabs->shift3:null);
-                                $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
-                                $hitNas += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
-                                
-                                $tLembur += (isset($vabs->total_lembur)?$vabs->total_lembur:null);
-                                
-                                $totLem += $tLembur;
-
-                                $pdf->Cell($Width2[1], 4.5, substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[2], 4.5, substr((isset($vabs->jadwal_jam_keluar)?$vabs->jadwal_jam_keluar:null),0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[3], 4.5, substr((isset($vabs->jam_masuk)?$vabs->jam_masuk:null),0,5), '1', 0, 'C');
-                                $pdf->Cell($Width2[4], 4.5, substr((isset($vabs->jam_keluar)?$vabs->jam_keluar:null),0,5), '1', 0, 'C');
-                                if(isset($vabs->n_masuk))
-                                {
-                                    $pdf->Cell($Width2[5], 4.5, ($vabs->n_masuk < 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                                    $pdf->Cell($Width2[6], 4.5, ($vabs->n_masuk > 0)?abs($vabs->n_masuk):'', '1', 0, 'C');
-                                }
-                                else
-                                {
-                                    $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
-                                    $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
-                                }
-                                if(isset($vabs->n_keluar))
-                                {
-                                    $pdf->Cell($Width2[7], 4.5, ($vabs->n_keluar > 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                                    $pdf->Cell($Width2[8], 4.5, ($vabs->n_keluar < 0)?abs($vabs->n_keluar):'', '1', 0, 'C');
-                                }
-                                else
-                                {
-                                    $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
-                                    $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
-                                }
-                                if(isset($vabs->inout))
-                                    $pdf->Cell($Width2[9], 4.5, $vabs->inout, '1', 0, 'C');
-                                else if(isset($vabs->keterangan))
-                                    $pdf->Cell($Width2[9], 4.5, $vabs->keterangan, '1', 0, 'C');
-                                else
-                                    $pdf->Cell($Width2[9], 4.5, '', '1', 0, 'C');
-
-                                $pdf->Cell($Width2[10], 4.5, (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null), '1', 0, 'C');
-                                $pdf->Cell($Width2[11], 4.5, (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null), '1', 0, 'C');
-                                
-                                if(isset($vabs->shift3))
-                                {
-                                    if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                                    {
-                                        $pdf->Cell($Width2[12], 4.5, (isset($vabs->shift3)?$vabs->shift3:null), '1', 0, 'C');
-                                        $sMalam += 1;
-                                    }
-                                    else
-                                    {
-                                        $pdf->Cell($Width2[12], 4.5, null, '1', 0, 'C');
-                                    }
-                                }
-                                else 
-                                {
-                                    $pdf->Cell($Width2[12], 4.5, null, '1', 0, 'C');
-                                }
-                                
-                                
-                                $pdf->Cell($Width2[13], 4.5, (isset($vabs->lembur_ln)?$vabs->lembur_ln:null), '1', 0, 'C');
-                                $pdf->Cell($Width2[14], 4.5, (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null), '1', 0, 'C');
-                                $pdf->Cell($Width2[15], 4.5, ($tLembur)?$tLembur:'', '1', 0, 'C');
-                            }
-                            else
-                            {
-                                $pdf->Cell($Width2[1], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[2], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[3], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[4], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[5], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[6], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[7], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[8], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[9], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[10], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[11], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[12], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[13], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[14], 4.5, '', '1', 0, 'C');
-                                $pdf->Cell($Width2[15], 4.5, '', '1', 0, 'C');
+                                $pdf->Cell($Width2[$i++], 4.5, $vdet, '1', 0, 'C');
                             }
                             $pdf->Ln();
-
                         }
                         $pdf->Cell((25+30+30+20+20+50), 4.5, "Jumlah", '1', 0, 'C');
-                        $pdf->Cell($Width2[10], 4.5, $lemburAktual, '1', 0, 'C');
-                        $pdf->Cell($Width2[11], 4.5, $hitLembur, '1', 0, 'C');
-                        $pdf->Cell($Width2[12], 4.5, $sMalam, '1', 0, 'C');
-                        $pdf->Cell($Width2[13], 4.5, $lemburLn, '1', 0, 'C');
-                        $pdf->Cell($Width2[14], 4.5, $hitNas, '1', 0, 'C');
-                        $pdf->Cell($Width2[15], 4.5, $totLem, '1', 0, 'C');
+                        $pdf->Cell($Width2[10], 4.5, $var['lemburAktual'], '1', 0, 'C');
+                        $pdf->Cell($Width2[11], 4.5, $var['hitungLembur'], '1', 0, 'C');
+                        $pdf->Cell($Width2[12], 4.5, $var['shiftMalam'], '1', 0, 'C');
+                        $pdf->Cell($Width2[13], 4.5, $var['lemburLn'], '1', 0, 'C');
+                        $pdf->Cell($Width2[14], 4.5, $var['hitungLn'], '1', 0, 'C');
+                        $pdf->Cell($Width2[15], 4.5, $var['totLem'], '1', 0, 'C');
                     }
                 }
                 $pdf->Output('Laporan Absen Detail.pdf', 'I');
@@ -526,9 +591,8 @@ class LaporanController
                         }
                     }
                     
-                    $sendTemp['detail'][] = $lbl;
+                    $tmpDet[] = $lbl;
                 }
-                
                 
                 if(isset($vVar['karyawan']))
                 {
