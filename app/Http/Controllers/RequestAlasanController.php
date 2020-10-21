@@ -223,12 +223,16 @@ class RequestAlasanController extends Controller
     public function storeDetail(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'dtanggal' => 'required',
+            'dtanggal' => 'required|date',
+            'dtanggalAkhir' => 'nullable|date|after_or_equal:dtanggal',
             'dpin' => 'required',
             'dalasan' => 'required'
         ],
         [
             'dtanggal.required' => 'Tanggal Alasan Tidak boleh kosong',
+            'dtanggal.date' => 'Tanggal tidak sesuai dengan format tanggal',
+            'dtanggalAkhir.date' => 'Tanggal akhir tidak sesuai dengan format tanggal',            
+            'dtanggalAkhir.after_or_equal' => 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal',
             'dpin.required' => 'Karyawan Tidak boleh kosong',
             'dalasan.required' => 'Alasan Tidak boleh kosong',
         ]);
