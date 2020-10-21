@@ -118,172 +118,80 @@ scratch. This page gets rid of all links and provides the needed markup only.
 </head>
 <body>
 @if(isset($var))
-    @foreach($var as $vVal)
-    @php
-        $lemburAktual = 0;
-        $hitungLembur = 0;
-        $shiftMalam = 0;
-        $lemburLn = 0;
-        $hitungLn = 0;
-        $totLem = 0;
-        $tLembur = 0;
-    @endphp
+    @foreach($var as $vVal)    
     <page size="A4" layout="landscape">
-    <div class="j1">Laporan Kehadiran Karyawan</div>
-    <div class="j2">Periode : {{$vVal['periodeStart']}} s/d {{$vVal['periodeEnd']}}</div>
-    <table class="info">
-        <tr>
-            <td>PIN / Nama</td>
-            <td>:</td>
-            <td>{{$vVal['karyawan']->pin.' - '.$vVal['karyawan']->nama}}</td>
-        </tr>
-        <tr>
-            <td>Unit Kerja</td>
-            <td>:</td>
-            <td>{{$vVal['karyawan']->divisi->kode.' - '.$vVal['karyawan']->divisi->deskripsi}}</td>
-        </tr>
-        <tr>
-            <td>NIK</td>
-            <td>:</td>
-            <td>{{$vVal['karyawan']->nik}}</td>
-        </tr>
-    </table>
-    
-    <table class="detail">
-        <thead>
+        <div class="j1">Laporan Kehadiran Karyawan</div>
+        <div class="j2">Periode : {{$vVal['periodeStart']}} s/d {{$vVal['periodeEnd']}}</div>
+        <table class="info">
             <tr>
-                <th rowspan="2">Tanggal</th>
-                <th colspan="2">Jadwal Kerja</th>
-                <th colspan="2">Jam Kerja</th>
-                <th colspan="2">Masuk</th>
-                <th colspan="2">Pulang</th>
-                <th rowspan="2">Keterangan</th>
-                <th rowspan="2">Lembur<br>Aktual</th>
-                <th rowspan="2">Hitung<br>Lembur</th>
-                <th rowspan="2">Shift<br>Malam</th>
-                <th rowspan="2">Lembur<br>Libur<br>Nas</th>
-                <th rowspan="2">Hitung<br>Libur<br>Nas</th>
-                <th rowspan="2">Total<br>Lembur</th>
+                <td>PIN / Nama</td>
+                <td>:</td>
+                <td>{{$vVal['karyawan']->pin.' - '.$vVal['karyawan']->nama}}</td>
             </tr>
             <tr>
-                <th>M</th>
-                <th>K</th>
-                <th>M</th>
-                <th>K</th>
-                <th>C</th>
-                <th>T</th>
-                <th>C</th>
-                <th>T</th>
+                <td>Unit Kerja</td>
+                <td>:</td>
+                <td>{{$vVal['karyawan']->divisi->kode.' - '.$vVal['karyawan']->divisi->deskripsi}}</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach($vVal['absen'] as $kabs => $vabs)            
             <tr>
-                <td class="dc">{{$kabs}}</td>
-                @if(!isset($vabs->inout))
-                    @php
-                    
-                    $lemburAktual += (isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null);
-                    $hitungLembur += (isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null);
-                    $lemburLn += (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
-                    $hitungLn += (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
-                    $tLembur = (isset($vabs->total_lembur)?$vabs->total_lembur:null);
+                <td>NIK</td>
+                <td>:</td>
+                <td>{{$vVal['karyawan']->nik}}</td>
+            </tr>
+        </table>
 
-                    $totLem += $tLembur;
-                    @endphp
-                    <td class="dc">{{substr((isset($vabs->jadwal_jam_masuk)?$vabs->jadwal_jam_masuk:null),0,5)}}</td>
-                    <td class="dc">{{substr((isset($vabs->jadwal_jam_keluar)?$vabs->jadwal_jam_keluar:null),0,5)}}</td>
-                    <td class="dc">{{substr((isset($vabs->jam_masuk)?$vabs->jam_masuk:null),0,5)}}</td>
-                    <td class="dc">{{substr((isset($vabs->jam_keluar)?$vabs->jam_keluar:null),0,5)}}</td>
-                    @if(isset($vabs->n_masuk))
-                        <td class="dc">{{($vabs->n_masuk < 0)?abs($vabs->n_masuk):''}}</td>
-                        <td class="dc">{{($vabs->n_masuk > 0)?abs($vabs->n_masuk):''}}</td>
-                    @else
-                        <td class="dc"></td>
-                        <td class="dc"></td>
-                    @endif
-                    @if(isset($vabs->n_keluar))
-                        <td class="dc">{{($vabs->n_keluar > 0)?abs($vabs->n_keluar):''}}</td>
-                        <td class="dc">{{($vabs->n_keluar < 0)?abs($vabs->n_keluar):''}}</td>
-                    @else
-                        <td class="dc"></td>
-                        <td class="dc"></td>
-                    @endif
-
-                    <td>
-                        @php
-                        if(isset($vabs->inout))
-                            echo $vabs->inout;
-                        else if(isset($vabs->keterangan))
-                            echo $vabs->keterangan;
-                        @endphp
-                    </td>
-                    <td>{{(isset($vabs->lembur_aktual)?$vabs->lembur_aktual:null)}}</td>
-                    <td>{{(isset($vabs->hitung_lembur)?$vabs->hitung_lembur:null)}}</td>
-                    <td class="dc">
-                        <?php
-                        if(isset($vabs->shift3))
-                        {
-                            if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
-                            {
-                                echo $vabs->shift3;
-                                $shiftMalam += 1;
-                            }
-                            else
-                            {
-                                echo '';
-                            }
-                        }
-                        else 
-                        {
-                            echo '';
-                        }
-                        ?>
-
-                    </td>
-                    <td>{{(isset($vabs->lembur_ln)?$vabs->lembur_ln:null)}}</td>
-                    <td>{{(isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null)}}</td>
-                    <td>{{str_replace('0.00',null,$tLembur)}}</td>
-                @else
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                        @php
-                        if(isset($vabs->inout))
-                            echo $vabs->inout;
-                        else if(isset($vabs->keterangan))
-                            echo $vabs->keterangan;
-                        @endphp
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                @endif
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr>
-                <td class="dc" colspan="10"><strong>Total</strong></td>
-                <td><strong>{{($lemburAktual)?$lemburAktual:'0.0'}}</strong></td>
-                <td><strong>{{($hitungLembur)?$hitungLembur:'0.0'}}</strong></td>
-                <td><strong>{{($shiftMalam)?$shiftMalam:'0.0'}}</strong></td>
-                <td><strong>{{($lemburLn)?$lemburLn:'0.0'}}</strong></td>
-                <td><strong>{{($hitungLn)?$hitungLn:'0.0'}}</strong></td>
-                <td><strong>{{($totLem)?$totLem:'0.0'}}</strong></td>
-            </tr>
-        </tfoot>
-    </table>
-    <div class="ip">Copyright &copy; Indah Jaya Textile Industry, PT. Print Date, {{$printDate}}</div>
+        <table class="detail">
+            <thead>
+                <tr>
+                    <th rowspan="2">Tanggal</th>
+                    <th colspan="2">Jadwal Kerja</th>
+                    <th colspan="2">Jam Kerja</th>
+                    <th colspan="2">Masuk</th>
+                    <th colspan="2">Pulang</th>
+                    <th rowspan="2">Keterangan</th>
+                    <th rowspan="2">Lembur<br>Aktual</th>
+                    <th rowspan="2">Hitung<br>Lembur</th>
+                    <th rowspan="2">Shift<br>Malam</th>
+                    <th rowspan="2">Lembur<br>Libur<br>Nas</th>
+                    <th rowspan="2">Hitung<br>Libur<br>Nas</th>
+                    <th rowspan="2">Total<br>Lembur</th>
+                </tr>
+                <tr>
+                    <th>M</th>
+                    <th>K</th>
+                    <th>M</th>
+                    <th>K</th>
+                    <th>C</th>
+                    <th>T</th>
+                    <th>C</th>
+                    <th>T</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($vVal['detail'] as $kabs => $vabs)    
+                <tr>
+                    <?php
+                    foreach($vabs as $kdet => $vdet)
+                    {
+                        echo '<td class="dc">'.$vdet.'</td>';
+                    }
+                    ?>
+                </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="dc" colspan="10"><strong>Total</strong></td>
+                    <td><strong>{{$vVal['lemburAktual']}}</strong></td>
+                    <td><strong>{{$vVal['hitungLembur']}}</strong></td>
+                    <td><strong>{{$vVal['shiftMalam']}}</strong></td>
+                    <td><strong>{{$vVal['lemburLn']}}</strong></td>
+                    <td><strong>{{$vVal['hitungLn']}}</strong></td>
+                    <td><strong>{{$vVal['totLem']}}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="ip">Copyright &copy; Indah Jaya Textile Industry, PT. Print Date, {{$printDate}}</div>
     </page>
     <div class="page-break"></div>
     @endforeach

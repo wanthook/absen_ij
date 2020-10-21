@@ -1187,13 +1187,15 @@ trait TraitProses
             }
             else if(isset($req['divisi']))
             {
+                $div = Divisi::descendantsAndSelf($req['divisi'])->pluck('id');
+//                dd($div);
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->where('divisi_id', $req['divisi'])->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id',$div)->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->where('divisi_id', $req['divisi'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id', $div)->orderBy('pin', 'asc')->pluck('id');
                 }
             }
             else
