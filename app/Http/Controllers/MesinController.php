@@ -271,8 +271,17 @@ class MesinController extends Controller
                     if($mesin->api_address)
                     {
                         $countData = 0;
-                        $req = new Client();   
-                        $res = $req->request('GET', $mesin->api_address.'/api/v1/tarik?ip='.$mesin->ip.'&key='.$mesin->key);
+                        $req = new Client(); 
+                        $res = null;
+                        if($mesin->api_db == 'Y')
+                        {
+                            $res = $req->request('GET', $mesin->api_address.'/api/v1/tarik_db?ip='.$mesin->ip);
+                        }
+                        else
+                        {
+                            $res = $req->request('GET', $mesin->api_address.'/api/v1/tarik?ip='.$mesin->ip.'&key='.$mesin->key);
+                        }
+                        
                         sleep(1);
                         $tarik = json_decode($res->getBody()->getContents());
                         
