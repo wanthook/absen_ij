@@ -595,7 +595,7 @@ class LaporanController
                         }
                     }
                     
-                    $tmpDet[] = $lbl;
+                    $sendTemp['detail'][] = $lbl;
                 }
                 
                 if(isset($vVar['karyawan']))
@@ -655,7 +655,7 @@ class LaporanController
             
             
         }
-        
+//        dd($send);
         if($req['btnSubmit'] == "preview")
         {
             return view('admin.laporan.komulatif.preview', ['var' => $send, 
