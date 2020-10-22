@@ -285,7 +285,7 @@ class LaporanController
 
                                 $tmpDet['lembur_ln'] = (isset($vabs->lembur_ln)?$vabs->lembur_ln:null);
                                 $tmpDet['hitung_lembur_ln'] = (isset($vabs->hitung_lembur_ln)?$vabs->hitung_lembur_ln:null);
-                                $tmpDet['tLembur'] = str_replace('0.00',null,$tLembur);
+                                $tmpDet['tLembur'] = ($tLembur=='0.00')?str_replace('0.00',null,$tLembur):$tLembur;
 
                             }
                             else
@@ -503,8 +503,16 @@ class LaporanController
                     else if(isset($vabs->libur))
                     {
                         if(isset($vabs->alasan))
-                        {
-                            $lbl = $vabs->alasan[0]->kode;
+                        {                            
+                            if($vabs->alasan[0]->kode == 'SPO')
+                            {
+                                $lbl = $vabs->total_lembur;
+                                $tLembur += $vabs->total_lembur;
+                            }
+                            else
+                            {
+                                $lbl = $vabs->alasan[0]->kode;
+                            }
                         }
                         else
                         {
