@@ -251,6 +251,10 @@ class LaporanController
                                                 $tmpDet['keterangan'] .= ', '.$als->kode;
                                             }
                                         }
+                                        else
+                                        {
+                                            $tmpDet['keterangan'] = null;
+                                        }
                                     }
                                 }
                                 else
