@@ -1366,13 +1366,32 @@ class LaporanController
                 foreach($rowDiv->karyawan as $rKar)
                 {
                     $jadwals = $rKar->jadwals()->first();
-                    $kar[] = [
-                        'tanggal_masuk' => $rKar->tanggal_masuk,
-                        'pin' => $rKar->pin,
-                        'jenkel' => (isset($rKar->jeniskelamin)?$rKar->jeniskelamin->nama:''),
-                        'jadwal' => $jadwals['kode'],
-                        'nama' => $rKar->nama
-                    ];
+                    
+                    $off = $rKar->logOffTanggal(end($periode))->first();
+                    
+                    if(!$off)
+                    {
+                        $kar[] = [
+                            'tanggal_masuk' => $rKar->tanggal_masuk,
+                            'pin' => $rKar->pin,
+                            'jenkel' => (isset($rKar->jeniskelamin)?$rKar->jeniskelamin->nama:''),
+                            'jadwal' => $jadwals['kode'],
+                            'nama' => $rKar->nama
+                        ];
+                    }
+                    else
+                    {
+                        if($off->kode != 'RM')
+                        {
+                            $kar[] = [
+                                'tanggal_masuk' => $rKar->tanggal_masuk,
+                                'pin' => $rKar->pin,
+                                'jenkel' => (isset($rKar->jeniskelamin)?$rKar->jeniskelamin->nama:''),
+                                'jadwal' => $jadwals['kode'],
+                                'nama' => $rKar->nama
+                            ];
+                        }
+                    }
                 }
                 
                 usort($kar, function($a, $b)
