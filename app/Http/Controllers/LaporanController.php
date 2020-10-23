@@ -948,8 +948,8 @@ class LaporanController
         $req = $request->all();
         
         
-        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->author();
-        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author();
+        $karAktif       = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->where('active_status',1)->author();
+//        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author();
         
         $tanggal = Carbon::now()->toDateString();
         
@@ -957,22 +957,22 @@ class LaporanController
         {
             $tanggal =  $req['tanggal'];
         }
-        $karNonAktif->where('active_status_date', '>', $tanggal);
+//        $karNonAktif->where('active_status_date', '>', $tanggal);
         
         if(isset($req['divisi']))
         {
             $karAktif->where('divisi_id', $req['divisi']);
-            $karNonAktif->where('divisi_id', $req['divisi']);
+//            $karNonAktif->where('divisi_id', $req['divisi']);
         }
         
         if(isset($req['perusahaan']))
         {
             $karAktif->where('perusahaan_id', $req['perusahaan']);
-            $karNonAktif->where('perusahaan_id', $req['perusahaan']);
+//            $karNonAktif->where('perusahaan_id', $req['perusahaan']);
         }
         
         $karAktif->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc');
-        $karNonAktif->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc');
+//        $karNonAktif->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc');
 //        dd($karAktif->get());
         $karyawan = null;
         
