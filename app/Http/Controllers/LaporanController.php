@@ -1001,19 +1001,19 @@ class LaporanController
             
         }
         
-        foreach($karNonAktif->get() as $kA)
-        {
-            $jadwal = $kA->jadwals;
-            $karyawan[] = ['nik' => ((isset($kA->nik))?$kA->nik:''),
-                           'pin' => ((isset($kA->pin))?$kA->pin:''),
-                           'nama'=> ((isset($kA->nama))?$kA->nama:''),
-                           'kode_divisi' => ((isset($kA->divisi->kode))?$kA->divisi->kode:''),
-                           'nama_divisi' => ((isset($kA->divisi->deskripsi))?$kA->divisi->deskripsi:''),
-                           'kode_jabatan' => ((isset($kA->jabatan->kode))?$kA->jabatan->kode:''),
-                           'nama_jabatan' => ((isset($kA->jabatan->deskripsi))?$kA->jabatan->deskripsi:''),
-                           'tmk' => ((isset($kA->tanggal_masuk))?$kA->tanggal_masuk:''),
-                           'jadwal' =>((isset($jadwal[0]))?$jadwal[0]->kode.' - '.$jadwal[0]->tipe:'') ];
-        }
+//        foreach($karNonAktif->get() as $kA)
+//        {
+//            $jadwal = $kA->jadwals;
+//            $karyawan[] = ['nik' => ((isset($kA->nik))?$kA->nik:''),
+//                           'pin' => ((isset($kA->pin))?$kA->pin:''),
+//                           'nama'=> ((isset($kA->nama))?$kA->nama:''),
+//                           'kode_divisi' => ((isset($kA->divisi->kode))?$kA->divisi->kode:''),
+//                           'nama_divisi' => ((isset($kA->divisi->deskripsi))?$kA->divisi->deskripsi:''),
+//                           'kode_jabatan' => ((isset($kA->jabatan->kode))?$kA->jabatan->kode:''),
+//                           'nama_jabatan' => ((isset($kA->jabatan->deskripsi))?$kA->jabatan->deskripsi:''),
+//                           'tmk' => ((isset($kA->tanggal_masuk))?$kA->tanggal_masuk:''),
+//                           'jadwal' =>((isset($jadwal[0]))?$jadwal[0]->kode.' - '.$jadwal[0]->tipe:'') ];
+//        }
         
         if($req['btnSubmit'] == "preview")
         {
