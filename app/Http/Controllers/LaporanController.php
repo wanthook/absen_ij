@@ -2274,7 +2274,8 @@ class LaporanController
         if(isset($req['divisi']))
         {
 //            $kar = Karyawan::where('divisi_id',$req['divisi'])->pluck('key');
-            $karyawan->where('divisi_id',$req['divisi']);
+            $div = Divisi::descendantsAndSelf($req['divisi'])->pluck('id');
+            $karyawan->whereIn('divisi_id',$div);
         }
 //        
         if(isset($req['perusahaan']))
