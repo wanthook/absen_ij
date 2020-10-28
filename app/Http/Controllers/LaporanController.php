@@ -441,7 +441,7 @@ class LaporanController
         $req = $request->all();
         
         $ret = $this->lDet($req);
-        
+//        dd($ret);
         $send = [];
         $curDate = Carbon::now();
         
@@ -477,6 +477,10 @@ class LaporanController
                 {
                     $lbl = '';
                     
+//                    if($kabs == '12/10/2020')
+//                    {
+//                        dd($vabs);
+//                    }
                     
                     if(isset($vabs->inout))
                     {
@@ -490,14 +494,23 @@ class LaporanController
                     {
                         if(isset($vabs->alasan))
                         {                            
-                            if($vabs->alasan[0]->kode == 'SPO')
+                            foreach($vabs->alasan as $als)
                             {
-                                $lbl = $vabs->total_lembur;
-                                $tLembur += $vabs->total_lembur;
-                            }
-                            else
-                            {
-                                $lbl = $vabs->alasan[0]->kode;
+                                if($als->kode == 'SPO')
+                                {
+                                    $lbl = $vabs->total_lembur;
+                                    $tLembur += $vabs->total_lembur;
+                                    break;
+                                }
+                                else if($als->libur == 'Y')
+                                {
+                                    $lbl = $als->kode;
+                                    break;
+                                }
+                                else
+                                {
+                                    $lbl = $als->kode;
+                                }
                             }
                         }
                         else
@@ -507,17 +520,38 @@ class LaporanController
                     }
                     else if(isset($vabs->mangkir))
                     {
-                        $lbl = 'M';
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = 'M';
+                        }
                     }
                     else if(isset($vabs->ta))
                     {
-                        $lbl = 'TA';
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = 'TA';
+                        }
                     }
                     else if(isset($vabs->gp))
                     {
-                        $lbl = 'GP';
-                        $jGp+=$vabs->gp;
-                        $jJk += $vabs->jumlah_jam_kerja;
+                        if(isset($vabs->alasan))
+                        {
+                            $lbl = $vabs->alasan[0]->kode;
+                        }
+                        else
+                        {
+                            $lbl = 'GP';
+                            $jGp+=$vabs->gp;
+                            $jJk += $vabs->jumlah_jam_kerja;
+                        }
                     }
                     else if(isset($vabs->total_lembur))
                     {
