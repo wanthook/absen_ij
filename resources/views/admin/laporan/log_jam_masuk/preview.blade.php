@@ -132,6 +132,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>No</th>
                 <th>PIN</th>
                 <th>Nama</th>
+                <th>Gol</th>
                 <th>Kode Jam</th>
                 <th>Jadwal Masuk</th>
                 <th>Kode Divisi</th>

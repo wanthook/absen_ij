@@ -87,6 +87,11 @@ class Karyawan extends Model
                     ->orderBy('tanggal', 'desc');
     }
     
+    public function logGolonganTanggal($tanggal)
+    {
+        return $this->log_golongan()->wherePivot('tanggal', '<=', $tanggal);
+    }
+    
     public function log_off()
     {
         return $this->belongsToMany('App\Alasan','off_karyawan_log','karyawan_id','off_id')

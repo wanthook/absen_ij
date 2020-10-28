@@ -486,20 +486,6 @@ class LaporanController
                     {
                         $lbl = $vabs->keterangan;
                     }
-                    else if(isset($vabs->mangkir))
-                    {
-                        $lbl = 'M';
-                    }
-                    else if(isset($vabs->ta))
-                    {
-                        $lbl = 'TA';
-                    }
-                    else if(isset($vabs->gp))
-                    {
-                        $lbl = 'GP';
-                        $jGp+=$vabs->gp;
-                        $jJk += $vabs->jumlah_jam_kerja;
-                    }
                     else if(isset($vabs->libur))
                     {
                         if(isset($vabs->alasan))
@@ -518,6 +504,20 @@ class LaporanController
                         {
                             $lbl = '0';
                         }
+                    }
+                    else if(isset($vabs->mangkir))
+                    {
+                        $lbl = 'M';
+                    }
+                    else if(isset($vabs->ta))
+                    {
+                        $lbl = 'TA';
+                    }
+                    else if(isset($vabs->gp))
+                    {
+                        $lbl = 'GP';
+                        $jGp+=$vabs->gp;
+                        $jJk += $vabs->jumlah_jam_kerja;
                     }
                     else if(isset($vabs->total_lembur))
                     {
@@ -2314,6 +2314,7 @@ class LaporanController
                         $action[] = [
                             'pin' => $kar->pin,
                             'nama' => $kar->nama,
+                            'golongan' => $kar->logGolonganTanggal($per->toDateString())->first()->nama,
                             'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
                             'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
                             'kode_divisi' => $kar->divisi->kode,
@@ -2330,7 +2331,6 @@ class LaporanController
                 }
             }
         }
-        
         $ret = [
             'periode' => $periode,
             'data' => $action
@@ -2357,8 +2357,8 @@ class LaporanController
                 $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Log Jam Masuk Karyawan","Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
                 $pdf->AddPage();
                 
-                $headTbl1 = array('No', 'PIN', 'Nama', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
-                $headW = array(10,15,50,20,20,20,40,20,20,50);
+                $headTbl1 = array('No', 'PIN', 'Nama', 'Gol', 'Kode Jam',  'Jadwal Masuk', 'Kode Divisi','Nama Divisi','Tanggal Absen','Jam Absen','Lokasi Mesin');
+                $headW = array(10,15,50, 20,20,20,20,40,20,20,50);
                 foreach($headTbl1 as $kH => $vH)
                 {
                     $pdf->Cell($headW[$kH] , 4, $vH, 'LRT', 0, 'C');
@@ -2448,7 +2448,7 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','PIN', 'Nama', 'Kode Jam', 'Jadwal Masuk', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen', 'Lokasi Mesin');
+            $headTbl1 = array('No','PIN', 'Nama', 'Gol','Kode Jam', 'Jadwal Masuk', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen', 'Lokasi Mesin');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
