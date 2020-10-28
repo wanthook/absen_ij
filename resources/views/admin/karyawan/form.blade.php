@@ -394,14 +394,14 @@
             
             $('#status_karyawan_id').on('select2:select', function(e)
             {
-                var dt = $(this).select2('data');
-//                console.log(dt);
-                if(dt[0].deskripsi === "KONTRAK")
+                var dt = e.params.data;
+                
+                if(dt.deskripsi === "KONTRAK")
                 {
                     $('#grp_kontrak').show();
                     $('#grp_probation').hide();
                 }
-                else if(dt[0].deskripsi === "PERCOBAAN")
+                else if(dt.deskripsi === "PERCOBAAN")
                 {
                     $('#grp_kontrak').hide();
                     $('#grp_probation').show();
@@ -412,6 +412,13 @@
                     $('#grp_probation').hide();
                 }
             });
+            
+//            if($('#status_karyawan_id').val())
+//            {
+//                var dt = $('#status_karyawan_id').select2('data');
+//                console.log(dt[0]);
+//                $('#status_karyawan_id').trigger({type: 'select2:select', params: { data: dt[0]}});
+//            }
             
             $('#jadwal_id').on('select2:select', function(e)
             {
@@ -838,7 +845,7 @@
                                 <div class="form-group">
                                     {{ Form::label('divisi_id', 'Divisi') }}
                                     @if($var->divisi)
-                                    {{ Form::select('divisi_id', [$var->divisi->id => $var->divisi->kode.' - '.$var->divisi->deskripsi], null, ['id' => 'divisi_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    {{ Form::select('divisi_id', [$var->divisi->id => $var->divisi->kode.' - '.$var->divisi->deskripsi], $var->divisi->id, ['id' => 'divisi_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     @else
                                     {{ Form::select('divisi_id', [], null, ['id' => 'divisi_id', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     @endif
