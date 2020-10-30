@@ -52,7 +52,6 @@
         let dTable = null;
         let objJadwal = [];
         let sMaster, eMaster, sTarget, eTarget;
-        let calendar = null, calendarShow = null;
         $(function(e)
         {
             bsCustomFileInput.init();
@@ -69,6 +68,7 @@
 
             let calendarEl = document.getElementById('calendar');
             let calendarElShow = document.getElementById('calendar-show');
+            let calendarElCopy = document.getElementById('calendar-copy');
             
             let calendarShow = new Calendar(calendarElShow, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
@@ -85,8 +85,8 @@
                 editable  : true,
                 selectable: true
             });
-
-            calendar = new Calendar(calendarEl, {
+            
+            let calendarCopy = new Calendar(calendarElCopy, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
                 locale: 'id',
@@ -97,58 +97,75 @@
                     center: 'title',
                     right : 'dayGridMonth'
                 },
-                dateClick: function(info) {
-                    let exists = false;
-                    let calEv = new Object();
-                    calendar.getEvents().forEach(function(data, index)
-                    {
-    //                    console.log(data);
-                        if(new Date(data.start).toDateString() === new Date(info.dateStr).toDateString())
-                        {
-                            exists = true;
-                            calEv = data;
-                        }
-                    });
-
-                    let $sel = $('#jm_kerja').val();
-
-                    if($sel)
-                    {
-                        getDataSelector($sel, function(data)
-                        {
-
-                            let itm = data.items[0];
-                            let arrEv = {
-                                    title: itm.kode+"\n"+itm.jam_masuk+" - "+itm.jam_keluar,
-                                    start: info.dateStr,
-                                    end: info.dateStr,
-                                    color: itm.warna,
-                                    id: itm.id
-                                    // allDay: true
-                                };
-                            if( !exists )
-                            {
-                                updateDataObject(arrEv);
-                                // console.log(objJadwal);
-                                calendar.addEvent(arrEv);
-                            }
-                            else
-                            {
-                                updateDataObject(arrEv);
-                                // console.log(objJadwal);
-                                calEv.remove();
-                                calendar.addEvent(arrEv);
-                            }
-                        });
-                    }
-                    else
-                    {
-                        updateDataObject({title:"",start:info.dateStr});
-                        calEv.remove();
-                    }
-                },
                 editable  : true,
                 selectable: true
+            });
+
+            let calendar = new Calendar(calendarEl, {
+            plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
+            // defaultView: 'dayGridMonth',
+            themeSystem: 'bootstrap',
+            locale: 'id',
+            firstDay: 1,
+            showNonCurrentDates: false,
+            header    : {
+                left  : 'prev,next today',
+                center: 'title',
+                right : 'dayGridMonth'
+                // right : 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            dateClick: function(info) {
+                let exists = false;
+                let calEv = new Object();
+                calendar.getEvents().forEach(function(data, index)
+                {
+//                    console.log(data);
+                    if(new Date(data.start).toDateString() === new Date(info.dateStr).toDateString())
+                    {
+                        exists = true;
+                        calEv = data;
+                    }
+                });
+                
+                let $sel = $('#jm_kerja').val();
+
+                if($sel)
+                {
+                    getDataSelector($sel, function(data)
+                    {
+                        
+                        let itm = data.items[0];
+                        let arrEv = {
+                                title: itm.kode+"\n"+itm.jam_masuk+" - "+itm.jam_keluar,
+                                start: info.dateStr,
+                                end: info.dateStr,
+                                color: itm.warna,
+                                id: itm.id
+                                // allDay: true
+                            };
+                        if( !exists )
+                        {
+                            updateDataObject(arrEv);
+                            // console.log(objJadwal);
+                            calendar.addEvent(arrEv);
+                        }
+                        else
+                        {
+                            updateDataObject(arrEv);
+                            // console.log(objJadwal);
+                            calEv.remove();
+                            calendar.addEvent(arrEv);
+                        }
+                    });
+                }
+                else
+                {
+                    updateDataObject({title:"",start:info.dateStr});
+                    calEv.remove();
+                }
+            },
+            editable  : true,
+            selectable: true
             });
 
             calendar.render();
@@ -171,13 +188,6 @@
             $('#cmdSearch').on('click',function(e)
             {
                 dTable.ajax.reload();
-            });
-            
-            $('#cmdTambahShow').on('click', function()
-            {
-                $('#grpCopy').hide();
-                $('#id').val(null);
-                
             });
             
             $('#warna').colorpicker();
@@ -210,6 +220,10 @@
                 sTarget = start.format('YYYY-MM-DD');
 //                eTarget = end.format('YYYY-MM-DD');
             });
+            
+//            $('#copyDateMaster').on('apply.daterangepicker', function(ev, picker) {
+//                $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+//            });
             
             $('#cmdUpload').on('click', function(e)
             {
@@ -302,6 +316,7 @@
                     {
                         if(result.status == 1)
                         {
+//                            document.getElementById("form_data").reset(); 
                             
                             Toast.fire({
                                 type: 'success',
@@ -395,7 +410,38 @@
             
             $('#modal-form').on('show.bs.modal', function (e) 
             {
-                loadCalendar();
+                let ids = $('#id').val();
+                if(ids != "")
+                {
+                    $.ajax({
+                        url         : '{{route("fcjadwalshift")}}',
+                        type        : 'POST',
+                        dataType    : 'json',
+                        data        : {id : ids},
+                        success     : function(result,status,xhr)
+                        {
+                            if(result!="")
+                            {
+                                result.forEach(function(itm, idx)
+                                {
+                                    updateDataObject(itm);
+                                    calendar.addEvent(itm);
+                                });
+
+//                                successCallback(result);
+                            }
+                            calendar.render();
+                        }
+
+                    });
+                }
+                
+                calendar.render();
+            });
+            
+            $('#modal-copy-form').on('show.bs.modal', function (e) 
+            { 
+                reloadCalendar(calendarCopy);
             });
             
             $('#cmdCopy').on('click', function(e)
@@ -406,7 +452,7 @@
                     url         : '{{route("copyjadwalshift")}}',
                     type        : 'POST',
                     dataType    : 'json',
-                    data        : {sMaster : sMaster, eMaster : eMaster, sTarget : sTarget, jadwalId : $('#id').val()},
+                    data        : {sMaster : sMaster, eMaster : eMaster, sTarget : sTarget, eTarget : eTarget, jadwalId : $('#id').val()},
                     beforeSend  : function(xhr)
                     {
 //                        $('#loadingDialog').modal('show');
@@ -427,8 +473,8 @@
                                 type: 'success',
                                 title: result.msg
                             });
-                            loadCalendar();
-//                            reloadCalendar(calendar);
+                            
+                            reloadCalendar(calendarCopy);
                         }
                         else
                         {
@@ -540,7 +586,6 @@
                         $('#deskripsi').val(datas.deskripsi);
                         calendar.refetchEvents();
                         calendar.render();
-                        $('#grpCopy').show();
 
                     });
                     
@@ -553,14 +598,28 @@
                         calendar.render();
                     });
                     
+                    $('.copyrow').on('click', function(e)
+                    {
+                        let _this	= $(this);
+                        let datas = dTable.row(_this.parents('tr')).data();
+                        $('#id').val(datas.id);
+                        calendar.refetchEvents();
+                        calendar.render();
+                    });
+                    
                 }
-            });            
+            });
+            
+            $('#resetSelect').on('click', function(e)
+            {
+                e.preventDefault();
+                $('#jm_kerja').val('').trigger('change');
+            });
+            
 
             $('#jm_kerja').select2({
                 // placeholder: 'Silakan Pilih',
-                placeholder: "",
-                allowClear: true,
-                minimumInputLength: 0,                
+                minimumInputLength: 0,
                 delay: 250,
                 ajax: {
                     url: "{{route('seljamkerja')}}",
@@ -588,7 +647,7 @@
                 },
                 templateSelection: function(par)
                 {
-                    if(typeof(par.text) !== "undefined")
+                    if(par.text == "")
                     {
                         return par.name || $(strSel(par));
                     }
@@ -665,43 +724,7 @@
 
         let strSel = function(par)
         {
-            if(typeof(par.kode) !== 'undefined')
-                return '<span class="badge" style="background-color:'+par.warna+'">'+par.kode+'</span>&nbsp;<span class="badge bg-success">'+par.jam_masuk+' - '+par.jam_keluar+'</span>';
-            else
-                return '';
-        }
-        
-        let loadCalendar = function()
-        {
-            calendar.getEvents().forEach(function(data, index)
-            {
-                data.remove();
-            });
-            let ids = $('#id').val();
-            if(ids != "")
-            {
-                $.ajax({
-                    url         : '{{route("fcjadwalshift")}}',
-                    type        : 'POST',
-                    dataType    : 'json',
-                    data        : {id : ids},
-                    success     : function(result,status,xhr)
-                    {
-                        if(result!="")
-                        {
-                            result.forEach(function(itm, idx)
-                            {
-                                updateDataObject(itm);
-                                calendar.addEvent(itm);
-                            });
-                        }
-                        calendar.render();
-                    }
-
-                });
-            }
-
-            calendar.render();
+            return '<span class="badge" style="background-color:'+par.warna+'">'+par.kode+'</span>&nbsp;<span class="badge bg-success">'+par.jam_masuk+' - '+par.jam_keluar+'</span>';
         }
         
         let reloadCalendar = function(calendar)
@@ -740,7 +763,7 @@
 
 @section('modal_form')
 <div class="modal fade" id="modal-form">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content bg-secondary">
             <div class="modal-header">
             <h4 class="modal-title">Form Jadwal Kerja Shift</h4>
@@ -752,82 +775,99 @@
             {{csrf_field()}}
             <input type="hidden" name="id" id="id">
             <div class="modal-body">   
-                <div class="row">
-                    <div class="col-6">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label for="kode">Kode Jadwal</label>
-                                            <input type="text" class="form-control form-control-sm" id="kode" name="kode" placeholder="Kode Jadwal Shift">
-                                        </div>
-                                    </div>                        
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="deskripsi">Deskripsi</label>
-                                            <input type="text" class="form-control form-control-sm" id="deskripsi" name="deskripsi" placeholder="Deskripsi">
-                                        </div>
-                                    </div>                        
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label for="kode">Jam Kerja</label>
-                                            <select class="form-control select2" style="width: 100%;" id="jm_kerja">
-
-                                            </select>
-                                            <!--<button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>-->
-                                        </div>
-                                    </div>            
-                                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="kode">Kode Jadwal</label>
+                                <input type="text" class="form-control form-control-sm" id="kode" name="kode" placeholder="Kode Jadwal Shift">
                             </div>
-                        </div>
+                        </div>                        
                     </div>
-                    <div class="col-6" id="grpCopy">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">  
-                                    <label>Range Jadwal Master:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
-                                            </span>
-                                        </div>
-                                        <input type="text" id="copyDateMaster" name="copyDateMaster" class="form-control form-control-sm float-right" id="reservation">
-                                    </div>
-                                </div>       
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="deskripsi">Deskripsi</label>
+                                <input type="text" class="form-control form-control-sm" id="deskripsi" name="deskripsi" placeholder="Deskripsi">
                             </div>
-                            <div class="col-12">
-                                <div class="form-group">  
-                                    <label>Range Jadwal Target:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
-                                            </span>
-                                        </div>
-                                        <input type="text" id="copyDateTarget" name="copyDateTarget" class="form-control form-control-sm float-right" id="reservation">
-                                    </div>
-                                </div>                        
+                        </div>                        
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="kode">Jam Kerja</label>
+                                <select class="form-control select2" style="width: 100%;" id="jm_kerja">
+                                    
+                                </select>
+                                <button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>
                             </div>
-                            <div class="col-12 d-flex justify-content-center">
-                                <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
-                            </div>
-                        </div>
-                    </div>       
-                    <div class="col-12 bg-gray">
-                        <div id="calendar"></div>
-                    </div>  
+                        </div>       
+                        <div class="col-12 bg-gray">
+                            <div id="calendar"></div>
+                            <!-- /.card -->
+                        </div>                 
+                    </div>
                 </div>
             </div>    
             <div class="modal-footer justify-content-between">
                 <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
                 <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button>
             </div>
+        </form>
+    </div>
+    <!-- /.modal-content -->
+</div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-copy-form">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+            <h4 class="modal-title">Form Copy Jadwal Shift</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <form id="form_data" action="{{route('copyjadwalshift')}}" accept-charset="UTF-8" >
+            {{csrf_field()}}
+            <input type="hidden" name="id" id="id">
+            <div class="modal-body">   
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">  
+                            <label>Range Jadwal Master:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="text" id="copyDateMaster" name="copyDateMaster" class="form-control form-control-sm float-right" id="reservation">
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">  
+                            <label>Range Jadwal Target:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="text" id="copyDateTarget" name="copyDateTarget" class="form-control form-control-sm float-right" id="reservation">
+                            </div>
+                        </div>                        
+                    </div>
+                    <div class="col-12 d-flex justify-content-center">
+                        <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
+                    </div>
+                    <div class="col-12 d-flex justify-content-center bg-gray">
+                         <div id="calendar-copy"></div>
+                    </div>
+                </div>
+            </div> 
         </form>
     </div>
     <!-- /.modal-content -->
@@ -929,7 +969,7 @@
         <h5 class="card-title">&nbsp;</h5>
         <div class="card-tools">
             <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
-            <button class="btn btn-xs btn-success" alt="Tambah" data-toggle="modal" data-target="#modal-form" id="cmdTambahShow"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</button>
+            <button class="btn btn-xs btn-success" alt="Tambah" data-toggle="modal" data-target="#modal-form"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</button>
         </div>
     </div>
 <!--    <div class="card-header">

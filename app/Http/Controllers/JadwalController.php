@@ -236,11 +236,26 @@ class JadwalController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadDayshift');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadDayshift');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;           
                 $arrKey = null;
@@ -459,13 +474,26 @@ class JadwalController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadShift');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadKaryawan');
                 
-                $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadShift');
+                $sheetData = [];
                 
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
-                              
-                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
                 
                 $x = 0;       
                 $kdBefore = ""; $jadId = 0;
@@ -566,14 +594,14 @@ class JadwalController extends Controller
                 'sMaster'   => 'required',
                 'eMaster'   => 'required',
                 'sTarget'   => 'required',
-                'eTarget'   => 'required',
+//                'eTarget'   => 'required',
                 'jadwalId'   => 'required',
             ],
             [
                 'sMaster.required'  => 'Tanggal Master Awal harus diisi.',
                 'eMaster.required'  => 'Tanggal Master Akhir harus diisi.',
                 'sTarget.required'  => 'Tanggal Target Awal harus diisi.',
-                'eTarget.required'  => 'Tanggal Target Akhir harus diisi.',
+//                'eTarget.required'  => 'Tanggal Target Akhir harus diisi.',
                 'jadwalId.required'  => 'Karyawan harus dipilih.',
             ]);
 
@@ -592,7 +620,8 @@ class JadwalController extends Controller
                 
                 if($jad->id)
                 {
-                    $targetPeriode = CarbonPeriod::create($req['sTarget'], $req['eTarget'])->toArray();
+//                    $targetPeriode = CarbonPeriod::create($req['sTarget'], $req['eTarget'])->toArray();
+                    $targetDate = Carbon::createFromFormat('Y-m-d', $req['sTarget']);
                     
                     $between = $jad->jadwal_kerja()->wherePivot('tanggal','>=',$req['sMaster'])
                                                    ->wherePivot('tanggal','<=',$req['eMaster'])
@@ -600,11 +629,9 @@ class JadwalController extends Controller
                                 
                     foreach($between->get() as $k => $v)
                     {
-                        if(array_key_exists($k, $targetPeriode))
-                        {
-                            $jad->jadwal_kerja()->wherePivot('tanggal', $targetPeriode[$k]->toDateString())->detach();
-                            $jad->jadwal_kerja()->attach($v->id,['tanggal' => $targetPeriode[$k]->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                        }
+                        $jad->jadwal_kerja()->wherePivot('tanggal', $targetDate->toDateString())->detach();
+                        $jad->jadwal_kerja()->attach($v->id,['tanggal' => $targetDate->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                        $targetDate->addDay();
                     }
                     
                     echo json_encode(array(
@@ -683,7 +710,7 @@ class JadwalController extends Controller
                 ->addColumn('action',function($datas)
                 {
                     $str    = '<div class="btn-group">';
-                    $str    .= '<button class="copyrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-copy-form" title="Copy Jadwal"><i class="fa fa-copy"></i></button>';
+//                    $str    .= '<button class="copyrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-copy-form" title="Copy Jadwal"><i class="fa fa-copy"></i></button>';
                     $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fa fa-pencil-alt"></i></button>';
                     $str    .= '<button class="delrow btn btn-danger btn-sm" title="Hapus"><i class="fa fa-eraser"></i></button>';
                     $str    .= '</div>';
