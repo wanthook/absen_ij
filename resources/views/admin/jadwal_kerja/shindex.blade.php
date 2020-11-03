@@ -25,6 +25,15 @@
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/fullcalendar-timegrid/main.min.css')}}">
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/fullcalendar-bootstrap/main.min.css')}}">
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.css')}}">
+    <style>
+        .fc-event-container {
+            font-size: 10pt;
+            font-family: Verdana, Arial, Sans-Serif;
+        }
+        .fc-day-number{
+            font-size: 10pt;
+        }
+    </style>
 @endsection
 
 @section('add_js')
@@ -75,6 +84,8 @@
                 themeSystem: 'bootstrap',
                 locale: 'id',
                 firstDay: 1,
+                stickyHeaderDates: true,
+                height: '50%',
                 showNonCurrentDates: false,
                 header    : {
                     left  : 'prev,next today',
@@ -175,7 +186,7 @@
             
             $('#cmdTambahShow').on('click', function()
             {
-                $('#grpCopy').hide();
+                $('.grpCopy').hide();
                 $('#id').val(null);
                 
             });
@@ -347,6 +358,7 @@
             $('#modal-form').on('hidden.bs.modal', function (e) 
             {
                 document.getElementById("form_data").reset(); 
+                $('#id').val(null);
                 $('#jm_kerja').val('').trigger('change');
                 dTable.ajax.reload();
                 objJadwal = [];
@@ -395,6 +407,7 @@
             
             $('#modal-form').on('show.bs.modal', function (e) 
             {
+//                console.log($('#id').val());
                 loadCalendar();
             });
             
@@ -540,7 +553,7 @@
                         $('#deskripsi').val(datas.deskripsi);
                         calendar.refetchEvents();
                         calendar.render();
-                        $('#grpCopy').show();
+                        $('.grpCopy').show();
 
                     });
                     
@@ -743,7 +756,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content bg-secondary">
             <div class="modal-header">
-            <h4 class="modal-title">Form Jadwal Kerja Shift</h4>
+            <h5 class="modal-title">Form Jadwal Kerja Shift</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -753,81 +766,78 @@
             <input type="hidden" name="id" id="id">
             <div class="modal-body">   
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-5">
                         <div class="row">
                             <div class="col-12">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label for="kode">Kode Jadwal</label>
-                                            <input type="text" class="form-control form-control-sm" id="kode" name="kode" placeholder="Kode Jadwal Shift">
-                                        </div>
-                                    </div>                        
+                                <div class="form-group">
+                                    <label for="kode">Kode Jadwal</label>
+                                    <input type="text" class="form-control form-control-sm" id="kode" name="kode" placeholder="Kode Jadwal Shift">
                                 </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="deskripsi">Deskripsi</label>
-                                            <input type="text" class="form-control form-control-sm" id="deskripsi" name="deskripsi" placeholder="Deskripsi">
-                                        </div>
-                                    </div>                        
+                            </div> 
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="deskripsi">Deskripsi</label>
+                                    <input type="text" class="form-control form-control-sm" id="deskripsi" name="deskripsi" placeholder="Deskripsi">
                                 </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label for="kode">Jam Kerja</label>
-                                            <select class="form-control select2" style="width: 100%;" id="jm_kerja">
+                            </div>   
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="kode">Jam Kerja</label>
+                                    <select class="form-control select2" style="width: 100%;" id="jm_kerja">
 
-                                            </select>
-                                            <!--<button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>-->
+                                    </select>
+                                    <!--<button id="resetSelect" class="btn btn-warning">Set Ulang Jam Kerja</button>-->
+                                </div>
+                            </div> 
+                            <div class="col-12">
+                                <div class="row justify-content-sm-center">
+                                    <div class="col col-sm-3">
+                                        <button type="button" id="cmdModalClose" class="btn btn-outline-light btn-danger" data-dismiss="modal">Keluar</button>
+                                    </div>
+                                    <div class="col col-sm-3">
+                                        <button type="submit" id="cmdModalSave" class="btn btn-outline-light btn-success">Simpan</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12" style="height: 10px; border-bottom: 2px solid whitesmoke;"></div>
+                            <div class="row grpCopy">
+                                <div class="col-12">
+                                    <div class="form-group">  
+                                        <label>Range Jadwal Master:</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="text" id="copyDateMaster" class="form-control form-control-sm float-right" id="reservation">
                                         </div>
-                                    </div>            
+                                    </div>      
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">  
+                                        <label>Range Jadwal Target:</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="text" id="copyDateTarget" name="copyDateTarget" class="form-control form-control-sm float-right" id="reservation">
+                                        </div>
+                                    </div>       
+                                </div>
+                                <div class="col-12 d-flex justify-content-center">
+                                    <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6" id="grpCopy">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">  
-                                    <label>Range Jadwal Master:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
-                                            </span>
-                                        </div>
-                                        <input type="text" id="copyDateMaster" name="copyDateMaster" class="form-control form-control-sm float-right" id="reservation">
-                                    </div>
-                                </div>       
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">  
-                                    <label>Range Jadwal Target:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
-                                            </span>
-                                        </div>
-                                        <input type="text" id="copyDateTarget" name="copyDateTarget" class="form-control form-control-sm float-right" id="reservation">
-                                    </div>
-                                </div>                        
-                            </div>
-                            <div class="col-12 d-flex justify-content-center">
-                                <button class="btn btn-warning btn-sm" id="cmdCopy"><i class="fa fa-copy"></i>&nbsp;Copy Jadwal</button>
-                            </div>
-                        </div>
-                    </div>       
-                    <div class="col-12 bg-gray">
+                    <div class="col-7 bg-gray">
                         <div id="calendar"></div>
                     </div>  
                 </div>
             </div>    
-            <div class="modal-footer justify-content-between">
-                <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
-                <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button>
-            </div>
         </form>
     </div>
     <!-- /.modal-content -->
