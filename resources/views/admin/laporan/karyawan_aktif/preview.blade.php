@@ -133,6 +133,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>Nama<br>Karyawan</th>
                 <th>Kode<br>Jabatan</th>
                 <th>Nama<br>Jabatan</th>
+                @if(config('global.perusahaan_short') == 'AIC')
+                <th>Gol</th>
+                @endif
                 <th>Tanggal<br>Masuk</th>
                 <th>Kode<br>Divisi</th>
                 <th>Nama<br>Divisi</th>
@@ -147,6 +150,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{isset($vVar['nama'])?$vVar['nama']:''}}</td>
                 <td class="dc">{{isset($vVar['kode_jabatan'])?$vVar['kode_jabatan']:''}}</td>
                 <td class="dc">{{isset($vVar['nama_jabatan'])?$vVar['nama_jabatan']:''}}</td>
+                @if(config('global.perusahaan_short') == 'AIC')
+                <td class="dc">{{isset($vVar['golongan'])?$vVar['golongan']:''}}</td>
+                @endif
                 <td class="dc">{{isset($vVar['tmk'])?$vVar['tmk']:''}}</td>
                 <td class="dc">{{isset($vVar['kode_divisi'])?$vVar['kode_divisi']:''}}</td>
                 <td class="dc">{{isset($vVar['nama_divisi'])?$vVar['nama_divisi']:''}}</td>
