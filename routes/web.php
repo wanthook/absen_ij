@@ -135,12 +135,13 @@ Route::group(['middleware' => 'auth'],function()
 
             Route::post('karyawandt', ['as' => 'dtkaryawan', 'uses' => 'KaryawanController@dt']);
             Route::post('karyawandttalasan', ['as' => 'dttalasankaryawan', 'uses' => 'KaryawanController@dtTransaksiAlasan']);
+            Route::post('karyawantabletalasan', ['as' => 'tabletalasankaryawan', 'uses' => 'KaryawanController@tableTransaksiAlasan']);
             Route::post('karyawandtstatus', ['as' => 'dttstatuskaryawan', 'uses' => 'KaryawanController@dtStatus']);
             Route::post('karyawandtstatusoff', ['as' => 'dttstatusoffkaryawan', 'uses' => 'KaryawanController@dtStatusOff']);
             
             Route::post('karyawansave', ['as' => 'savekaryawan', 'uses' => 'KaryawanController@store']);
             Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'KaryawanController@storeAlasanKaryawan']);
-            Route::post('karyawansavemanual', ['as' => 'savejadwalmanual', 'uses' => 'KaryawanController@manualStore']);
+            Route::post('karyawansavemanual', ['as' => 'savejadwalmanual', 'uses' => 'JadwalController@manualStore']);
             Route::post('karyawansavedivisi', ['as' => 'savedivisikaryawan', 'uses' => 'KaryawanController@storeDivisi']);
             Route::post('karyawansavegolongan', ['as' => 'savegolongankaryawan', 'uses' => 'KaryawanController@storeGolongan']);
             Route::post('karyawansavestatus/{kode}', ['as' => 'savestatuskaryawan', 'uses' => 'KaryawanController@storeStatusKaryawan']);
@@ -158,6 +159,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
             Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'KaryawanController@destroyAlasanKaryawan']);
             Route::post('karyawansel', ['as' => 'selkaryawan', 'uses' => 'KaryawanController@select2']);
+            Route::post('karyawanselect', ['as' => 'selectkaryawan', 'uses' => 'KaryawanController@selectKaryawan']);
             Route::post('karyawanseloff', ['as' => 'selkaryawanoff', 'uses' => 'KaryawanController@select2off']);
             Route::post('karyawanstatussel', ['as' => 'selkaryawanstatus', 'uses' => 'MasterOptionController@select2karyawanstatus']);       
             Route::post('karyawanjadwalsetdt', ['as' => 'dtjadwalset', 'uses' => 'KaryawanController@dtJadwal']);    

@@ -24,15 +24,6 @@
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/fullcalendar-daygrid/main.min.css')}}">
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/fullcalendar-timegrid/main.min.css')}}">
     <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/fullcalendar-bootstrap/main.min.css')}}">
-    <style>
-        .fc-event-container {
-            font-size: 9pt;
-            font-family: Verdana, Arial, Sans-Serif;
-        }
-        .fc-day-number{
-            font-size: 10pt;
-        }
-    </style>
 @endsection
 
 @section('add_js')
@@ -89,62 +80,64 @@
                 // right : 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             dateClick: function(info) {
-                let exists = false;
-                let calEv = new Object();
-                calendar.getEvents().forEach(function(data, index)
-                {
-                    if(new Date(data.start).toDateString() === new Date(info.dateStr).toDateString())
+                var karId = $('#setId').val();
+                var jamId = $('#jm_kerja').val();
+                var tgl = info.dateStr;
+                
+                $.ajax({
+                    url         : '{{route("savejadwalmanual")}}',
+                    type        : 'POST',
+                    dataType    : 'json',
+                    data        : {karId : karId, jamId : jamId, tgl : tgl},
+                    beforeSend  : function(xhr)
                     {
-                        exists = true;
-                        calEv = data;
-                    }
-                });
-
-                let $sel = $('#jm_kerja').val();
-
-                if($sel)
-                {
-                    getDataSelector($sel, function(data)
+//                        $('#loadingDialog').modal('show');
+                        toastOverlay.fire({
+                            type: 'warning',
+                            title: 'Sedang memproses data'
+                        });
+                    },
+                    success     : function(result,status,xhr)
                     {
-
-                        let itm = data.items[0];
-                        let arrEv = {
-                                title: itm.kode+"\n"+itm.jam_masuk+" - "+itm.jam_keluar,
-                                start: info.dateStr,
-                                end: info.dateStr,
-                                color: itm.warna,
-                                id: itm.id
-                                // allDay: true
-                            };
-                        if( !exists )
+                        toastOverlay.close();
+                        if(result.status == 1)
                         {
-                            updateDataObject(arrEv);
-                            // console.log(objJadwal);
-                            calendar.addEvent(arrEv);
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
                         }
                         else
                         {
-                            updateDataObject(arrEv);
-                            // console.log(objJadwal);
-                            calEv.remove();
-                            calendar.addEvent(arrEv);
+                            if(Array.isArray(result.msg))
+                            {
+                                var str = "";
+                                for(var i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                            }
+                            else
+                            {
+                                Toast.fire({
+                                    type: 'error',
+                                    title: result.msg
+                                });
+                            }
+                            
                         }
-                    });
-                }
-                else
+                    }
+                        
+                });
+                calendar.getEvents().forEach(function(data, index)
                 {
-                    let arrEv = {
-                                title: '',
-                                start: info.dateStr,
-                                end: info.dateStr,
-                                color: '',
-                                id: ''
-                                // allDay: true
-                            };
-                            updateDataObject(arrEv);
-                    updateDataObject({title:"",start:info.dateStr});
-                    calEv.remove();
-                }
+                    data.remove();
+                });
+                loadManual(calendar);
             },
             editable  : true,
             selectable: true
@@ -167,54 +160,16 @@
                 allowEnterKey: false
             });
             
-            $('#sKarPin').select2({
-                // placeholder: 'Silakan Pilih',
-                placeholder: "",
-                allowClear: true,
-                minimumInputLength: 0,
-                delay: 250,
-                ajax: {
-                    url: "{{route('selkaryawan')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term,
-                            t: true
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
+            $('#sKarCar').on('click',function(e)
+            {
+                dTableKar.ajax.reload();
             });
             
-            $('#sKarPin').on('select2:select', function(e)
+            $('#setRefresh').on('click', function(e)
             {
-                $('#setId').val($(this).val());
-                calendar.getEvents().forEach(function(data, index)
-                {
-                    data.remove();
-                });
-                loadManual(calendar);
-                objJadwal = [];
-            });
-            
-            $('#sKarPin').on('select2:unselect', function(e)
-            {
-                $('#setId').val();
-                calendar.getEvents().forEach(function(data, index)
-                {
-                    data.remove();
-                });
-            });   
+                $('#setId').val('');
+                $('#setPin').val('');
+            });           
             
             $('#cmdUpload').on('click', function(e)
             {
@@ -266,6 +221,169 @@
                     }
                 });
             });
+            
+            
+            
+            $('#sPerusahaan').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selperusahaan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
+            dTableKar = $('#dTableKar').DataTable({
+                "sPaginationType": "full_numbers",
+                "searching":false,
+                "ordering": true,
+                "deferRender": true,
+                "processing": true,
+                "serverSide": true,
+                "select": true,
+                "scrollX": true,
+                "scrollY": 600,
+//                "autoWidth": false,
+                "lengthMenu": [100, 500, 1000, 1500, 2000 ],
+                "ajax":
+                {
+                    "url"       : "{{ route('dtkaryawan') }}",
+                    "type"      : 'POST',
+                    data: function (d) 
+                    {
+                        d.sNama   = $('#sKarPin').val();
+                        d.sDivisi      = $('#sKarDiv').val();
+                        d.sPerusahaan      = $('#sPerusahaan').val();
+                    }
+                },        
+                select: 
+                {
+                    style:    'os',
+                    selector: 'td:first-child'
+                },
+                "columnDefs"    :[{
+                    targets: 0,
+                    searchable: false,
+                    orderable: false,
+                    render: function (data, type, full, meta){
+//                        console.log(full.id);
+                        return '<button class="btn btn-warning btn-xs btnSet" value="#"><i class="fa fa-calendar"></i></button>';
+                    }
+                },
+                {
+                        targets : 'tpin',
+                        data: "pin"
+                },
+                {
+                        targets : 'tnik',
+                        data: "nik"
+                },
+                {
+                        targets : 'tnama',
+                        data: "nama"
+                },
+                {
+                        targets : 'tjabatan',
+                        data: function(data)
+                        {
+                            if(data.jabatan)
+                            {
+                                return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
+                        }
+                },
+                {
+                        targets : 'tdivisi',
+                        data: function(data)
+                        {
+                            if(data.divisi)
+                            {
+                                return data.divisi.kode+" - "+data.divisi.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
+                        }
+                },
+                {
+                        targets : 'tjadwal',
+                        data: function(data)
+                        {
+                            return data.jadwal.tipe+" - "+data.jadwal.kode;
+                        }
+                }],
+                "drawCallback": function( settings, json ) 
+                {
+                    $('.btnSet').on('click',function(e)
+                    {
+                        let _this	= $(this);
+                        let datas = dTableKar.row(_this.parents('tr')).data();
+                        
+                        $('#setId').val(datas.id);
+                        $('#setPin').val(datas.pin);
+                        
+                        calendar.getEvents().forEach(function(data, index)
+                        {
+                            data.remove();
+                        });
+                        loadManual(calendar);
+                        
+                    });
+                }
+            });
+            
+            $('#sKarDiv').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('seldivisi')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
 
             $('#jm_kerja').select2({
                 // placeholder: 'Silakan Pilih',
@@ -310,60 +428,31 @@
                 }
             });
             
-            $('#cmdSimpan').on('click', function(e)
-            {
-                e.preventDefault();
-                if(objJadwal)
-                {
-                    $.ajax({
-                        url         : '{{route("savejadwalmanual")}}',
-                        type        : 'POST',
-                        dataType    : 'json',
-                        data        : {karId:$('#setId').val(), jamkerja:objJadwal},
-                        beforeSend  : function(xhr)
-                        {
-    //                        $('#loadingDialog').modal('show');
-                            toastOverlay.fire({
-                                type: 'warning',
-                                title: 'Sedang memproses data'
-                            });
-                        },
-                        success     : function(result,status,xhr)
-                        {
-                            toastOverlay.close();
-                            if(result.status == 1)
-                            {
-                                Toast.fire({
-                                    type: 'success',
-                                    title: result.msg
-                                });
-                            }
-                            else
-                            {
-                                if(Array.isArray(result.msg))
-                                {
-                                    var str = "";
-                                    for(var i = 0 ; i < result.msg.length ; i++ )
-                                    {
-                                        str += result.msg[i]+"<br>";
-                                    }
-                                    Toast.fire({
-                                        type: 'error',
-                                        title: str
-                                    });
-                                }
-                                else
-                                {
-                                    Toast.fire({
-                                        type: 'error',
-                                        title: result.msg
-                                    });
-                                }
-
-                            }
+            $('#sKarJab').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('seljabatan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
                         }
-
-                    });
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
                 }
             });
         });
@@ -371,7 +460,6 @@
         let loadManual = function(calendar)
         {
             var id =  $('#setId').val();
-            console.log(id);
             if(id != "")
             {
                 $.ajax({
@@ -431,7 +519,7 @@
         let updateDataObject = function(data)
         {
             let ada = false;
-            let dtX = {date:data.start, id:data.id};
+            let dtX = {id:data.id,date:data.start};
             let idxDel = null;
             
             objJadwal.forEach(function(el, idx)
@@ -519,41 +607,94 @@
 @endsection
 
 @section('content')
-<div class="row">  
-    <div class="col-4">
-        <div class="card card-primary card-outline">
-            <div class="card-body">
-                <form>
-                    {{Form::hidden('setId', null, ['id' => 'setId'])}}
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                {{ Form::label('sKarPin', 'PIN') }}
-                                {{ Form::select('sKarPin', [], null, ['id' => 'sKarPin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="kode">Jam Kerja</label>
-                                <select class="form-control select2" style="width: 100%;" id="jm_kerja">
+<div class="row">      
+    <div class="col-6">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <form>
+                            <div class="row">
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        {{ Form::label('sKarPin', 'PIN/NIK') }}
+                                        {{ Form::text('sKarPin', null, ['id' => 'sKarPin', 'class' => 'form-control form-control-sm', 'placeholder' => 'PIN/NIK']) }}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        {{ Form::label('sKarDiv', 'Divisi') }}
+                                        {{ Form::select('sKarDiv', [], null, ['id' => 'sKarDiv', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
 
-                                </select>
+                                    </div>
+                                </div>
+                                @if(Auth::user()->type->nama != 'REKANAN')
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        {{ Form::label('sPerusahaan', 'Perusahaan') }}
+                                        {{ Form::select('sPerusahaan', [], null, ['id' => 'sPerusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    </div>
+                                </div>
+                                @endif
+                                <div class="col-2">
+                                    <div class="btn-group">
+                                        {{ Form::button('<i class="fa fa-search"></i>Cari',['id' => 'sKarCar', 'class' => 'btn btn-success btn-sm']) }}
+                                        {{ Form::button('<i class="fa fa-upload"></i>Upload',['id' => 'sKarUpload', 'class' => 'btn btn-primary btn-sm', 'alt'=>'Upload', 'data-toggle' => 'modal', 'data-target' => '#modal-form-upload']) }}
+                                    </div>
+                                </div>
                             </div>
-                        </div>                                
-                        <div class="col-12 d-flex justify-content-center btn-group">
-                            <button class="btn btn-success btn-sm" id="cmdSimpan"><i class="fa fa-save"></i>&nbsp;Simpan</button>
-                            {{ Form::button('<i class="fa fa-upload"></i>Upload',['id' => 'sKarUpload', 'class' => 'btn btn-primary btn-sm', 'alt'=>'Upload', 'data-toggle' => 'modal', 'data-target' => '#modal-form-upload']) }}
-                        </div>
+                        </form>
                     </div>
-                </form>
+                    <div class="card-body">  
+        <!--                <div class="float-right">
+                            <button id="btnSet" class="btn btn-info">Set >></button>
+                        </div>-->
+                        <table id="dTableKar" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="tpin">PIN</th>
+                                    <th class="tnik">NIK</th>
+                                    <th class="tnama">Nama</th>
+                                    <th class="tdivisi">Divisi</th>
+                                    <th class="tjabatan">Jabatan</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </div>  
     <div class="col-6">
-        <div class="card card-primary card-outline">
-            <div class="card-body">
-                <div class="justify-content-md-center">        
-                    <div class="bg-gray"">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-body"> 
+                        <div class="row">
+                            <div class="col-3">PIN</div>
+                            <div class="col-3">
+                                <input type="hidden" id="setId">
+                                <div class="form-inline">
+                                    <div class="form-group">
+                                        <input type="text" id="setPin" class="form-control form-control-sm" readonly="readonly">
+                                        <button class="btn btn-default btn-sm" id="setRefresh">Refresh</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="kode">Jam Kerja</label>
+                            <select class="form-control select2" style="width: 100%;" id="jm_kerja">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card card-primary">
+                    <div class="card-body bg-gray"> 
                         <div id="calendar"></div>
                     </div>
                 </div>

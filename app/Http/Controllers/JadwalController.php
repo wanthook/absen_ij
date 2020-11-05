@@ -660,6 +660,72 @@ class JadwalController extends Controller
         }
     }
     
+    public function manualStore(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'karId'   => 'required',
+//                'jamId'   => 'required',
+                'jamkerja'   => 'required',
+            ],
+            [
+                'karId.required'  => 'Karyawan harus dipilih.',
+//                'jamId.required'  => 'Jam Kerja harus dipilih.',
+                'jamkerja.required'  => 'Tanggal harus dipilih.'
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+
+                $req['updated_by']   = Auth::user()->id;        
+                $req['updated_at']   = Carbon::now();
+
+                $jd = Karyawan::find($req['karId']);
+                
+                foreach($req['jamkerja'] as $jamKerja)
+                {
+                    $par = $jd->jadwal_manual()->wherePivot('tanggal', $jamKerja['date']);
+//                
+                    if($par)
+                    {
+                        $par->detach();
+                    }
+
+                    if(isset($jamKerja['id']))
+                    {
+                        $jd->jadwal_manual()->attach($jamKerja['id'],['tanggal' => $jamKerja['date'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                    }
+                }
+                
+
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil diubah'
+                ));
+                    
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+    
     public function dtjadwalday(Request $request)
     {
         $req    = $request->all();
