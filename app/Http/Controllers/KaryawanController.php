@@ -532,70 +532,6 @@ class KaryawanController extends Controller
             ));
         }
     }
-
-    public function manualStore(Request $request)
-    {
-        try
-        {
-            $validation = Validator::make($request->all(), 
-            [
-                'karId'   => 'required',
-//                'jamId'   => 'required',
-                'tgl'   => 'required',
-            ],
-            [
-                'karId.required'  => 'Karyawan harus dipilih.',
-//                'jamId.required'  => 'Jam Kerja harus dipilih.',
-                'tgl.required'  => 'Tanggal harus dipilih.'
-            ]);
-
-            if($validation->fails())
-            {
-                echo json_encode(array(
-                    'status' => 0,
-                    'msg'   => $validation->errors()->all()
-                ));
-            }
-            else
-            {
-                $req = $request->all();
-
-                $req['updated_by']   = Auth::user()->id;        
-                $req['updated_at']   = Carbon::now();
-
-                $jd = Karyawan::find($req['karId']);
-                
-                $par = $jd->jadwal_manual()->wherePivot('tanggal', $req['tgl']);
-                
-//                dd($par->detach());
-//                
-                if($jd->jadwal_manual()->wherePivot('tanggal', $req['tgl']))
-                {
-                    $par->detach();
-                }
-                
-                if($req['jamId'])
-                {
-                    $jd->jadwal_manual()->attach($req['jamId'],['tanggal' => $req['tgl'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                }
-
-                echo json_encode(array(
-                    'status' => 1,
-                    'msg'   => 'Data berhasil diubah'
-                ));
-                    
-            }
-            
-        }
-        catch (QueryException $er)
-        {
-            echo json_encode(array(
-                'status' => 0,
-                'msg'   => 'Data gagal disimpan',
-                'err' => $er->getMessage()
-            ));
-        }
-    }
     
     public function storeUploadAlasan(Request $request)
     {
@@ -917,6 +853,13 @@ class KaryawanController extends Controller
                         $tgl = Carbon::now();
                         
                         $divisi = Divisi::where('kode', trim($sD[$arrKey->divisi]))->first();
+                        
+                        $jabatan = null;
+                        
+                        if(trim($sD[$arrKey->jabatan]))
+                        {
+                            $jabatan = Jabaran::where('kode', trim($sD[$arrKey->jabatan]))->first();
+                        }
 
                         $attach = ['tanggal' => $tgl->toDateString(), 
                         'keterangan' => trim($sD[$arrKey->catatan]),
@@ -926,8 +869,15 @@ class KaryawanController extends Controller
                         'updated_at' => Carbon::now()];
                         
                         $kar->log_divisi()->attach($divisi->id, $attach);
-
-                        $kar->fill(['divisi_id' => $divisi->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        
+                        $arrUpd = ['divisi_id' => $divisi->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
+                        
+                        if(trim($sD[$arrKey->jabatan]))
+                        {
+                            $arrUpd['jabatan_id'] = $jabatan->id;
+                        }
+                        
+                        $kar->fill($arrUpd)->save();
                         
                     }
                     else
@@ -2024,8 +1974,13 @@ class KaryawanController extends Controller
                         'updated_at' => Carbon::now()
                     ]);
                     
-                    $karyawan->fill(['divisi_id' => $req['sDivisi'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                    $arrUpd = ['divisi_id' => $req['sDivisi'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
                     
+                    if($req['sJabatan'])
+                    {
+                        $arrUpd['jabatan_id'] = $req['sJabatan'];
+                    }
+                    $karyawan->fill($arrUpd)->save();
                     echo json_encode(array(
                         'status' => 1,
                         'msg'   => 'Data berhasil disimpan'
@@ -2497,6 +2452,78 @@ class KaryawanController extends Controller
                 ->make(true);
     }
     
+    public function tableTransaksiAlasan(Request $request)
+    {
+        $ret = [];
+        $total = 0;
+        $req    = $request->all();
+        
+        $datas = DB::table('alasan_karyawan')
+                  ->selectRaw('alasan_karyawan.tanggal as tanggal, '
+                          . 'alasan_karyawan.alasan_id as alasan_id, '
+                          . 'alasan_karyawan.waktu as waktu, '
+                          . 'alasan_karyawan.keterangan as keterangan, '
+                          . 'karyawans.id as karyawan_id, '
+                          . 'karyawans.pin as pin, '
+                          . 'karyawans.nik as nik, '
+                          . 'karyawans.nama as nama, '
+                          . 'divisis.kode as divisi_kode, '
+                          . 'divisis.deskripsi as divisi_deskripsi, '
+                          . 'alasans.kode as alasan_kode, '
+                          . 'alasans.deskripsi as alasan_deskripsi,'
+                          . 'alasan_karyawan.created_at as id')
+                  ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
+                  ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
+                  ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
+                  ->orderBy('alasan_karyawan.tanggal', 'desc')
+                  ->groupBy('alasan_karyawan.alasan_id', 'alasan_karyawan.karyawan_id');
+        
+        $total = DB::table('alasan_karyawan')
+                        ->selectRaw('count(*) as cnt');
+        
+        if(isset($req['sTanggal']))
+        {
+            $datas->where('alasan_karyawan.tanggal',$req['sTanggal']);
+            $total->where('alasan_karyawan.tanggal',$req['sTanggal']);
+            
+        }
+        
+        if(Auth::user()->type->nama == 'REKANAN')
+        {
+            $datas->where('karyawans.perusahaan_id', Auth::user()->perusahaan_id);
+            $total->where('karyawans.perusahaan_id', Auth::user()->perusahaan_id);
+        }
+        
+        if(isset($req['page']))
+        {
+            $datas->offset($req['page']);
+        }
+        
+        if(isset($req['rows']))
+        {
+            $datas->limit($req['rows']);
+        }
+        
+        $res = $datas->get();
+        
+        foreach($res as $val)
+        {
+            $ret[] = [
+                'sKar' => $val->karyawan_id,
+                'sKarText' => $val->pin.' - '.$val->nama,
+                'sDivisiKode' => $val->divisi_kode,
+                'sDivisiNama' => $val->divisi_deskripsi,
+                'sAlasan' => $val->alasan_id,
+                'sAlasanKode' => $val->alasan_kode,
+                'sAlasanNama' => $val->alasan_deskripsi,
+                'sWaktu' => $val->waktu,
+                'tanggal' => $val->tanggal
+            ];
+        }
+        
+        echo json_encode(['rows' => $ret, 'total' => $total->first()->cnt]);
+    }
+    
     public function dtJadwal(Request $request)
     {
         $req    = $request->all();
@@ -2525,12 +2552,9 @@ class KaryawanController extends Controller
                         
         $datas = Karyawan::with(['log_divisi' => function($q){
             $q->orderBy('created_at', 'desc');
-        },'divisi'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
+        },'divisi', 'jabatan'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
         
-        if(isset($req['sKar']))
-        {
-            $datas->where('id', $req['sKar']);
-        }
+        $datas->where('id', $req['sKar']);
         
         if(isset($req['sDivisi']))
         {
@@ -2606,7 +2630,7 @@ class KaryawanController extends Controller
         if(isset($req['q']))
         {
             $term = $req['q'];
-            $tags = Karyawan::author()->where(function($q) use($term)
+            $tags = Karyawan::with('divisi', 'jabatan')->author()->where(function($q) use($term)
             {
                 $q->where('pin','like','%'.$term.'%')
                   ->orWhere('nik','like','%'.$term.'%')
@@ -2625,10 +2649,35 @@ class KaryawanController extends Controller
         
         $formatted_tags = [];
         foreach ($tags->get() as $tag) {
-            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama];
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama, 'divisi' => ['kode' => $tag->divisi->kode, 'nama' => $tag->divisi->deskripsi]];
         }
         
         echo json_encode(array('items' => $formatted_tags));
+    }
+    
+    public function selectKaryawan(Request $request)
+    {
+        $tags = null;
+        $req = $request->all();
+        $tags = Karyawan::with('divisi', 'jabatan')->author();
+        if(isset($req['q']))
+        {
+            $term = $req['q'];
+            $tags->where(function($q) use($term)
+            {
+                $q->where('pin','like','%'.$term.'%')
+                  ->orWhere('nik','like','%'.$term.'%')
+                  ->orWhere('nama','like','%'.$term.'%');
+//                  ->orWhere('id',$term);
+            });
+        }
+        $tags->limit(100);
+        $formatted_tags = [];
+        foreach ($tags->get() as $tag) {
+            $formatted_tags[] = ['sKar' => $tag->id, 'sKarText' => $tag->pin.' - '.$tag->nama, 'divisi' => ['kode' => $tag->divisi->kode, 'nama' => $tag->divisi->deskripsi]];
+        }
+        return response()->json($formatted_tags);
+//        echo json_encode(array('items' => $formatted_tags));
     }
     
     public function select2off(Request $request)

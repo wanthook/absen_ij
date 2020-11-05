@@ -252,6 +252,13 @@
                         }
                 },
                 {
+                        targets : 'tjabatan',
+                        data: function(data)
+                        {
+                            return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                        }
+                },
+                {
                         targets : 'ttanggal',
                         data: function(data)
                         {
@@ -400,13 +407,45 @@
                     cache: true
                 }
             });
+            
+
+            $('#sJabatan').select2({
+                // placeholder: 'Silakan Pilih',
+                minimumInputLength: 0,
+                allowClear: true,
+                delay: 250,
+                placeholder: {
+                    id: "",
+                    placeholder: ""
+                },
+                ajax: {
+                    url: "{{route('seljabatan')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        let query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
         });
         
         var detFormat = function(dt)
         {
             if(dt.log_divisi.length > 0)
             {
-                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Jadwal</th><th>Keterangan</th></tr>';
+                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Divisi</th><th>Keterangan</th></tr>';
             
                 dt.log_divisi.forEach(function(i,x)
                 {
@@ -487,13 +526,19 @@
                                         {{ Form::select('sKar', [], null, ['id' => 'sKar', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
                                 </div>            
-                                <div class="col-4">
+                                <div class="col-3">
                                     <div class="form-group">                                        
                                         {{ Form::label('sDivisi', 'Divisi') }}
                                         {{ Form::select('sDivisi', [], null, ['id' => 'sDivisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
+                                </div>              
+                                <div class="col-2">
+                                    <div class="form-group">                                        
+                                        {{ Form::label('sJabatan', 'Jabatan') }}
+                                        {{ Form::select('sJabatan', [], null, ['id' => 'sJabatan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                    </div>
                                 </div>    
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sKeterangan', 'Keterangan') }}
                                         {{ Form::text('sKeterangan',  null, ['id' => 'sKeterangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
@@ -521,6 +566,7 @@
                                     <th class="tpin">PIN</th>
                                     <th class="tnama">Nama</th>
                                     <th class="tdivisi">Divisi</th>
+                                    <th class="tjabatan">Jabatan</th>
                                 </tr>
                             </thead>
                         </table>

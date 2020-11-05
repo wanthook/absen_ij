@@ -58,6 +58,7 @@ class Karyawan extends Model
         'off_id',
         'off_comment',
         'off_date',
+        'hamil',
         'jumlah_anak',
         'deleted_at',
         'created_by',
@@ -114,8 +115,6 @@ class Karyawan extends Model
         return $this->belongsToMany('App\JamKerja')
                     ->withPivot('tanggal','created_by','created_at');
     }
-    
-    
     
     public function jadwals()
     {
