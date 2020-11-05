@@ -1121,11 +1121,11 @@ class LaporanController
             $colStat = 1;
             $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
 			$headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
-			if(config('global.perusahaan_short') == 'AIC')
+            if(config('global.perusahaan_short') == 'AIC')
             {
-				$headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Golongan', 'Tanggal', 'Kode', 'Nama', 'Kode');
+                $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Gol', 'Tanggal', 'Kode', 'Nama', 'Kode');
                 $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
-			}
+            }
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -1235,7 +1235,7 @@ class LaporanController
             if(config('global.perusahaan_short') == 'AIC')
             {
                 $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Golongan', 'Tanggal', 'Kode', 'Nama', 'Kode');
-                $headW = array(10,15,50,10,30,10,15,13,40,20);
+                $headW = array(8,13,50,10,30,10,15,13,40,20);
                 $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
             }
             
