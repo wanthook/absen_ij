@@ -81,6 +81,13 @@ class Karyawan extends Model
                     ->orderBy('tanggal', 'desc');
     }
     
+    public function log_jabatan()
+    {
+        return $this->belongsToMany('App\Jabatan','jabatan_karyawan_log','karyawan_id','jabatan_id')
+                    ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                    ->orderBy('tanggal', 'desc');
+    }
+    
     public function log_golongan()
     {
         return $this->belongsToMany('App\MasterOption','golongan_karyawan_log','karyawan_id','golongan_id')

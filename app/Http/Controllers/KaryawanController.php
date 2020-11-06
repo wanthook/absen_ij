@@ -852,33 +852,42 @@ class KaryawanController extends Controller
                         
                         $tgl = Carbon::now();
                         
-                        $divisi = Divisi::where('kode', trim($sD[$arrKey->divisi]))->first();
+                        $divisi = null;
                         
                         $jabatan = null;
                         
-                        if(trim($sD[$arrKey->jabatan]))
+                        $arrUpd = ['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
+                        
+                        if(trim($sD[$arrKey->divisi]))
                         {
-                            $jabatan = Jabaran::where('kode', trim($sD[$arrKey->jabatan]))->first();
-                        }
+                            $divisi = Divisi::where('kode', trim($sD[$arrKey->divisi]))->first();
+                            if($divisi)
+                            {
+                                $arrUpd['divisi_id'] = $divisi->id;
+                                $attach = ['tanggal' => $tgl->toDateString(), 
+                                    'keterangan' => trim($sD[$arrKey->catatan]),
+                                    'created_by' => Auth::user()->id,
+                                    'updated_by' => Auth::user()->id,
+                                    'created_at' => Carbon::now(),
+                                    'updated_at' => Carbon::now()];
 
-                        $attach = ['tanggal' => $tgl->toDateString(), 
-                        'keterangan' => trim($sD[$arrKey->catatan]),
-                        'created_by' => Auth::user()->id,
-                        'updated_by' => Auth::user()->id,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()];
-                        
-                        $kar->log_divisi()->attach($divisi->id, $attach);
-                        
-                        $arrUpd = ['divisi_id' => $divisi->id,'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
+                                $kar->log_divisi()->attach($divisi->id, $attach);
+                            }
+                        }
                         
                         if(trim($sD[$arrKey->jabatan]))
                         {
-                            $arrUpd['jabatan_id'] = $jabatan->id;
+                            $jabatan = Jabatan::where('kode', trim($sD[$arrKey->jabatan]))->first();
+                            if($jabatan)
+                            {
+                                $arrUpd['jabatan_id'] = $jabatan->id;
+                            }
                         }
                         
-                        $kar->fill($arrUpd)->save();
-                        
+                        if($divisi || $jabatan)
+                        {
+                            $kar->fill($arrUpd)->save();
+                        }
                     }
                     else
                     {
@@ -1941,10 +1950,12 @@ class KaryawanController extends Controller
             $validation = Validator::make($request->all(), 
             [
                 'sKar'   => 'required',
-                'sDivisi'   => 'required'
+                'sDivisi'   => 'required_without:sJabatan',
+                'sJabatan'   => 'required_without:sDivisi'
             ],
             [
-                'sDivisi.required'  => 'Divisi harus diisi.',
+                'sDivisi.required_without'  => 'Divisi harus diisi.',
+                'sJabatan.required_without'  => 'Jabatan harus diisi.',
                 'sKar.required'  => 'Karyawan harus dipilih.',
             ]);
 
@@ -1965,18 +1976,20 @@ class KaryawanController extends Controller
                 {
                     $tgl = Carbon::now();
                     
-                    $karyawan->log_divisi()->attach($req['sDivisi'], [
-                        'tanggal' => $tgl->toDateString(), 
-                        'keterangan' => $req['sKeterangan'],
-                        'created_by' => Auth::user()->id,
-                        'updated_by' => Auth::user()->id,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
-                    
-                    $arrUpd = ['divisi_id' => $req['sDivisi'],'updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
-                    
-                    if($req['sJabatan'])
+                    $arrUpd = ['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
+                    if(isset($req['sDivisi']))
+                    {
+                        $karyawan->log_divisi()->attach($req['sDivisi'], [
+                            'tanggal' => $tgl->toDateString(), 
+                            'keterangan' => $req['sKeterangan'],
+                            'created_by' => Auth::user()->id,
+                            'updated_by' => Auth::user()->id,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ]);
+                        $arrUpd['divisi_id'] = $req['sDivisi'];
+                    }
+                    if(isset($req['sJabatan']))
                     {
                         $arrUpd['jabatan_id'] = $req['sJabatan'];
                     }
