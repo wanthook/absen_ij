@@ -395,7 +395,7 @@ trait TraitProses
                             case "SPO": $isSpo = true; break;
                         }
                         
-                        if($vAlasan->libur == 'Y')
+                        if($vAlasan->libur == 'Y' && $vAlasan->kode != 'LN')
                         {
                             $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
                         }
@@ -875,6 +875,7 @@ trait TraitProses
                                 }
                                 else if($vAlasan->kode == 'LN')
                                 {       
+                                    $jDiff = $jKeluar->diffInHours($jMasuk);
                                     $wkt = (float)$vAlasan->pivot->waktu;
 
                                     if($jDiff>=$wkt)
