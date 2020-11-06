@@ -477,18 +477,14 @@ class LaporanController
                 {
                     $lbl = '';
                     
-//                    if($kabs == '12/10/2020')
-//                    {
-//                        dd($vabs);
-//                    }
-                    
                     if(isset($vabs->inout))
                     {
                         $lbl = $vabs->inout;
                     }
                     else if(isset($vabs->is_off))
                     {
-                        $lbl = $vabs->keterangan;
+//                        $lbl = $vabs->keterangan;
+                        $lbl = 'RM';
                     }
                     else if(isset($vabs->libur))
                     {
