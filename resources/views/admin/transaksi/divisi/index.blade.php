@@ -408,7 +408,7 @@
                 }
             });
             
-
+            @if(Auth::user()->type->nama == 'ADMIN')
             $('#sJabatan').select2({
                 // placeholder: 'Silakan Pilih',
                 minimumInputLength: 0,
@@ -439,6 +439,7 @@
                     cache: true
                 }
             });
+            @endif
         });
         
         var detFormat = function(dt)
@@ -531,13 +532,15 @@
                                         {{ Form::label('sDivisi', 'Divisi') }}
                                         {{ Form::select('sDivisi', [], null, ['id' => 'sDivisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
-                                </div>              
+                                </div>       
+                                @if(Auth::user()->type->nama == 'ADMIN')
                                 <div class="col-2">
                                     <div class="form-group">                                        
                                         {{ Form::label('sJabatan', 'Jabatan') }}
                                         {{ Form::select('sJabatan', [], null, ['id' => 'sJabatan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
-                                </div>    
+                                </div> 
+                                @endif
                                 <div class="col-2">
                                     <div class="form-group">
                                         {{ Form::label('sKeterangan', 'Keterangan') }}

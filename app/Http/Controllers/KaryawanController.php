@@ -875,20 +875,24 @@ class KaryawanController extends Controller
                             }
                         }
                         
-                        if(trim($sD[$arrKey->jabatan]))
+                        if(Auth::user()->type->nama == 'ADMIN')
                         {
-                            $jabatan = Jabatan::where('kode', trim($sD[$arrKey->jabatan]))->first();
-                            if($jabatan)
+                        
+                            if(trim($sD[$arrKey->jabatan]))
                             {
-                                $arrUpd['jabatan_id'] = $jabatan->id;
-                                $attach = ['tanggal' => $tgl->toDateString(), 
-                                    'keterangan' => trim($sD[$arrKey->catatan]),
-                                    'created_by' => Auth::user()->id,
-                                    'updated_by' => Auth::user()->id,
-                                    'created_at' => Carbon::now(),
-                                    'updated_at' => Carbon::now()];
+                                $jabatan = Jabatan::where('kode', trim($sD[$arrKey->jabatan]))->first();
+                                if($jabatan)
+                                {
+                                    $arrUpd['jabatan_id'] = $jabatan->id;
+                                    $attach = ['tanggal' => $tgl->toDateString(), 
+                                        'keterangan' => trim($sD[$arrKey->catatan]),
+                                        'created_by' => Auth::user()->id,
+                                        'updated_by' => Auth::user()->id,
+                                        'created_at' => Carbon::now(),
+                                        'updated_at' => Carbon::now()];
 
-                                $kar->log_jabatan()->attach($jabatan->id, $attach);
+                                    $kar->log_jabatan()->attach($jabatan->id, $attach);
+                                }
                             }
                         }
                         
@@ -1997,10 +2001,22 @@ class KaryawanController extends Controller
                         ]);
                         $arrUpd['divisi_id'] = $req['sDivisi'];
                     }
-                    if(isset($req['sJabatan']))
-                    {
-                        $arrUpd['jabatan_id'] = $req['sJabatan'];
+                    if(Auth::user()->type->nama == 'ADMIN')
+                    {                            
+                        if(isset($req['sJabatan']))
+                        {
+                            $karyawan->log_jabatan()->attach($req['sJabatan'], [
+                                'tanggal' => $tgl->toDateString(), 
+                                'keterangan' => $req['sKeterangan'],
+                                'created_by' => Auth::user()->id,
+                                'updated_by' => Auth::user()->id,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ]);
+                            $arrUpd['jabatan_id'] = $req['sJabatan'];
+                        }
                     }
+                    
                     $karyawan->fill($arrUpd)->save();
                     echo json_encode(array(
                         'status' => 1,
