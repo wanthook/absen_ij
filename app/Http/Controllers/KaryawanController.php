@@ -881,6 +881,14 @@ class KaryawanController extends Controller
                             if($jabatan)
                             {
                                 $arrUpd['jabatan_id'] = $jabatan->id;
+                                $attach = ['tanggal' => $tgl->toDateString(), 
+                                    'keterangan' => trim($sD[$arrKey->catatan]),
+                                    'created_by' => Auth::user()->id,
+                                    'updated_by' => Auth::user()->id,
+                                    'created_at' => Carbon::now(),
+                                    'updated_at' => Carbon::now()];
+
+                                $kar->log_jabatan()->attach($jabatan->id, $attach);
                             }
                         }
                         
