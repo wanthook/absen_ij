@@ -216,7 +216,6 @@
                     data: function (d) 
                     {
                         d.sKar   = $('#sKar').val();
-                        d.sPerusahaan   = $('#sPerusahaan').val();
                     }
                 },        
                 select: 
