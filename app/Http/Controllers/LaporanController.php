@@ -154,6 +154,11 @@ class LaporanController
         return view('admin.laporan.log_mesin_karyawan.index');
     }
     
+    public function indexStatusNonAktif()
+    {
+        return view('admin.laporan.status_non_aktif.index');
+    }
+    
     public function laporanDetail(Request $request)
     {
         try
@@ -404,15 +409,18 @@ class LaporanController
                             $pdf->Cell($Width2[$kH], 4, $vH, $border, 0, 'C');
                         }
                         $pdf->Ln();
-
-                        foreach($var['detail'] as $kabs => $vabs)
+                        
+                        if(isset($var['detail']))
                         {
-                            $i = 0;
-                            foreach($vabs as $kdet => $vdet)
+                            foreach($var['detail'] as $kabs => $vabs)
                             {
-                                $pdf->Cell($Width2[$i++], 4.5, $vdet, '1', 0, 'C');
+                                $i = 0;
+                                foreach($vabs as $kdet => $vdet)
+                                {
+                                    $pdf->Cell($Width2[$i++], 4.5, $vdet, '1', 0, 'C');
+                                }
+                                $pdf->Ln();
                             }
-                            $pdf->Ln();
                         }
                         $pdf->Cell((25+30+30+20+20+50), 4.5, "Jumlah", '1', 0, 'C');
                         $pdf->Cell($Width2[10], 4.5, $var['lemburAktual'], '1', 0, 'C');

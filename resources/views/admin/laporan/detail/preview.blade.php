@@ -168,16 +168,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </tr>
             </thead>
             <tbody>
-                @foreach($vVal['detail'] as $kabs => $vabs)    
-                <tr>
-                    <?php
-                    foreach($vabs as $kdet => $vdet)
-                    {
-                        echo '<td class="dc">'.$vdet.'</td>';
-                    }
-                    ?>
-                </tr>
-                @endforeach
+                @if(isset($vVal['detail']))
+                    @foreach($vVal['detail'] as $kabs => $vabs)    
+                    <tr>
+                        <?php
+                        foreach($vabs as $kdet => $vdet)
+                        {
+                            echo '<td class="dc">'.$vdet.'</td>';
+                        }
+                        ?>
+                    </tr>
+                    @endforeach
+                @endif
             </tbody>
             <tfoot>
                 <tr>
