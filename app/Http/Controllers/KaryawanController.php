@@ -2591,7 +2591,10 @@ class KaryawanController extends Controller
             $q->orderBy('created_at', 'desc');
         },'divisi', 'jabatan'])->author()->KaryawanAktif()->orderBy('updated_at', 'desc');        
         
-        $datas->where('id', $req['sKar']);
+        if(isset($req['sKar']))
+        {
+            $datas->where('id', $req['sKar']);
+        }
         
         if(isset($req['sDivisi']))
         {

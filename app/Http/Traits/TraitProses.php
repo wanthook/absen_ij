@@ -854,11 +854,11 @@ trait TraitProses
                                         $lAkt = $wkt;
                                         $lemburAktual += $lAkt;
 
-                                        if($lAkt>5)
-                                        {
-                                            $lAkt -= 1;
-                                            $lemburAktual -= 1;
-                                        }
+//                                        if($lAkt>5)
+//                                        {
+//                                            $lAkt -= 1;
+//                                            $lemburAktual -= 1;
+//                                        }
                                     }
                                     else
                                     {
@@ -882,18 +882,18 @@ trait TraitProses
                                     {
                                         $lemburLN += $wkt;
 
-                                        if($wkt>5)
-                                        {
-                                            $lemburLN -= 1;
-                                        }
+//                                        if($wkt>5)
+//                                        {
+//                                            $lemburLN -= 1;
+//                                        }
                                     }
                                     else
                                     {
                                         $lemburLN += (float) $this->roundDec($jDiff);
-                                        if($jDiff>5)
-                                        {
-                                            $lemburLN -= 1;
-                                        }
+//                                        if($jDiff>5)
+//                                        {
+//                                            $lemburLN -= 1;
+//                                        }
                                     }
 
                                     $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
