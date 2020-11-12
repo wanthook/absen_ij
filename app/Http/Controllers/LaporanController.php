@@ -2541,10 +2541,17 @@ class LaporanController
                 {
                     if(isset($abs['activity']))
                     {
+                        $gol = null;
+                        
+                        if($kar->logGolonganTanggal($per->toDateString())->first())
+                        {
+                            $gol = $kar->logGolonganTanggal($per->toDateString())->first()->nama;
+                        }
+                        
                         $action[] = [
                             'pin' => $kar->pin,
                             'nama' => $kar->nama,
-                            'golongan' => $kar->logGolonganTanggal($per->toDateString())->first()->nama,
+                            'golongan' => $gol,
                             'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
                             'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
                             'kode_divisi' => $kar->divisi->kode,
