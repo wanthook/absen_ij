@@ -492,7 +492,22 @@ class LaporanController
                     else if(isset($vabs->is_off))
                     {
 //                        $lbl = $vabs->keterangan;
-                        $lbl = 'RM';
+                        if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                        {
+                            if(isset($vabs->total_lembur))
+                            {
+                                $lbl = $vabs->total_lembur;
+                                $tLembur += $vabs->total_lembur;
+                            }
+                            else
+                            {
+                                $lbl = '0';
+                            }
+                        }
+                        else
+                        {
+                            $lbl = 'RM';
+                        }
                     }
                     else if(isset($vabs->libur))
                     {
