@@ -1312,7 +1312,7 @@ class LaporanController
             $tanggal =  explode(' - ', $req['tanggal']);
         }
                 
-        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author()->whereBetween('active_status_date', $tanggal);
+        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->whereIn('active_status',[2,3])->author()->whereBetween('active_status_date', $tanggal);
               
         $logOff = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->whereHas('log_off', function($q) use($tanggal)
         {
