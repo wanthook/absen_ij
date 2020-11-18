@@ -68,6 +68,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('laporan-transaksi-alasan', ['as' => 'ltransaksialasan', 'uses' => 'LaporanController@indexTransaksiAlasan']);
             Route::get('laporan-log-jam-masuk', ['as' => 'llogjammasuk', 'uses' => 'LaporanController@indexLogJamMasuk']);
             Route::get('laporan-log-mesin-karyawan', ['as' => 'llogmesinkaryawan', 'uses' => 'LaporanController@indexLogMesinKaryawan']);
+            Route::get('laporan-non-aktif-karyawan', ['as' => 'lnonaktifkaryawan', 'uses' => 'LaporanController@indexStatusNonAktif']);
         });
 
         Route::group(['prefix' => 'administrator'], function()
@@ -124,6 +125,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('alasansave', ['as' => 'savealasan', 'uses' => 'AlasanController@store']);
             Route::post('alasandel', ['as' => 'delalasan', 'uses' => 'AlasanController@destroy']);
             Route::post('alasansel', ['as' => 'selalasan', 'uses' => 'AlasanController@select2']);
+            Route::post('alasanselect', ['as' => 'selectalasan', 'uses' => 'AlasanController@selectAlasan']);
 
             Route::post('perusahaandt', ['as' => 'dtperusahaan', 'uses' => 'PerusahaanController@dt']);
             Route::post('perusahaansave', ['as' => 'saveperusahaan', 'uses' => 'PerusahaanController@store']);
@@ -135,12 +137,14 @@ Route::group(['middleware' => 'auth'],function()
 
             Route::post('karyawandt', ['as' => 'dtkaryawan', 'uses' => 'KaryawanController@dt']);
             Route::post('karyawandttalasan', ['as' => 'dttalasankaryawan', 'uses' => 'KaryawanController@dtTransaksiAlasan']);
-            Route::post('karyawantabletalasan', ['as' => 'tabletalasankaryawan', 'uses' => 'KaryawanController@tableTransaksiAlasan']);
+            Route::post('karyawantabletalasan', ['as' => 'tabletalasankaryawan', 'uses' => 'AlasanController@tableTransaksiAlasan']);
+            Route::post('karyawantabletalasanrange', ['as' => 'tabletalasanrangekaryawan', 'uses' => 'AlasanController@tableTransaksiAlasanRange']);
             Route::post('karyawandtstatus', ['as' => 'dttstatuskaryawan', 'uses' => 'KaryawanController@dtStatus']);
             Route::post('karyawandtstatusoff', ['as' => 'dttstatusoffkaryawan', 'uses' => 'KaryawanController@dtStatusOff']);
             
             Route::post('karyawansave', ['as' => 'savekaryawan', 'uses' => 'KaryawanController@store']);
-            Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'KaryawanController@storeAlasanKaryawan']);
+            Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'AlasanController@storeAlasanKaryawan']);
+            Route::post('karyawansavealasanrange', ['as' => 'savealasankaryawanrange', 'uses' => 'AlasanController@storeAlasanRangeKaryawan']);
             Route::post('karyawansavemanual', ['as' => 'savejadwalmanual', 'uses' => 'JadwalController@manualStore']);
             Route::post('karyawansavedivisi', ['as' => 'savedivisikaryawan', 'uses' => 'KaryawanController@storeDivisi']);
             Route::post('karyawansavegolongan', ['as' => 'savegolongankaryawan', 'uses' => 'KaryawanController@storeGolongan']);
@@ -157,7 +161,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawanstatusoffupload', ['as' => 'uploadstatusoffkaryawan', 'uses' => 'KaryawanController@storeUploadOff']);
             
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
-            Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'KaryawanController@destroyAlasanKaryawan']);
+            Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'AlasanController@destroyAlasanKaryawan']);
             Route::post('karyawansel', ['as' => 'selkaryawan', 'uses' => 'KaryawanController@select2']);
             Route::post('karyawanselect', ['as' => 'selectkaryawan', 'uses' => 'KaryawanController@selectKaryawan']);
             Route::post('karyawanseloff', ['as' => 'selkaryawanoff', 'uses' => 'KaryawanController@select2off']);
@@ -178,6 +182,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('mesindel', ['as' => 'delmesin', 'uses' => 'MesinController@destroy']);
             Route::post('mesinsel', ['as' => 'selmesin', 'uses' => 'MesinController@select2']);
             Route::post('mesintarik', ['as' => 'tarikmesin', 'uses' => 'MesinController@tarikAbsen']);
+            Route::post('mesinhapus', ['as' => 'hapusmesin', 'uses' => 'MesinController@hapusAbsen']);
 
             Route::post('jamkerjadt', ['as' => 'dtjamkerja', 'uses' => 'JamKerjaController@dt']);
             Route::post('jamkerjasave', ['as' => 'savejamkerja', 'uses' => 'JamKerjaController@store']);
@@ -217,6 +222,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('laporankaryawanrekapabsen', ['as' => 'karyawanrekapabsenlaporan', 'uses' => 'LaporanController@laporanKaryawanRekapAbsen']);
             Route::post('laporantransaksialasan', ['as' => 'transaksialasanlaporan', 'uses' => 'LaporanController@laporanTransaksiAlasan']);
             Route::post('laporanlogjammasuk', ['as' => 'logjammasuklaporan', 'uses' => 'LaporanController@laporanLogJamMasuk']);
+            Route::post('laporannonaktifkaryawan', ['as' => 'karyawannonaktiflaporan', 'uses' => 'LaporanController@laporanKaryawanNonAktif']);
 
             Route::post('absenmanualsave', ['as' => 'saveabsenmanual', 'uses' => 'ActivityManualController@store']);
             Route::post('absenmanualuploadsave', ['as' => 'saveabsenmanualupload', 'uses' => 'ActivityManualController@storeUploadAbsenManual']);
