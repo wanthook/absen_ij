@@ -1365,102 +1365,6 @@ class KaryawanController extends Controller
         }
     }
 
-    public function storeAlasanKaryawan(Request $request)
-    {
-        try
-        {
-            $validation = Validator::make($request->all(), 
-            [
-                'sTanggal'   => 'required',
-                'sKar'   => 'required',
-                'sAlasan'   => 'required',
-            ],
-            [
-                'sTanggal.required'  => 'Tanggal harus diisi.',
-                'sKar.required'  => 'Karyawan harus dipilih.',
-                'sAlasan.required'  => 'Alasan harus dipilih.'
-            ]);
-
-            if($validation->fails())
-            {
-                echo json_encode(array(
-                    'status' => 0,
-                    'msg'   => $validation->errors()->all()
-                ));
-            }
-            else
-            {
-                $req = $request->all();
-
-                $req['created_by']   = Auth::user()->id;  
-                
-                $tglA = Carbon::createFromFormat("Y-m-d", $req['sTanggal']);
-                $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggal']);
-
-                $jd = Karyawan::find($req['sKar']);
-                
-                $al = Alasan::find($req['sAlasan']);
-                
-                if($req['sTanggalAkhir'])
-                {
-                    $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggalAkhir']);
-                }
-                
-                $tglPer = CarbonPeriod::create($tglA->toDateString(), $tglB->toDateString())->toArray();
-                
-                foreach($tglPer as $vTgl)
-                {
-                    $par = $jd->alasan()->wherePivot('tanggal', $vTgl);
-//                
-                    if($par)
-                    {
-                        if($req['sAlasanOld'])
-                        {
-                            $par->detach($req['sAlasanOld']);
-                        }
-                        else
-                        {
-                            $par->detach($req['sAlasan']);
-                        }
-                        
-                    }
-
-                    if($req['sAlasan'])
-                    {
-                        $attach = ['tanggal' => $vTgl, 'keterangan' => $req['sKeterangan'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
-
-                        if($req['sWaktu'])
-                        {
-                            $attach['waktu'] = $req['sWaktu'];
-                        }
-
-                        $jd->alasan()->attach($req['sAlasan'], $attach);
-                        
-//                        if($this->cekProses($jd->id, $vTgl))
-//                        {
-                            $this->prosesAbsTanggal($jd->id, $vTgl);
-//                        }
-                    }
-                }
-
-                echo json_encode(array(
-                    'status' => 1,
-                    'msg'   => 'Data berhasil diubah'
-                ));
-                    
-            }
-            
-        }
-        catch (QueryException $er)
-        {
-            echo json_encode(array(
-                'status' => 0,
-                'msg'   => 'Data gagal disimpan',
-                'err' => $er->getMessage()
-            ));
-        }
-    }
-
     public function storeJadwalKaryawan(Request $request)
     {
         try
@@ -2145,68 +2049,6 @@ class KaryawanController extends Controller
      * @param  \App\Karyawan  $Request $request
      * @return \Illuminate\Http\Response
      */
-    public function destroyAlasanKaryawan(Request $request)
-    {
-        try
-        {
-            $validation = Validator::make($request->all(), 
-            [
-                'sTanggal'   => 'required',
-                'sAlasan'   => 'required',
-                'sKar'   => 'required'
-            ],
-            [
-                'sTanggal.required'  => 'Tanggal harus diisi.',
-                'sAlasan.required'  => 'Alasan harus diisi.',
-                'sKar.required'  => 'Karyawan harus dipilih.'
-            ]);
-
-            if($validation->fails())
-            {
-                echo json_encode(array(
-                    'status' => 0,
-                    'msg'   => $validation->errors()->all()
-                ));
-            }
-            else
-            {
-                $req = $request->all();
-
-                $jd = Karyawan::find($req['sKar']);
-                
-                $par = $jd->alasan()->wherePivot('tanggal', $req['sTanggal']);
-                
-//                dd($par->detach());
-//                
-                if($jd->alasan()->wherePivot('tanggal', $req['sTanggal']))
-                {
-                    $par->detach($req['sAlasan']);
-                }
-                $this->prosesAbsTanggal($jd->id, $req['sTanggal']);
-                echo json_encode(array(
-                    'status' => 1,
-                    'msg'   => 'Data berhasil dihapus'
-                ));
-                    
-            }
-            
-        }
-        catch (QueryException $er)
-        {
-            echo json_encode(array(
-                'status' => 0,
-                'msg'   => 'Data gagal dihapus',
-                'err' => $er->getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Karyawan  $Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function destroyJadwalKaryawan(Request $request)
     {
         try
@@ -2489,78 +2331,6 @@ class KaryawanController extends Controller
                 ->make(true);
     }
     
-    public function tableTransaksiAlasan(Request $request)
-    {
-        $ret = [];
-        $total = 0;
-        $req    = $request->all();
-        
-        $datas = DB::table('alasan_karyawan')
-                  ->selectRaw('alasan_karyawan.tanggal as tanggal, '
-                          . 'alasan_karyawan.alasan_id as alasan_id, '
-                          . 'alasan_karyawan.waktu as waktu, '
-                          . 'alasan_karyawan.keterangan as keterangan, '
-                          . 'karyawans.id as karyawan_id, '
-                          . 'karyawans.pin as pin, '
-                          . 'karyawans.nik as nik, '
-                          . 'karyawans.nama as nama, '
-                          . 'divisis.kode as divisi_kode, '
-                          . 'divisis.deskripsi as divisi_deskripsi, '
-                          . 'alasans.kode as alasan_kode, '
-                          . 'alasans.deskripsi as alasan_deskripsi,'
-                          . 'alasan_karyawan.created_at as id')
-                  ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
-                  ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
-                  ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
-                  ->orderBy('alasan_karyawan.tanggal', 'desc')
-                  ->groupBy('alasan_karyawan.alasan_id', 'alasan_karyawan.karyawan_id');
-        
-        $total = DB::table('alasan_karyawan')
-                        ->selectRaw('count(*) as cnt');
-        
-        if(isset($req['sTanggal']))
-        {
-            $datas->where('alasan_karyawan.tanggal',$req['sTanggal']);
-            $total->where('alasan_karyawan.tanggal',$req['sTanggal']);
-            
-        }
-        
-        if(Auth::user()->type->nama == 'REKANAN')
-        {
-            $datas->where('karyawans.perusahaan_id', Auth::user()->perusahaan_id);
-            $total->where('karyawans.perusahaan_id', Auth::user()->perusahaan_id);
-        }
-        
-        if(isset($req['page']))
-        {
-            $datas->offset($req['page']);
-        }
-        
-        if(isset($req['rows']))
-        {
-            $datas->limit($req['rows']);
-        }
-        
-        $res = $datas->get();
-        
-        foreach($res as $val)
-        {
-            $ret[] = [
-                'sKar' => $val->karyawan_id,
-                'sKarText' => $val->pin.' - '.$val->nama,
-                'sDivisiKode' => $val->divisi_kode,
-                'sDivisiNama' => $val->divisi_deskripsi,
-                'sAlasan' => $val->alasan_id,
-                'sAlasanKode' => $val->alasan_kode,
-                'sAlasanNama' => $val->alasan_deskripsi,
-                'sWaktu' => $val->waktu,
-                'tanggal' => $val->tanggal
-            ];
-        }
-        
-        echo json_encode(['rows' => $ret, 'total' => $total->first()->cnt]);
-    }
-    
     public function dtJadwal(Request $request)
     {
         $req    = $request->all();
@@ -2697,7 +2467,6 @@ class KaryawanController extends Controller
     
     public function selectKaryawan(Request $request)
     {
-        $tags = null;
         $req = $request->all();
         $tags = Karyawan::with('divisi', 'jabatan')->author();
         if(isset($req['q']))
@@ -2711,10 +2480,9 @@ class KaryawanController extends Controller
 //                  ->orWhere('id',$term);
             });
         }
-        $tags->limit(100);
         $formatted_tags = [];
         foreach ($tags->get() as $tag) {
-            $formatted_tags[] = ['sKar' => $tag->id, 'sKarText' => $tag->pin.' - '.$tag->nama, 'divisi' => ['kode' => $tag->divisi->kode, 'nama' => $tag->divisi->deskripsi]];
+            $formatted_tags[] = ['sKar' => $tag->id, 'sKarText' => $tag->pin.' - '.$tag->nama];
         }
         return response()->json($formatted_tags);
 //        echo json_encode(array('items' => $formatted_tags));

@@ -1299,6 +1299,297 @@ class LaporanController
         }
     }
     
+    public function laporanKaryawanNonAktif(Request $request)
+    {
+        $req = $request->all();
+
+        $tanggal = [];
+
+        $ret = [];
+
+        if(isset($req['tanggal']))
+        {
+            $tanggal =  explode(' - ', $req['tanggal']);
+        }
+                
+        $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->where('active_status',2)->author()->whereBetween('active_status_date', $tanggal);
+              
+        $logOff = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->whereHas('log_off', function($q) use($tanggal)
+        {
+            $q->where('kode', 'RM');
+            $q->whereBetween('off_karyawan_log.tanggal', $tanggal);
+        });
+        
+        if(isset($req['perusahaan']))
+        {
+            $karNonAktif->where('perusahaan_id', $req['perusahaan']);
+            $logOff->where('perusahaan_id', $req['perusahaan']);
+        }
+
+        if(isset($req['divisi']))
+        {
+            $div = Divisi::descendantsAndSelf($req['divisi'])->pluck('id');
+
+            $karNonAktif->whereIn('divisi_id', $div);
+            $logOff->whereIn('divisi_id', $div);
+        }
+        
+        foreach($karNonAktif->get() as $kA)
+        {
+            $ret[] = array(
+                'pin' => (isset($kA->pin)?$kA->pin:''),
+                'nik' => (isset($kA->nik)?$kA->nik:''),
+                'tanggal_masuk' => (isset($kA->tanggal_masuk)?$kA->tanggal_masuk:''),
+                'nama_karyawan' => (isset($kA->nama)?$kA->nama:''),
+                'kode_divisi' => (isset($kA->divisi)?$kA->divisi->kode:''),
+                'nama_divisi' => (isset($kA->divisi)?$kA->divisi->deskripsi:''),
+                'tanggal_keluar' => (isset($kA->active_status_date)?$kA->active_status_date:''),
+                'keterangan' => (isset($kA->active_comment)?$kA->active_comment:'')
+
+
+            );            
+        }
+
+        foreach($logOff->get() as $kA)
+        {
+            $lF = $kA->log_off()->where('kode','RM')->orderBy('off_karyawan_log.tanggal', 'desc')->first();
+            
+            $ret[] = array(
+                'pin' => (isset($kA->pin)?$kA->pin:''),
+                'nik' => (isset($kA->nik)?$kA->nik:''),
+                'tanggal_masuk' => (isset($kA->tanggal_masuk)?$kA->tanggal_masuk:''),
+                'nama_karyawan' => (isset($kA->nama)?$kA->nama:''),
+                'kode_divisi' => (isset($kA->divisi)?$kA->divisi->kode:''),
+                'nama_divisi' => (isset($kA->divisi)?$kA->divisi->deskripsi:''),
+                'tanggal_keluar' => (isset($lF->pivot)?$lF->pivot->tanggal:''),
+                'keterangan' => (isset($lF->kode)?$lF->kode:'')
+            );        
+        }
+        
+        usort($ret, function($a, $b)
+        {
+            $ret =  $a['tanggal_keluar'] <=> $b['tanggal_keluar'];
+            if($ret == 0 )
+            {
+                $ret = $a['pin'] <=> $b['pin'];
+            }
+            
+            return $ret;
+        });
+
+        if($req['btnSubmit'] == "preview")
+        {
+            return view('admin.laporan.status_non_aktif.preview', ['var' => $ret, 
+                'periode' => $tanggal[0].' s/d '.$tanggal[1], 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]);
+        }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan Absen Komulatif')
+                ->setSubject('Laporan Karyawan Non Aktif')
+                ->setDescription('Laporan Karyawan Non Aktif')
+                ->setKeywords('laporan indahjaya karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Laporan Karyawan Non Aktif');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan Karyawan Non Aktif');
+            $ss->getActiveSheet()->setCellValue('A2', 'Periode : '.$tanggal[0].' s/d '.$tanggal[1]);
+            $mergeHead = 10;
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Keterangan');
+			$headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Keluar', '');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+			
+            $colStat = 1;
+			$rowStart++;
+			
+            foreach($headTbl2 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart-1,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+			
+            if(count($ret))
+            {
+                foreach($ret as $kKar => $vKar)
+                {
+                    $colStat = 1;
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kKar+1);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['pin'])?$vKar['pin']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nik'])?$vKar['nik']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_masuk'])?$vKar['tanggal_masuk']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama_karyawan'])?$vKar['nama_karyawan']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['kode_divisi'])?$vKar['kode_divisi']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama_divisi'])?$vKar['nama_divisi']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_keluar'])?$vKar['tanggal_keluar']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['keterangan'])?$vKar['keterangan']:'');
+
+                    $rowStart++;
+                }
+            }
+			
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,6,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="Laporan Karyawan Non Aktif.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
+        }
+        else if($req['btnSubmit'] == "pdf")
+        {
+            $pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+            $pdf->SetMargins(3, 23, 5);
+            $pdf->setFontSubsetting(false);
+            $pdf->SetFont('helvetica', '', 8);
+            
+            $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
+            $pdf->AddPage();
+            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Keterangan');
+            $headW = array(10,15,50,10,30,15,13,40,20);
+            $headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Keluar', '');
+            
+            foreach($headTbl1 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRT', 0, 'C');
+            }
+            $pdf->Ln();
+            foreach($headTbl2 as $kH => $vH)
+            {
+                $pdf->Cell($headW[$kH], 4, $vH, 'LRB', 0, 'C');
+            }
+            $pdf->Ln();
+            if(count($ret))
+            {
+                foreach($ret as $kKar => $vKar)
+                {
+                    $y = 0;
+                    $pdf->Cell($headW[$y++], 4, $kKar+1, 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['pin'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['nik'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['tanggal_masuk'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['nama_karyawan'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['kode_divisi'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['nama_divisi'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, substr($vKar['tanggal_keluar'],0,20), 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['keterangan'], 'LRB', 0, 'C');
+                    $pdf->Ln();
+                }
+            }
+            $pdf->Output('Laporan Karyawan Non Aktif.pdf', 'I');
+        }
+        else
+        {
+            return abort(404,'Not Found');
+        }
+    }
+    
     public function laporanKaryawanMangkirTa(Request $request)
     {
         $req = $request->all();

@@ -219,15 +219,28 @@ class Karyawan extends Model
                     ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at');
     }
     
-    public function agama()
-    {
-        return $this->belongsTo('App\MasterOption','agama_id');
-    }
-    
     public function alasanTanggal($tanggal)
     {
         return $this->alasan()
                     ->wherePivot('tanggal', $tanggal);
+    }
+    
+    public function alasanRange()
+    {
+        return $this->belongsToMany('App\Alasan','alasan_karyawan_range','karyawan_id','alasan_id')
+                    ->withPivot('tanggal_awal', 'tanggal_akhir', 'waktu', 'keterangan','created_by','created_at');
+    }
+    
+    public function alasanRangeTanggal($tanggal)
+    {
+        return $this->alasanRange()
+                    ->wherePivot('tanggal_awal', '<=',$tanggal)
+                    ->wherePivot('tanggal_akhir', '>=', $tanggal);
+    }
+    
+    public function agama()
+    {
+        return $this->belongsTo('App\MasterOption','agama_id');
     }
     
     public function absenManual()
