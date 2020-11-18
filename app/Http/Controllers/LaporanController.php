@@ -571,6 +571,11 @@ class LaporanController
                         {
                             if($vabs->alasan[0]->kode != 'LN')
                             {
+                                if($vabs->alasan[0]->kode == 'GP')
+                                {
+                                    $jGp+=$vabs->gp;
+                                    $jJk += $vabs->jumlah_jam_kerja;
+                                }
                                 $lbl = $vabs->alasan[0]->kode;
                             }
                         }
