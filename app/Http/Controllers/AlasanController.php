@@ -6,6 +6,7 @@ use App\Alasan;
 use App\Karyawan;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Yajra\DataTables\DataTables;
 use Illuminate\Database\QueryException;
 use Auth;
