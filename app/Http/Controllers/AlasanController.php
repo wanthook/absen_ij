@@ -106,8 +106,104 @@ class AlasanController extends Controller
             ));
         }
     }
-    
+
     public function storeAlasanKaryawan(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sTanggal'   => 'required',
+                'sKar'   => 'required',
+                'sAlasan'   => 'required',
+            ],
+            [
+                'sTanggal.required'  => 'Tanggal harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.',
+                'sAlasan.required'  => 'Alasan harus dipilih.'
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+
+                $req['created_by']   = Auth::user()->id;  
+                
+                $tglA = Carbon::createFromFormat("Y-m-d", $req['sTanggal']);
+                $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggal']);
+
+                $jd = Karyawan::find($req['sKar']);
+                
+                $al = Alasan::find($req['sAlasan']);
+                
+                if($req['sTanggalAkhir'])
+                {
+                    $tglB = Carbon::createFromFormat("Y-m-d", $req['sTanggalAkhir']);
+                }
+                
+                $tglPer = CarbonPeriod::create($tglA->toDateString(), $tglB->toDateString())->toArray();
+                
+                foreach($tglPer as $vTgl)
+                {
+                    $par = $jd->alasan()->wherePivot('tanggal', $vTgl);
+//                
+                    if($par)
+                    {
+                        if($req['sAlasanOld'])
+                        {
+                            $par->detach($req['sAlasanOld']);
+                        }
+                        else
+                        {
+                            $par->detach($req['sAlasan']);
+                        }
+                        
+                    }
+
+                    if($req['sAlasan'])
+                    {
+                        $attach = ['tanggal' => $vTgl, 'keterangan' => $req['sKeterangan'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
+
+                        if($req['sWaktu'])
+                        {
+                            $attach['waktu'] = $req['sWaktu'];
+                        }
+
+                        $jd->alasan()->attach($req['sAlasan'], $attach);
+                        
+//                        if($this->cekProses($jd->id, $vTgl))
+//                        {
+                            $this->prosesAbsTanggal($jd->id, $vTgl);
+//                        }
+                    }
+                }
+
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil diubah'
+                ));
+                    
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+    
+    public function storeAlasanKaryawan2(Request $request)
     {
         try
         {
