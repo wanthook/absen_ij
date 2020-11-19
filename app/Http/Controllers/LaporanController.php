@@ -504,6 +504,16 @@ class LaporanController
                                 $lbl = '0';
                             }
                         }
+                        else if(isset($vabs->alasan))
+                        {                            
+                            foreach($vabs->alasan as $als)
+                            {
+                                if($als->libur == 'Y')
+                                {
+                                    $lbl = $als->kode;
+                                }
+                            }
+                        }
                         else
                         {
                             $lbl = 'RM';
@@ -700,15 +710,22 @@ class LaporanController
                 
                 if($s3Total)
                 {
-                    if($s3Total == $shift3Real)
+                    if($s3Total >= 3)
                     {
-                        $s3v = 1;
+                        if($s3Total == $shift3Real)
+                        {
+                            $s3v = 1;
+                        }
+                        else if(($s3Total - $shift3Real) == 1)
+                        {
+                            $s3v = 0.5;
+                        }
+                        else if(($s3Total - $shift3Real) > 1)
+                        {
+                            $s3v = 0;
+                        }
                     }
-                    else if(($s3Total - $shift3Real) == 1)
-                    {
-                        $s3v = 0.5;
-                    }
-                    else if(($s3Total - $shift3Real) > 1)
+                    else
                     {
                         $s3v = 0;
                     }

@@ -18,7 +18,7 @@ class SubTransaction extends Pivot
      */
     public function getNilaiAttribute($amount)
     {
-        if(Auth::user()->type->nama == 'PAJAK')
+        if(Auth::user()->type->nama == 'PAJAK' || Auth::user()->type->nama == 'ADMIN')
         {
             return Crypt::decryptString($amount);
         }
@@ -30,7 +30,7 @@ class SubTransaction extends Pivot
                 return Crypt::decryptString($amount);
             }
         }
-        return $amount;
+        return '';
     }
     
     /**
