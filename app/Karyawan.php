@@ -298,7 +298,7 @@ class Karyawan extends Model
 
     public function scopeKaryawanAktif($query)
     {
-        $query->where('active_status', 1);
+        $query->whereIn('active_status', [1,2]);
         
         return $query;
     }

@@ -61,10 +61,16 @@ trait TraitProses
         $this->prosesAbs($karId, $tgl);
     }
     
+    public function prosesAbsTanggalRange($karId, $tanggalAwal, $tanggalAkhir)
+    {
+        $tgl = CarbonPeriod::create($tanggalAwal, $tanggalAkhir)->toArray();
+        
+        $this->prosesAbs($karId, $tgl);
+    }
+    
     public function prosesAbs($karId, $tanggal)
     {
         $karyawan = Karyawan::find($karId);
-                    
         $tmk = null;
         $active = null;
         $off = null;
@@ -101,7 +107,7 @@ trait TraitProses
 
         $jadwalArr = $this->jadwals($tanggal, $karyawan);
         $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-        
+        // dd($jadwalArr);
         if($jadwalArr)
         {
             $arrProses = [];
@@ -210,7 +216,7 @@ trait TraitProses
 
                 if(!isset($val->kode))
                 {
-                    continue;
+                    // dd($val);
                 }
 
                 /*
@@ -303,6 +309,12 @@ trait TraitProses
                  * Ambil alasan karyawan pada tanggal current
                  */
                 $alasan = $karyawan->alasanTanggal($key);
+                
+                if(!$alasan->count())
+                {
+                    $alasan = $karyawan->alasanRangeTanggal($key);
+                }
+                
                 /*
                  * End
                  */
@@ -928,9 +940,10 @@ trait TraitProses
                     }
                 }
 
-
+                
                 if(!$jMasuk && !$jKeluar)
                 {
+                    // dd($key);
                     if(!$isLibur && !$isInOut && !$isOff)
                     {
                         $today = Carbon::now();

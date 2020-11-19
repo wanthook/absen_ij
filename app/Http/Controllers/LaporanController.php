@@ -508,9 +508,14 @@ class LaporanController
                         {                            
                             foreach($vabs->alasan as $als)
                             {
-                                if($als->libur == 'Y')
+                                if($als->libur == 'Y' && $als->kode != 'RM')
                                 {
                                     $lbl = $als->kode;
+                                    break;
+                                }
+                                else
+                                {
+                                    $lbl = 'RM';
                                 }
                             }
                         }

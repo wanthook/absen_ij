@@ -65,16 +65,15 @@ class ProsesabsenController extends Controller
      */
     public function proses(Request $request)
     {
-        
         try
         {
             $validation = Validator::make($request->all(), 
-                [
-                    'tanggal'   => 'required'
-                ],
-                [
-                    'tanggal.required'  => 'Kode harus diisi.'
-                ]);
+            [
+                'tanggal'   => 'required'
+            ],
+            [
+                'tanggal.required'  => 'Kode harus diisi.'
+            ]);
 
             if($validation->fails())
             {
@@ -102,10 +101,9 @@ class ProsesabsenController extends Controller
 
                 $tArr = explode(" - ", $req['tanggal']);
                 $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
-
+                // dd($karyawan->count());
                 $karyawan->chunk(100, function($kar) use($tanggal)
                 {
-
                     foreach($kar as $rKar)
                     {
                         $this->prosesAbs($rKar->id, $tanggal);
