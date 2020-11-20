@@ -1458,7 +1458,7 @@ class LaporanController
         
         usort($ret, function($a, $b)
         {
-            $ret =  $a['tanggal_keluar'] <=> $b['tanggal_keluar'];
+            $ret =  $a['tanggal_set'] <=> $b['tanggal_set'];
             if($ret == 0 )
             {
                 $ret = $a['pin'] <=> $b['pin'];
