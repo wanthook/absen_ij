@@ -135,7 +135,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>Nama<br>Karyawan</th>
                 <th>Kode<br>Divisi</th>
                 <th>Nama<br>Divisi</th>
-                <th>Tanggal<br>Keluar</th>
+                <th>Tanggal<br>Set</th>
+                <th>Tanggal<br>Awal</th>
+                <th>Tanggal<br>Akhir</th>
                 <th>Keterangan</th>
             </tr>
         </thead>
@@ -149,7 +151,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{isset($vVar['nama_karyawan'])?$vVar['nama_karyawan']:''}}</td>
                 <td class="dc">{{isset($vVar['kode_divisi'])?$vVar['kode_divisi']:''}}</td>
                 <td class="dc">{{isset($vVar['nama_divisi'])?$vVar['nama_divisi']:''}}</td>
-                <td class="dc">{{isset($vVar['tanggal_keluar'])?$vVar['tanggal_keluar']:''}}</td>
+                <td class="dc">{{isset($vVar['tanggal_set'])?$vVar['tanggal_set']:''}}</td>
+                <td class="dc">{{isset($vVar['tanggal_awal'])?$vVar['tanggal_awal']:''}}</td>
+                <td class="dc">{{isset($vVar['tanggal_akhir'])?$vVar['tanggal_akhir']:''}}</td>
                 <td class="dc">{{isset($vVar['keterangan'])?$vVar['keterangan']:''}}</td>
             </tr>
             @endforeach

@@ -1331,21 +1331,26 @@ class LaporanController
         $req = $request->all();
 
         $tanggal = [];
+        $tanggalRange = [];
 
         $ret = [];
 
         if(isset($req['tanggal']))
         {
             $tanggal =  explode(' - ', $req['tanggal']);
+            $tanggalRange = CarbonPeriod::create($tanggal[0], $tanggal[1])->toArray();
         }
                 
         $karNonAktif    = Karyawan::with('divisi', 'jabatan', 'jadwals')->whereIn('active_status',[2,3])->author()->whereBetween('active_status_date', $tanggal);
               
-        $logOff = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')->whereHas('log_off', function($q) use($tanggal)
-        {
-            $q->where('kode', 'RM');
-            $q->whereBetween('off_karyawan_log.tanggal', $tanggal);
-        });
+        $logOff = Karyawan::with('divisi', 'jabatan', 'jadwals', 'log_off')
+                    ->whereHas('log_off', function($q) use($tanggal)
+                    {
+                        $q->where('kode', 'RM');
+                        $q->where('off_karyawan_log.tanggal','<=',$tanggal[1]);
+                        // $q->whereBetween('off_karyawan_log.tanggal', $tanggal);
+                    })
+                    ->where('active_status', 1);
         
         if(isset($req['perusahaan']))
         {
@@ -1360,7 +1365,7 @@ class LaporanController
             $karNonAktif->whereIn('divisi_id', $div);
             $logOff->whereIn('divisi_id', $div);
         }
-        
+
         foreach($karNonAktif->get() as $kA)
         {
             $ret[] = array(
@@ -1370,17 +1375,73 @@ class LaporanController
                 'nama_karyawan' => (isset($kA->nama)?$kA->nama:''),
                 'kode_divisi' => (isset($kA->divisi)?$kA->divisi->kode:''),
                 'nama_divisi' => (isset($kA->divisi)?$kA->divisi->deskripsi:''),
-                'tanggal_keluar' => (isset($kA->active_status_date)?$kA->active_status_date:''),
+                'tanggal_set' => (isset($kA->active_status_date)?$kA->active_status_date:''),
+                'tanggal_start' => null,
+                'tanggal_end' => null,
                 'keterangan' => (isset($kA->active_comment)?$kA->active_comment:'')
-
-
             );            
         }
 
         foreach($logOff->get() as $kA)
         {
-            $lF = $kA->log_off()->where('kode','RM')->orderBy('off_karyawan_log.tanggal', 'desc')->first();
+            $lF = $kA->log_off()->where('kode','RM')
+                                ->where('off_karyawan_log.tanggal','<=',$tanggal[1])
+                                ->orderBy('off_karyawan_log.tanggal', 'desc')
+                                ->first();
+            $lA = $kA->log_off()->where('kode','AKT')
+                                ->where('off_karyawan_log.tanggal','<=',$tanggal[1])
+                                ->orderBy('off_karyawan_log.tanggal', 'desc')
+                                ->first();
             
+            $tanggal_start = null;
+            $tanggal_end = null;
+
+            $tglA = null;
+            $tglF = null;
+
+            if($lA)
+            {
+                $tglA = Carbon::createFromFormat('Y-m-d', $lA->pivot->tanggal);
+
+            }
+
+            if($lF)
+            {
+                $tglF = Carbon::createFromFormat('Y-m-d', $lF->pivot->tanggal);
+            }
+
+            if($tglA)
+            {
+                $tanggal_end = $tglA->copy()->subDay(1)->toDateString();
+                
+                if($tglF)
+                {
+                    if($tglF->diffInDays($tanggalRange[0], false) < 0)
+                    {
+                        $tanggal_start = $tglF->toDateString();
+                    }
+                    else
+                    {
+                        $tanggal_start = $tanggalRange[0]->toDateString();
+                    }
+                }
+            }
+            else
+            {
+                $tanggal_end = end($tanggalRange)->toDateString();
+                if($tglF)
+                {
+                    if($tglF->diffInDays($tanggalRange[0], false) < 0)
+                    {
+                        $tanggal_start = $tglF->toDateString();
+                    }
+                    else
+                    {
+                        $tanggal_start = $tanggalRange[0]->toDateString();
+                    }
+                }
+            }
+
             $ret[] = array(
                 'pin' => (isset($kA->pin)?$kA->pin:''),
                 'nik' => (isset($kA->nik)?$kA->nik:''),
@@ -1388,7 +1449,9 @@ class LaporanController
                 'nama_karyawan' => (isset($kA->nama)?$kA->nama:''),
                 'kode_divisi' => (isset($kA->divisi)?$kA->divisi->kode:''),
                 'nama_divisi' => (isset($kA->divisi)?$kA->divisi->deskripsi:''),
-                'tanggal_keluar' => (isset($lF->pivot)?$lF->pivot->tanggal:''),
+                'tanggal_set' => (isset($lF->pivot)?$lF->pivot->tanggal:''),
+                'tanggal_awal' => $tanggal_start,
+                'tanggal_akhir' => $tanggal_end,
                 'keterangan' => (isset($lF->kode)?$lF->kode:'')
             );        
         }
@@ -1403,7 +1466,7 @@ class LaporanController
             
             return $ret;
         });
-
+        // dd($ret);
         if($req['btnSubmit'] == "preview")
         {
             return view('admin.laporan.status_non_aktif.preview', ['var' => $ret, 
@@ -1478,8 +1541,8 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Keterangan');
-			$headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Keluar', '');
+            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Tanggal', 'Tanggal','Keterangan');
+			$headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Set', 'Awal', 'Akhir','');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -1533,7 +1596,9 @@ class LaporanController
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama_karyawan'])?$vKar['nama_karyawan']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['kode_divisi'])?$vKar['kode_divisi']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama_divisi'])?$vKar['nama_divisi']:'');
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_keluar'])?$vKar['tanggal_keluar']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_set'])?$vKar['tanggal_set']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_awal'])?$vKar['tanggal_awal']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_akhir'])?$vKar['tanggal_akhir']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['keterangan'])?$vKar['keterangan']:'');
 
                     $rowStart++;
@@ -1578,9 +1643,9 @@ class LaporanController
             
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
             $pdf->AddPage();
-            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Keterangan');
+            $headTbl1 = array('No','PIN', 'NIK','Tanggal','Nama', 'Kode', 'Nama', 'Tanggal', 'Tanggal', 'Tanggal', 'Keterangan');
             $headW = array(10,15,50,10,30,15,13,40,20);
-            $headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Keluar', '');
+            $headTbl2 = array('','', '','Masuk','Karyawan', 'Divisi', 'Divisi', 'Set', 'Awal', 'Akhir','');
             
             foreach($headTbl1 as $kH => $vH)
             {
@@ -1604,7 +1669,9 @@ class LaporanController
                     $pdf->Cell($headW[$y++], 4, $vKar['nama_karyawan'], 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['kode_divisi'], 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['nama_divisi'], 'LRB', 0, 'C');
-                    $pdf->Cell($headW[$y++], 4, substr($vKar['tanggal_keluar'],0,20), 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, substr($vKar['tanggal_set'],0,20), 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, substr($vKar['tanggal_awal'],0,20), 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, substr($vKar['tanggal_akhir'],0,20), 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['keterangan'], 'LRB', 0, 'C');
                     $pdf->Ln();
                 }
