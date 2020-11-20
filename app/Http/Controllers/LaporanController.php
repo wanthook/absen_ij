@@ -1412,7 +1412,13 @@ class LaporanController
 
             if($tglA)
             {
+                if($tanggalRange[0]->diffInDays($tglA, false) < 0)
+                {
+                    continue;
+                }
+
                 $tanggal_end = $tglA->copy()->subDay(1)->toDateString();
+                
                 
                 if($tglF)
                 {
