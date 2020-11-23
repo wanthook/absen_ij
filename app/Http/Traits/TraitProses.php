@@ -217,6 +217,7 @@ trait TraitProses
                 if(!isset($val->kode))
                 {
                     // dd($val);
+                    
                 }
 
                 /*
@@ -313,6 +314,8 @@ trait TraitProses
                 if(!$alasan->count())
                 {
                     $alasan = $karyawan->alasanRangeTanggal($key);
+
+                    
                 }
                 
                 /*
@@ -393,6 +396,36 @@ trait TraitProses
                      * End if
                      */
 
+                }
+                else
+                {
+                    /*
+                     * Jadi ada kondisi di apac yang dimana itu adalah libur nasional namun
+                     * tidak diset libur nasional di tanggal libur nasional
+                     * tapi ada beberapa karyawan yang di set alasan Libur Nasional.
+                     * 23-11-2020
+                     */
+                    if(isset($alasan))
+                    {
+                        if($alasan->count())
+                        {
+                            $iLn = false;
+                            foreach($alasan->get() as $al)
+                            {
+                                if($al->kode == 'LN')
+                                {
+                                    $iLn = true; break;
+                                }
+                            }
+
+                            if($iLn)
+                            {
+                                $isLn = true;
+                                $isLibur = 1;
+                                $keterangan[] = "Libur Nasional";
+                            }
+                        }
+                    }
                 }
 
                 if($alasan->count())
