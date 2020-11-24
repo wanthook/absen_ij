@@ -169,6 +169,12 @@ trait TraitProses
 
                 $flagNotInOut = null;
                 $pendek = null;
+                $kodeJadwal = null;
+
+                if(isset($val->kode))
+                {
+                    $kodeJadwal = $val->kode;
+                }
 
                 if($tmk)
                 {
@@ -214,12 +220,6 @@ trait TraitProses
                     }
                 }
 
-                if(!isset($val->kode))
-                {
-                    // dd($val);
-                    
-                }
-
                 /*
                  * Ambil Jadwal Manual
                  */
@@ -240,34 +240,37 @@ trait TraitProses
                  * Jika Ya, Masukkan nilai jadwal masuk dan pulang
                  * Jika Tidak, Nilai libur akan 1
                  */
-                if($val->kode != 'L')
+                if($kodeJadwal)
                 {
-                    /*
-                     * Absen Manual
-                     */                       
-                    if($val->jam_masuk && $val->jam_keluar)
+                    if($kodeJadwal != 'L')
                     {
-                        $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
-                        $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
-                        
                         /*
-                         * cek jadwal shift3
-                         */
-                        if($in->greaterThan($out))
+                        * Absen Manual
+                        */                       
+                        if($val->jam_masuk && $val->jam_keluar)
                         {
-                            $out->addDay();
-                            $shift3 = 1;
+                            $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
+                            $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                            
+                            /*
+                            * cek jadwal shift3
+                            */
+                            if($in->greaterThan($out))
+                            {
+                                $out->addDay();
+                                $shift3 = 1;
+                            }
                         }
+                        else
+                        {
+                            goto proses_simpan;
+                        }
+
                     }
                     else
                     {
-                        goto proses_simpan;
+                        $isLibur = 1;
                     }
-
-                }
-                else
-                {
-                    $isLibur = 1;
                 }
                 /*
                  * End If
@@ -453,93 +456,96 @@ trait TraitProses
 
                 if(!$isLnOff && !$isSpo)
                 {
-                    if($val->kode != 'L')
-                    {                        
-
-                        $jadMasuk = $in;
-                        $jadKeluar = $out;
-
-                        $jumlahJamKerja = $out->diffInHours($in);
-
-                        $actIn = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [
-                                    $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
-                                    $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
-                                ])
-                                ->orderBy('tanggal', 'ASC')
-                                ->first();
-                        $jMasukId = ($actIn)?$actIn->id:null;
-
-                        $actOut = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [
-                                    $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                    $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
-                                ])
-                                ->orderBy('tanggal', 'DESC')
-                                ->first();
-                        $jKeluarId = ($actOut)?$actOut->id:null;
-
-                        if($jMasukId)
-                        {
-                            if(!$jKeluarId)
-                            {
-                                if(!$shift3)
-                                {
-                                    $actOut = Activity::where('pin', $karyawan->key)
-                                            ->whereDate('tanggal', $out->copy()->toDateString())
-                                            ->orderBy('tanggal', 'DESC')
-                                            ->first();
-
-                                    $flagNotInOut = "out";
-
-                                    $jKeluarId = ($actOut)?$actOut->id:null;
-                                }
-                                else
-                                {
-                                    $actOut = Activity::where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [$out->copy()->toDateString().' 00:00:00', $out->copy()->addDay()->toDateString().' 09:00:00'])
-                                            ->orderBy('tanggal', 'DESC')
-                                            ->first();
-
-                                    $flagNotInOut = "out";
-                                    
-                                    $jKeluarId = ($actOut)?$actOut->id:null;
-                                }
-                            }
-                        }
-                        else if($jKeluarId)
-                        {
-                            if(!$jMasukId)
-                            {
-                                if(!$shift3)
-                                {
-                                    $actIn = Activity::where('pin', $karyawan->key)
-                                            ->whereDate('tanggal', $in->copy()->toDateString())
-                                            ->orderBy('tanggal', 'ASC')
-                                            ->first();
-
-                                    $flagNotInOut = "in";
-
-                                    $jMasukId = ($actIn)?$actIn->id:null;
-                                }
-                                else
-                                {
-                                    $actIn = Activity::where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
-                                            ->orderBy('tanggal', 'ASC')
-                                            ->first();
-
-                                    $flagNotInOut = "in";
-
-                                    $jMasukId = ($actIn)?$actIn->id:null;                                                
-                                }
-                            }
-                        }
-                    }
-                    else
+                    if($kodeJadwal)
                     {
-                        $actIn = null;
-                        $actOut = null;
+                        if($kodeJadwal != 'L')
+                        {                        
+
+                            $jadMasuk = $in;
+                            $jadKeluar = $out;
+
+                            $jumlahJamKerja = $out->diffInHours($in);
+
+                            $actIn = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [
+                                        $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
+                                        $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
+                                    ])
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+                            $jMasukId = ($actIn)?$actIn->id:null;
+
+                            $actOut = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [
+                                        $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                        $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
+                                    ])
+                                    ->orderBy('tanggal', 'DESC')
+                                    ->first();
+                            $jKeluarId = ($actOut)?$actOut->id:null;
+
+                            if($jMasukId)
+                            {
+                                if(!$jKeluarId)
+                                {
+                                    if(!$shift3)
+                                    {
+                                        $actOut = Activity::where('pin', $karyawan->key)
+                                                ->whereDate('tanggal', $out->copy()->toDateString())
+                                                ->orderBy('tanggal', 'DESC')
+                                                ->first();
+
+                                        $flagNotInOut = "out";
+
+                                        $jKeluarId = ($actOut)?$actOut->id:null;
+                                    }
+                                    else
+                                    {
+                                        $actOut = Activity::where('pin', $karyawan->key)
+                                                ->whereBetween('tanggal', [$out->copy()->toDateString().' 00:00:00', $out->copy()->addDay()->toDateString().' 09:00:00'])
+                                                ->orderBy('tanggal', 'DESC')
+                                                ->first();
+
+                                        $flagNotInOut = "out";
+                                        
+                                        $jKeluarId = ($actOut)?$actOut->id:null;
+                                    }
+                                }
+                            }
+                            else if($jKeluarId)
+                            {
+                                if(!$jMasukId)
+                                {
+                                    if(!$shift3)
+                                    {
+                                        $actIn = Activity::where('pin', $karyawan->key)
+                                                ->whereDate('tanggal', $in->copy()->toDateString())
+                                                ->orderBy('tanggal', 'ASC')
+                                                ->first();
+
+                                        $flagNotInOut = "in";
+
+                                        $jMasukId = ($actIn)?$actIn->id:null;
+                                    }
+                                    else
+                                    {
+                                        $actIn = Activity::where('pin', $karyawan->key)
+                                                ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
+                                                ->orderBy('tanggal', 'ASC')
+                                                ->first();
+
+                                        $flagNotInOut = "in";
+
+                                        $jMasukId = ($actIn)?$actIn->id:null;                                                
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            $actIn = null;
+                            $actOut = null;
+                        }
                     }
 
                 }
@@ -766,10 +772,10 @@ trait TraitProses
                 if(!$isMangkir && !$isTa && $jMasuk && $jKeluar)
                 {
 
-                    if(isset($val->kode))
+                    if($kodeJadwal)
                     {
 //                        dd($val->kode);
-                        if(substr($val->kode,0,1) == "J")
+                        if(substr($kodeJadwal,0,1) == "J")
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -801,7 +807,7 @@ trait TraitProses
                             //3.5 hitung lembur kalau gak telat sama gak gp
                             
                         }
-                        else if(substr($val->kode,0,1) == "S")
+                        else if(substr($kodeJadwal,0,1) == "S")
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -821,7 +827,7 @@ trait TraitProses
 //                            $lemburAktual += 0.5;
 //                            $hitungLembur = 0.75;
                         }
-                        else if(substr($val->kode,0,1) == "P")
+                        else if(substr($kodeJadwal,0,1) == "P")
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -1035,7 +1041,7 @@ trait TraitProses
                     'jam_keluar' => (!empty($jKeluar))?$jKeluar->format('H:i:s'):null,
                     'jam_masuk_id' => $jMasukId,
                     'jam_keluar_id' => $jKeluarId,
-                    'kode_jam_kerja' => (isset($val->kode)?$val->kode:null),
+                    'kode_jam_kerja' => $kodeJadwal,
                     'jadwal_jam_masuk' => (isset($val->jam_masuk)?$val->jam_masuk:null),
                     'jadwal_jam_keluar' => (isset($val->jam_keluar)?$val->jam_keluar:null),
                     'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
