@@ -148,6 +148,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>{{$per->format('d')}}</th>
                 @endforeach
                 <th>Lbr</th>
+                <th>LbrA</th>
                 <th>S3</th>
                 <th>GP</th>
                 <th>JK</th>
@@ -177,6 +178,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 @endforeach
                 @endif
                 <td class="dc">{{$vVar['tLembur']}}</td>
+                <td class="dc">{{$vVar['lemburAktual']}}</td>
                 <td class="dc">{{$vVar['s3']}}</td>
                 <td class="dc">{{$vVar['gp']}}</td>
                 <td class="dc">{{$vVar['jk']}}</td>

@@ -739,6 +739,7 @@ class LaporanController
                 
                 
                 $sendTemp['tLembur'] = $tLembur;
+                $sendTemp['lemburAktual'] = $lemburAktual;
                 $sendTemp['s3'] = $shift3Real;
                 $sendTemp['gp'] = ($jGp/60);
                 $sendTemp['jk'] = $jJk;
@@ -909,7 +910,7 @@ class LaporanController
             $colStat = 1;
 //            $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kode', 'Divisi', 'Nama');
             $headTbl1 = array('No','PIN', 'TMK','SEX', 'Kd. Div',  'Nama');
-            $headTbl2 = array('Lbr', 'S3', 'GP', 'JK', 'S3V', 'PM', 'JM', 'INS');
+            $headTbl2 = array('Lbr', 'LbrA','S3', 'GP', 'JK', 'S3V', 'PM', 'JM', 'INS');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -987,6 +988,7 @@ class LaporanController
                 }
                 
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['tLembur']);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['lemburAktual']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['s3']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['gp']);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $vVar['jk']);
