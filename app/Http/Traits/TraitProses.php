@@ -113,10 +113,18 @@ trait TraitProses
             $arrProses = [];
             foreach($jadwalArr as $key => $val)
             {    
-                
+                /*
+                 * Ambil Jadwal Manual
+                 */
+                if($jadwalManual[$key])
+                {
+                    $val = $jadwalManual[$key];
+                }
+                /*
+                 * End Ambil Jadwal Manual
+                 */
 
                 $alasanId = null;
-
 
                 $jadwalBefore = null;
 
@@ -220,19 +228,7 @@ trait TraitProses
                     }
                 }
 
-                /*
-                 * Ambil Jadwal Manual
-                 */
-                if($jadwalManual[$key])
-                {
-                    $val = $jadwalManual[$key];
-                }
-                /*
-                 * End Ambil Jadwal Manual
-                 */
-
-
-
+                
                 /*
                  * Start If
                  * 
