@@ -106,7 +106,7 @@ if(config('global.perusahaan_short') == 'AIC')
                 editable  : true,
                 selectable: true
             });
-            @if($show)
+
             calendar = new Calendar(calendarEl, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
@@ -173,7 +173,6 @@ if(config('global.perusahaan_short') == 'AIC')
             });
 
             calendar.render();
-            @endif
 
             let Toast = Swal.mixin({
                 toast: true,
@@ -195,7 +194,6 @@ if(config('global.perusahaan_short') == 'AIC')
                 dTable.ajax.reload();
             });
             
-            @if($show)
             $('#cmdTambahShow').on('click', function()
             {
                 $('.grpCopy').hide();
@@ -520,7 +518,6 @@ if(config('global.perusahaan_short') == 'AIC')
                 ],
                 "drawCallback": function( settings, json ) 
                 {
-                    @if($show)
                     $('.delrow').on('click',function(e)
                     {
                         if(confirm('Apakah Anda yakin menghapus data ini?'))
@@ -572,14 +569,14 @@ if(config('global.perusahaan_short') == 'AIC')
                         $('.grpCopy').show();
 
                     });
-                    @endif
+
                     $('.show').on('click', function(e)
                     {
                         let _this	= $(this);
                         let datas = dTable.row(_this.parents('tr')).data();
                         $('#id').val(datas.id);
-                        calendarShow.refetchEvents();
-                        calendarShow.render();
+                        calendar.refetchEvents();
+                        calendar.render();
                     });
                     
                 }
@@ -768,7 +765,6 @@ if(config('global.perusahaan_short') == 'AIC')
 @endsection
 
 @section('modal_form')
-@if($show)
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-xl">
         <div class="modal-content bg-secondary">
@@ -906,7 +902,7 @@ if(config('global.perusahaan_short') == 'AIC')
 </div>
     <!-- /.modal-dialog -->
 </div>
-@endif
+
 <div class="modal fade" id="modal-show">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-secondary">
