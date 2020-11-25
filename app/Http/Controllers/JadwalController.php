@@ -81,6 +81,13 @@ class JadwalController extends Controller
 
     public function dayshiftStore(Request $request)
     {
+        if(config('global.perusahaan_short') == 'AIC')
+        {
+            if(Auth::user()->id != 1 && Auth::user()->id != 9)
+            {
+                abort(404);
+            }
+        }
         try
         {
             $validation = Validator::make($request->all(), 
@@ -213,6 +220,13 @@ class JadwalController extends Controller
     
     public function dayshiftUpload(Request $request)
     {
+        if(config('global.perusahaan_short') == 'AIC')
+        {
+            if(Auth::user()->id != 1 && Auth::user()->id != 9)
+            {
+                abort(404);
+            }
+        }
         try
         {
             $validation = Validator::make($request->all(), 
@@ -362,6 +376,13 @@ class JadwalController extends Controller
 
     public function shiftStore(Request $request)
     {
+        if(config('global.perusahaan_short') == 'AIC')
+        {
+            if(Auth::user()->id != 1 && Auth::user()->id != 9)
+            {
+                abort(404);
+            }
+        }
         try
         {
             $validation = Validator::make($request->all(), 
@@ -451,6 +472,13 @@ class JadwalController extends Controller
     
     public function shiftUpload(Request $request)
     {
+        if(config('global.perusahaan_short') == 'AIC')
+        {
+            if(Auth::user()->id != 1 && Auth::user()->id != 9)
+            {
+                abort(404);
+            }
+        }
         try
         {
             $validation = Validator::make($request->all(), 
@@ -587,6 +615,13 @@ class JadwalController extends Controller
 
     public function shiftCopyStore(Request $request)
     {
+        if(config('global.perusahaan_short') == 'AIC')
+        {
+            if(Auth::user()->id != 1 && Auth::user()->id != 9)
+            {
+                abort(404);
+            }
+        }
         try
         {
             $validation = Validator::make($request->all(), 
@@ -736,8 +771,8 @@ class JadwalController extends Controller
         {
             $datas->where(function($q) use($req)
             {
-                $q->where('kode', $req['txtSearch']);
-                $q->orWhere('deskripsi', $req['txtSearch']);
+                $q->where('kode', 'like', '%'.$req['search'].'%');
+                $q->orWhere('deskripsi', 'like', '%'.$req['search'].'%');
             });
         }
         $datas->orderBy('id','desc');
@@ -745,9 +780,21 @@ class JadwalController extends Controller
         return  Datatables::of($datas)
                 ->addColumn('action',function($datas)
                 {
+                    $show = true;
+                    if(config('global.perusahaan_short') == 'AIC')
+                    {
+                        if(Auth::user()->id != 1 && Auth::user()->id != 9)
+                        {
+                            $show = false;
+                        }
+                    }
+                    
                     $str    = '<div class="btn-group">';
-                    $str    .= '<button class="editrow btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fa fa-pencil-alt"></i></button>';
-                    $str    .= '<button class="delrow btn btn-danger btn-xs" title="Hapus"><i class="fa fa-eraser"></i></button>';
+                    if($show)
+                    {
+                        $str    .= '<button class="editrow btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fa fa-pencil-alt"></i></button>';
+                        $str    .= '<button class="delrow btn btn-danger btn-xs" title="Hapus"><i class="fa fa-eraser"></i></button>';
+                    }
                     $str    .= '</div>';
                     
                     return $str;
@@ -766,8 +813,8 @@ class JadwalController extends Controller
         {
             $datas->where(function($q) use($req)
             {
-                $q->where('kode', $req['search']);
-                $q->orWhere('nama', $req['search']);
+                $q->where('kode', 'like', '%'.$req['search'].'%');
+                $q->orWhere('deskripsi', 'like', '%'.$req['search'].'%');
             });
         }
         $datas->orderBy('id','desc');
@@ -775,10 +822,21 @@ class JadwalController extends Controller
         return  Datatables::of($datas)
                 ->addColumn('action',function($datas)
                 {
+                    $show = true;
+                    if(config('global.perusahaan_short') == 'AIC')
+                    {
+                        if(Auth::user()->id != 1 && Auth::user()->id != 9)
+                        {
+                            $show = false;
+                        }
+                    }
                     $str    = '<div class="btn-group">';
+                    if($show)
+                    {
 //                    $str    .= '<button class="copyrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-copy-form" title="Copy Jadwal"><i class="fa fa-copy"></i></button>';
-                    $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fa fa-pencil-alt"></i></button>';
-                    $str    .= '<button class="delrow btn btn-danger btn-sm" title="Hapus"><i class="fa fa-eraser"></i></button>';
+                        $str    .= '<button class="editrow btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-form" title="Ubah"><i class="fa fa-pencil-alt"></i></button>';
+                        $str    .= '<button class="delrow btn btn-danger btn-sm" title="Hapus"><i class="fa fa-eraser"></i></button>';
+                    }
                     $str    .= '</div>';
                     
                     return $str;

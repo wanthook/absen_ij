@@ -1,3 +1,13 @@
+@php
+$show = true;
+if(config('global.perusahaan_short') == 'AIC')
+{
+    if(Auth::user()->id != 1 && Auth::user()->id != 9)
+    {
+        $show = false;
+    }
+}
+@endphp
 @extends('adminlte3.app')
 
 @section('title_page')
@@ -96,7 +106,7 @@
                 editable  : true,
                 selectable: true
             });
-
+            @if($show)
             calendar = new Calendar(calendarEl, {
                 plugins: [ 'bootstrap', 'interaction', 'dayGrid', 'timeGrid' ],
                 themeSystem: 'bootstrap',
@@ -163,7 +173,8 @@
             });
 
             calendar.render();
-            
+            @endif
+
             let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -184,15 +195,14 @@
                 dTable.ajax.reload();
             });
             
+            @if($show)
             $('#cmdTambahShow').on('click', function()
             {
                 $('.grpCopy').hide();
                 $('#id').val(null);
                 
             });
-            
-            $('#warna').colorpicker();
-            
+
             $('#copyDateMaster').daterangepicker(
             {
                 timePicker: false,
@@ -368,43 +378,7 @@
                 });
                 calendar.render();
             });
-            
-            $('#modal-show').on('show.bs.modal', function (e) 
-            {                
-                calendarShow.getEvents().forEach(function(data, index)
-                {
-                    data.remove();
-                });
-                
-                let ids = $('#id').val();
-                if(ids != "")
-                {
-                    $.ajax({
-                        url         : '{{route("fcjadwalshift")}}',
-                        type        : 'POST',
-                        dataType    : 'json',
-                        data        : {id : ids},
-                        success     : function(result,status,xhr)
-                        {
-                            if(result!="")
-                            {
-                                result.forEach(function(itm, idx)
-                                {
-//                                    updateDataObject(itm);
-                                    calendarShow.addEvent(itm);
-                                });
 
-//                                successCallback(result);
-                            }
-                            calendarShow.render();
-                        }
-
-                    });
-                }
-                
-                calendarShow.render();
-            });
-            
             $('#modal-form').on('show.bs.modal', function (e) 
             {
 //                console.log($('#id').val());
@@ -475,6 +449,47 @@
                         
                 });
             });
+            @endif
+
+            $('#warna').colorpicker();
+            
+            $('#modal-show').on('show.bs.modal', function (e) 
+            {                
+                calendarShow.getEvents().forEach(function(data, index)
+                {
+                    data.remove();
+                });
+                
+                let ids = $('#id').val();
+                if(ids != "")
+                {
+                    $.ajax({
+                        url         : '{{route("fcjadwalshift")}}',
+                        type        : 'POST',
+                        dataType    : 'json',
+                        data        : {id : ids},
+                        success     : function(result,status,xhr)
+                        {
+                            if(result!="")
+                            {
+                                result.forEach(function(itm, idx)
+                                {
+//                                    updateDataObject(itm);
+                                    calendarShow.addEvent(itm);
+                                });
+
+//                                successCallback(result);
+                            }
+                            calendarShow.render();
+                        }
+
+                    });
+                }
+                
+                calendarShow.render();
+            });
+            
+            
             
             dTable = $('#dTable').DataTable({
                 "sPaginationType": "full_numbers",
@@ -505,6 +520,7 @@
                 ],
                 "drawCallback": function( settings, json ) 
                 {
+                    @if($show)
                     $('.delrow').on('click',function(e)
                     {
                         if(confirm('Apakah Anda yakin menghapus data ini?'))
@@ -556,7 +572,7 @@
                         $('.grpCopy').show();
 
                     });
-                    
+                    @endif
                     $('.show').on('click', function(e)
                     {
                         let _this	= $(this);
@@ -752,6 +768,7 @@
 @endsection
 
 @section('modal_form')
+@if($show)
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-xl">
         <div class="modal-content bg-secondary">
@@ -845,29 +862,7 @@
     <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade" id="modal-show">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-secondary">
-            <div class="modal-header">
-            <h4 class="modal-title">Kalender Kerja</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">  
-            <div class="row bg-gray">
-                <div id="calendar-show"></div>        
-            </div>
-        </div>    
-        <div class="modal-footer justify-content-between">
-            <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
-            <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button>
-        </div>
-    </div>
-    <!-- /.modal-content -->
-</div>
-    <!-- /.modal-dialog -->
-</div>
+
 
 <div class="modal fade" id="modal-form-upload">
     <div class="modal-dialog">
@@ -911,6 +906,30 @@
 </div>
     <!-- /.modal-dialog -->
 </div>
+@endif
+<div class="modal fade" id="modal-show">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+            <h4 class="modal-title">Kalender Kerja</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">  
+            <div class="row bg-gray">
+                <div id="calendar-show"></div>        
+            </div>
+        </div>    
+        <div class="modal-footer justify-content-between">
+            <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
+            <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button>
+        </div>
+    </div>
+    <!-- /.modal-content -->
+</div>
+    <!-- /.modal-dialog -->
+</div>
 @endsection
 
 @section('content')
@@ -938,8 +957,10 @@
     <div class="card-header">
         <h5 class="card-title">&nbsp;</h5>
         <div class="card-tools">
+            @if($show)
             <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
             <button class="btn btn-xs btn-success" alt="Tambah" data-toggle="modal" data-target="#modal-form" id="cmdTambahShow"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</button>
+            @endif
         </div>
     </div>
 <!--    <div class="card-header">

@@ -1,3 +1,13 @@
+@php
+$show = true;
+if(config('global.perusahaan_short') == 'AIC')
+{
+    if(Auth::user()->id != 1 && Auth::user()->id != 9)
+    {
+        $show = false;
+    }
+}
+@endphp
 @extends('adminlte3.app')
 
 @section('title_page')
@@ -49,6 +59,8 @@
             
             $('#warna').colorpicker();
             
+
+            @if($show)
             $('#cmdUpload').on('click', function(e)
             {
                 let frm = document.getElementById('form_data_upload');
@@ -157,7 +169,7 @@
                 
                 return false;
             });
-
+            
             $('#tblHari tr td').on('click', function(e)
             {
                 let $td = $(this);
@@ -194,7 +206,7 @@
                 });
                 dTable.ajax.reload();
             });
-            
+            @endif
             dTable = $('#dTable').DataTable({
                 "searching":false,
                 "ordering": true,
@@ -257,6 +269,7 @@
                 ],
                 "drawCallback": function( settings, json ) 
                 {
+                    @if($show)
                     $('.delrow').on('click',function(e)
                     {
                         if(confirm('Apakah Anda yakin menghapus data ini?'))
@@ -339,7 +352,7 @@
                         }
 
                     });
-                    
+                    @endif
                     
                 }
             });           
@@ -425,6 +438,7 @@
 @endsection
 
 @section('modal_form')
+@if($show)
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-secondary">
@@ -527,6 +541,7 @@
 </div>
     <!-- /.modal-dialog -->
 </div>
+@endif
 @endsection
 
 @section('content')
@@ -554,8 +569,10 @@
     <div class="card-header">
         <h5 class="card-title">&nbsp;</h5>
         <div class="card-tools">
+            @if($show)
             <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>&nbsp;Upload</button>
             <button class="btn btn-xs btn-success" alt="Tambah" data-toggle="modal" data-target="#modal-form"><i class="fa fa-plus-circle"></i>&nbsp;Tambah</button>
+            @endif
         </div>
     </div>
 <!--    <div class="card-header">
@@ -583,5 +600,4 @@
         </div>
     <!-- /.card-body -->
 </div>
-
 @endsection
