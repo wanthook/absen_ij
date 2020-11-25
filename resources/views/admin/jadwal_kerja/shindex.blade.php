@@ -447,7 +447,6 @@ if(config('global.perusahaan_short') == 'AIC')
                         
                 });
             });
-            @endif
 
             $('#warna').colorpicker();
             
