@@ -578,10 +578,8 @@ if(config('global.perusahaan_short') == 'AIC')
                         let _this	= $(this);
                         let datas = dTable.row(_this.parents('tr')).data();
                         $('#id').val(datas.id);
-                        @if($show)
                         calendarShow.refetchEvents();
                         calendarShow.render();
-                        @endif
                     });
                     
                 }
