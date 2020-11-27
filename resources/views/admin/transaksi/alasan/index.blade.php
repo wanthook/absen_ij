@@ -15,6 +15,7 @@
     <!--<link rel="stylesheet" href="{{asset('plugins/easyui/themes/default/easyui.css')}}">-->
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/bootstrap/easyui.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/icon.css')}}">
+    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/color.css')}}">
    
 @endsection
 
@@ -764,6 +765,7 @@
                     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapus">Hapus</a>
                     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSave">Simpan</a>
                     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Batal</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton c1" plain="true" style="width:100px" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>Upload</a>
 
                 </div>
             </div>

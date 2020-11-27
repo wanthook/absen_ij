@@ -357,6 +357,145 @@ class AlasanController extends Controller
             ));
         }
     }
+    
+    public function storeUploadAlasan(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+//                        dd($csv);
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                foreach($sheetData as $sD)
+                {
+                   if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $dS = array();
+                    
+                    $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
+                    
+                    if($karyawan->count())
+                    {
+                        if(!empty(trim($sD[$arrKey->alasan])))
+                        {
+                            $karId = $karyawan->first()->id;
+                            $kar = Karyawan::find($karId);
+                            $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
+                            $alasan = Alasan::where('kode', trim($sD[$arrKey->alasan]))->first();
+//                            dd($alasan);
+                            if($par)
+                            {
+                                $par->detach($alasan->id);
+                            }
+                    
+                            if(trim($sD[$arrKey->waktu]))
+                            {
+                                $attach['waktu'] = trim($sD[$arrKey->waktu]);
+                            }
+                            if(trim($sD[$arrKey->keterangan]))
+                            {
+                                $attach['keterangan'] = trim($sD[$arrKey->keterangan]);
+                            }
+                            
+                            if(trim($sD[$arrKey->tanggal_akhir]))
+                            {
+                                $attach = ['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal]),'created_by' => Auth::user()->id];
+                                $kar->alasanRange()->attach($alasan->id, $attach);
+                                $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal]));
+                            }
+                            else
+                            {
+                                $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id];
+                                $kar->alasan()->attach($alasan->id, $attach);
+                                $this->prosesAbsTanggal($kar->id, trim($sD[$arrKey->tanggal]));
+                            }
+
+                            
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
+            ));
+        }
+    }
 
     /**
      * Display the specified resource.

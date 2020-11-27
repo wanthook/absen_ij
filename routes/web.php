@@ -153,7 +153,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawansavestatusoff/{kode}', ['as' => 'savestatusoffkaryawan', 'uses' => 'KaryawanController@storeStatusOffKaryawan']);
             
             Route::post('karyawanupload', ['as' => 'uploadkaryawan', 'uses' => 'KaryawanController@storeUpload']);
-            Route::post('karyawanalasanupload', ['as' => 'uploadalasankaryawan', 'uses' => 'KaryawanController@storeUploadAlasan']);
+            Route::post('karyawanalasanupload', ['as' => 'uploadalasankaryawan', 'uses' => 'AlasanController@storeUploadAlasan']);
             Route::post('karyawanstatusupload', ['as' => 'uploadstatuskaryawan', 'uses' => 'KaryawanController@storeUploadStatus']);
             Route::post('karyawanjadwalupload', ['as' => 'uploadjadwalkaryawan', 'uses' => 'KaryawanController@storeUploadJadwal']);
             Route::post('karyawanjadwalmanualupload', ['as' => 'uploadjadwalmanualkaryawan', 'uses' => 'KaryawanController@storeUploadJadwalManual']);
