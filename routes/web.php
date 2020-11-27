@@ -144,6 +144,7 @@ Route::group(['middleware' => 'auth'],function()
             
             Route::post('karyawansave', ['as' => 'savekaryawan', 'uses' => 'KaryawanController@store']);
             Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'AlasanController@storeAlasanKaryawan']);
+            Route::post('karyawansavealasan2', ['as' => 'savealasankaryawan2', 'uses' => 'AlasanController@storeAlasanKaryawan2']);
             Route::post('karyawansavealasanrange', ['as' => 'savealasankaryawanrange', 'uses' => 'AlasanController@storeAlasanRangeKaryawan']);
             Route::post('karyawansavemanual', ['as' => 'savejadwalmanual', 'uses' => 'JadwalController@manualStore']);
             Route::post('karyawansavedivisi', ['as' => 'savedivisikaryawan', 'uses' => 'KaryawanController@storeDivisi']);
@@ -162,6 +163,7 @@ Route::group(['middleware' => 'auth'],function()
             
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
             Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'AlasanController@destroyAlasanKaryawan']);
+            Route::post('karyawandelalasanrange', ['as' => 'delalasankaryawanrange', 'uses' => 'AlasanController@destroyAlasanKaryawanRange']);
             Route::post('karyawansel', ['as' => 'selkaryawan', 'uses' => 'KaryawanController@select2']);
             Route::post('karyawanselect', ['as' => 'selectkaryawan', 'uses' => 'KaryawanController@selectKaryawan']);
             Route::post('karyawanseloff', ['as' => 'selkaryawanoff', 'uses' => 'KaryawanController@select2off']);

@@ -12,45 +12,30 @@
 
 @section('add_css')
     <!-- Datatables -->
-    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.css')}}">
-    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/datatables.net-select-bs4/css/select.bootstrap4.min.css')}}">
-    <!-- bootstrap color picker -->
-    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css')}}">
-    <!-- select2 -->
-    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/select2/css/select2.min.css')}}">
-    <!-- daterange picker -->
-    <link rel="stylesheet" href="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.css')}}">
-    <style>
-        td.details-control {
-            background: url('{{asset('images/details_open.png')}}') no-repeat center center;
-            cursor: pointer;
-        }
-        tr.shown td.details-control {
-            background: url('{{asset('images/details_close.png')}}') no-repeat center center;
-        }
-    </style>
+    <!--<link rel="stylesheet" href="{{asset('plugins/easyui/themes/default/easyui.css')}}">-->
+    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/bootstrap/easyui.css')}}">
+    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/icon.css')}}">
+   
 @endsection
 
 @section('add_js')
     <!-- Datatables -->
-    <script src="{{asset('bower_components/admin-lte/plugins/datatables/jquery.dataTables.min.js')}}"></script>
-    <script src="{{asset('bower_components/admin-lte/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
-    <script src="{{asset('bower_components/admin-lte/plugins/datatables.net-select-bs4/js/select.bootstrap4.min.js')}}"></script>
-    <!-- bootstrap color picker -->
-    <script src="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js')}}"></script>
-    <!-- select2 -->
-    <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
+    <script src="{{asset('plugins/easyui/jquery.easyui.min.js')}}"></script>
+    <script src="{{asset('plugins/easyui/plugins/jquery.edatagrid.js')}}"></script>
+    <script src="{{asset('plugins/easyui/plugins/jquery.datetimebox.js')}}"></script>
+    <script src="{{asset('plugins/easyui/plugins/jquery.combobox.js')}}"></script>
+    <script src="{{asset('plugins/easyui/plugins/jquery.combogrid.js')}}"></script> <!-- moment -->
+    <script src="{{asset('bower_components/admin-lte/plugins/moment/moment.min.js')}}"></script>
     <!-- date-range-picker -->
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
-    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
     <script>
-        let dTableKar = null;
-        let dTableKarJad = null;
-        let objJadwal = [];
+        var dg = null;
+        var dgRange = null;
+        var editIndex = undefined;
+        var editRangeIndex = undefined;
         
         $(function(e)
         {
-            bsCustomFileInput.init();
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -62,277 +47,45 @@
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000
-            });
-            
-            var toastOverlay = Swal.mixin({
-                position: 'center',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                allowEnterKey: false,
-                showConfirmButton: false
-            });
-            
-            $('#sTanggal, #sTanggalAkhir').daterangepicker({
-                singleDatePicker:true,
-                autoUpdateInput: false,
-                locale: {
-                    format: 'YYYY-MM-DD',
-                    cancelLabel: 'Clear'
-                }
-            });
-            
-            $('#sTanggal, #sTanggalAkhir').on('apply.daterangepicker', function(ev, picker) {
-                $(this).val(picker.startDate.format('YYYY-MM-DD'));
-            });
-            
-            $('#sTanggal').on('change', function(e)
-            {
-                dTableKar.ajax.reload();
-            });    
-            
-            $('#perusahaan').on('select2:select', function(e)
-            {
-                dTableKar.ajax.reload();
             }); 
             
-            $('#cmdUpload').on('click', function(e)
+            $('#cmdSave').on('click', function(e)
             {
-                let frm = document.getElementById('form_data_upload');
-                let datas = new FormData(frm);
-//                console.log($('#form_data_upload').attr('action'));
-                $.ajax(
-                {
-                    url         : $('#form_data_upload').attr('action'),
-                    dataType    : 'JSON',
-                    type        : 'POST',
-                    data        : datas ,
-                    processData: false,
-                    contentType: false,
-                    beforeSend  : function(xhr)
-                    {
-//                        $('#loadingDialog').modal('show');
-                        toastOverlay.fire({
-                            type: 'warning',
-                            title: 'Sedang memproses data upload',
-                            onBeforeOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    },
-                    success(result,status,xhr)
-                    {
-                        toastOverlay.close();
-                        if(result.status == 1)
-                        {
-                            Toast.fire({
-                                type: 'success',
-                                title: result.msg
-                            });
-                        }
-                        else
-                        {
-                            if(Array.isArray(result.msg))
-                            {
-                                var str = "";
-                                for(var i = 0 ; i < result.msg.length ; i++ )
-                                {
-                                    str += result.msg[i]+"<br>";
-                                }
-                                Toast.fire({
-                                    type: 'error',
-                                    title: str
-                                });
-                            }
-                            
-                        }
-                        dTableKar.ajax.reload();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) { 
-                        /* implementation goes here */ 
-                        toastOverlay.close();
-                        console.log(jqXHR.responseText);
-                    }
-                });
-            });
-            
-            $('#cmdTambah').on('click',function(e)
-            {
-//                dTableKar.ajax.reload();
                 e.preventDefault();
-                let frm = document.getElementById('frmTransAlasan');
-                let datas = new FormData(frm);
                 
-                $.ajax(
+                var rows = dg.datagrid('getRows');
+//                console.log(rows);
+                var datas = [];
+                
+                $.each(rows, function(i, row)
                 {
-                    url         : $('#frmTransAlasan').attr('action'),
-                    dataType    : 'JSON',
-                    type        : 'POST',
-                    data        : datas ,
-                    processData: false,
-                    contentType: false,
-                    beforeSend  : function(xhr)
-                    {
-//                        $('#loadingDialog').modal('show');
-                        toastOverlay.fire({
-                            type: 'warning',
-                            title: 'Sedang memproses data',
-                            onBeforeOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    },
-                    success(result,status,xhr)
-                    {
-                        toastOverlay.close();
-                        
-                        if(result.status == 1)
-                        {
-                            Toast.fire({
-                                type: 'success',
-                                title: result.msg
-                            });
-                            
-                            $('#sAlasanOld').val(null);
-                        }
-                        else
-                        {
-                            if(Array.isArray(result.msg))
-                            {
-                                var str = "";
-                                for(var i = 0 ; i < result.msg.length ; i++ )
-                                {
-                                    str += result.msg[i]+"<br>";
-                                }
-                                Toast.fire({
-                                    type: 'error',
-                                    title: str
-                                });
-                            }
-                            
-                        }
-                        dTableKar.ajax.reload();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) { 
-                        /* implementation goes here */ 
-                        toastOverlay.close();
-                        console.log(jqXHR.responseText);
-                    }
+                    datas[i] = {
+                        sKar : row.sKar, 
+                        sAlasan : row.sAlasan, 
+                        sWaktu : row.sWaktu, 
+                        sKeterangan : row.sKeterangan,
+                        sAlasanOld : row.sAlasanOld,
+                    };
                 });
-            });
-            
-            dTableKar = $('#dTableKar').DataTable({
-                "sPaginationType": "full_numbers",
-                "searching":false,
-                "ordering": true,
-                "deferRender": true,
-                "processing": true,
-                "serverSide": true,
-                "select": true,
-                "scrollX": true,
-                "scrollY": 600,
-                "autoWidth": false,
-                "lengthMenu": [500, 1000, 1500, 2000 ],
-                "ajax":
-                {
-                    "url"       : "{{ route('dttalasankaryawan') }}",
-                    "type"      : 'POST',
-                    data: function (d) 
-                    {
-                        d.sTanggal   = $('#sTanggal').val();
-                        d.perusahaan   = $('#perusahaan').val();
-                    }
-                },        
-                select: 
-                {
-                    style:    'os',
-                    selector: 'td:first-child'
-                },
-                "columnDefs"    :[
-                {
-                    "targets": 0,
-                    "orderable":      false,
-                    "data"     :      function(d)
-                    {
-                        return '<button class="btn btn-sm btn-primary btnedit"><i class="fa fa-edit"></i></button>'+
-                            '<button class="btn btn-sm btn-danger btndel"><i class="fa fa-eraser"></i></button>';
-                    }
-                },
-                {
-                    targets : 'ttanggalawal',
-                    data : 'tanggal_awal'
-                },
-                {
-                    targets : 'ttanggalakhir',
-                    data : 'tanggal_akhir'
-                },
-                {
-                        targets : 'tpin',
-                        data: "pin"
-                },
-                {
-                        targets : 'tnik',
-                        data: "nik"
-                },
-                {
-                        targets : 'tnama',
-                        data: "nama"
-                },
-                {
-                        targets : 'talasan',
-                        data: function(data)
-                        {
-                            return data.alasan_kode+" - "+data.alasan_deskripsi;
-                        }
-                },
-                {
-                        targets : 'talasanwaktu',
-                        data: function(data)
-                        {
-                            return ((data.waktu)?data.waktu:'');
-                        }
-                },
-                {
-                        targets : 'tdivisi',
-                        data: function(data)
-                        {
-                            return data.divisi_kode+" - "+data.divisi_deskripsi;
-                        }
-                }
-                ],
-                "drawCallback": function( settings, json ) 
-                {
-                    $('.btnSet').on('click',function(e)
-                    {
-                        if(confirm('Apakah anda yakin menghapus alasan ini?'))
-                        {
-                            let _this	= $(this);
-                            let datas = dTableKar.row(_this.parents('tr')).data();
-                            console.log(_this.val());
-                        }
-                    });
-                }
-            });
-            
-            $('#dTableKar tbody').on('click', '.btndel', function () 
-            {
-                var tr = $(this).closest('tr');
-                var row = dTableKar.row( tr );
-                var datas = row.data();
                 
-                if(confirm('Apakah Anda yakin menghapus data ini?'))
+                var obj = {sTanggal : $('#sTanggal').val(), sData : datas}
+                
+                if(datas.length > 0)
                 {
                     $.ajax(
                     {
-                        url         : '{{route("delalasankaryawan")}}',
+                        url         : '{{route('savealasankaryawan2')}}',
                         dataType    : 'JSON',
                         type        : 'POST',
-                        data        : {sTanggal : datas.tanggal, sKar : datas.karyawan_id, sAlasan: datas.alasan_id} ,
+                        contentType: "application/json; charset=utf-8",
+                        data        :  JSON.stringify(obj),
+                        processData: false,
                         beforeSend  : function(xhr)
                         {
     //                        $('#loadingDialog').modal('show');
                             toastOverlay.fire({
                                 type: 'warning',
-                                title: 'Sedang memproses hapus data',
+                                title: 'Sedang memproses data',
                                 onBeforeOpen: () => {
                                     Swal.showLoading();
                                 }
@@ -340,12 +93,16 @@
                         },
                         success(result,status,xhr)
                         {
+                            toastOverlay.close();
+
                             if(result.status == 1)
                             {
                                 Toast.fire({
                                     type: 'success',
                                     title: result.msg
                                 });
+
+//                                $('#sAlasanOld').val(null);
                             }
                             else
                             {
@@ -360,170 +117,516 @@
                                         type: 'error',
                                         title: str
                                     });
-                                    $('#tipe_exim').attr('disabled','disabled');
                                 }
 
                             }
-                            dTableKar.ajax.reload();
+//                            dTableKar.ajax.reload();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) { 
+                            /* implementation goes here */ 
+                            toastOverlay.close();
+                            console.log(jqXHR.responseText);
                         }
                     });
-
-                    return false;
+                }
+                else
+                {
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Tidak ada data yang harus disimpan.'
+                    });
                 }
             });
             
-            $('#dTableKar tbody').on('click', '.btnedit', function () 
+            $('#cmdSaveRange').on('click', function(e)
             {
-                var tr = $(this).closest('tr');
-                var row = dTableKar.row( tr );
-                var datas = row.data();
+                e.preventDefault();
                 
-                $('#sTanggal').val(datas.tanggal_awal);
-                $('#sTanggalAkhir').val(datas.tanggal_akhir);
+                var rows = dgRange.datagrid('getRows');
+//                console.log(rows);
+                var datas = [];
                 
-                var newOption = new Option(datas.pin+' - '+datas.nama, datas.karyawan_id, true, true);
-                $('#sKar').append(newOption).trigger('change'); 
+                $.each(rows, function(i, row)
+                {
+                    datas[i] = {
+                        sTanggalAwal : row.sTanggalAwal, 
+                        sTanggalAkhir : row.sTanggalAkhir, 
+                        sKar : row.sKar, 
+                        sAlasan : row.sAlasan, 
+                        sWaktu : row.sWaktu, 
+                        sKeterangan : row.sKeterangan,
+                        sAlasanOld : row.sAlasanOld,
+                    };
+                });
                 
-                $('#sAlasanOld').val(datas.alasan_id);
-                var newOption = new Option(datas.alasan_kode+' - '+datas.alasan_deskripsi, datas.alasan_id, true, true);
-                $('#sAlasan').append(newOption).trigger('change'); 
+                var obj = {sData : datas}
                 
-                $('#sWaktu').val(datas.waktu);
-                $('#sKeterangan').val(datas.keterangan);
-//                $('#sId').val(datas.id);
-//                
-//                console.log(datas);
-            });
-            
-            
-            $('#perusahaan').select2({
-                // placeholder: 'Silakan Pilih',
-                placeholder: "",
-                allowClear: true,
-                minimumInputLength: 0,
-                delay: 250,
-                ajax: {
-                    url: "{{route('selperusahaan')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
+                if(datas.length > 0)
+                {
+                    $.ajax(
                     {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
-            $('#sKar').select2({
-                // placeholder: 'Silakan Pilih',
-                placeholder: "",
-                allowClear: true,
-                minimumInputLength: 0,
-                delay: 250,
-                ajax: {
-                    url: "{{route('selkaryawan')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        var query = {
-                            q: params.term
-                        }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                }
-            });
-            
+                        url         : '{{route('savealasankaryawanrange')}}',
+                        dataType    : 'JSON',
+                        type        : 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        data        :  JSON.stringify(obj),
+                        processData: false,
+                        beforeSend  : function(xhr)
+                        {
+    //                        $('#loadingDialog').modal('show');
+                            toastOverlay.fire({
+                                type: 'warning',
+                                title: 'Sedang memproses data',
+                                onBeforeOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        },
+                        success(result,status,xhr)
+                        {
+                            toastOverlay.close();
 
-            $('#sAlasan').select2({
-                // placeholder: 'Silakan Pilih',
-                minimumInputLength: 0,
-                allowClear: true,
-                delay: 250,
-                placeholder: {
-                    id: "",
-                    placeholder: ""
-                },
-                ajax: {
-                    url: "{{route('selalasan')}}",
-                    dataType    : 'json',
-                    type : 'post',
-                    data: function (params) 
-                    {
-                        let query = {
-                            q: params.term
+                            if(result.status == 1)
+                            {
+                                Toast.fire({
+                                    type: 'success',
+                                    title: result.msg
+                                });
+
+//                                $('#sAlasanOld').val(null);
+                            }
+                            else
+                            {
+                                if(Array.isArray(result.msg))
+                                {
+                                    var str = "";
+                                    for(var i = 0 ; i < result.msg.length ; i++ )
+                                    {
+                                        str += result.msg[i]+"<br>";
+                                    }
+                                    Toast.fire({
+                                        type: 'error',
+                                        title: str
+                                    });
+                                }
+
+                            }
+//                            dTableKar.ajax.reload();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) { 
+                            /* implementation goes here */ 
+                            toastOverlay.close();
+                            console.log(jqXHR.responseText);
                         }
-                        
-                        return query;
-                    },
-                    processResults: function (data) 
-                    {
-                        return {
-                            results: data.items
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: function(par)
+                    });
+                }
+            });
+            
+            $('#cmdHapus').on('click', function(e)
+            {
+                var idx = $('#dg').edatagrid('getSelected');
+                
+                if(idx)
                 {
-                    return par.name || $(strSel(par));
-                },
-                templateSelection: function(par)
-                {
-                    if(par.text == "")
+                    if(!idx.isNewRecord)
                     {
-                        return par.name || $(strSel(par));
+                        if(confirm('Apakah anda ingin menghapus data '+idx.sKarText+', dengan alasan '+idx.sAlsText+' ?'))
+                        {
+                            $.ajax(
+                            {
+                                url         : '{{route("delalasankaryawan")}}',
+                                dataType    : 'JSON',
+                                type        : 'POST',
+                                data        : {sTanggal : idx.tanggal, sKar : idx.sKar, sAlasan: idx.sAlasan} ,
+                                beforeSend  : function(xhr)
+                                {
+            //                        $('#loadingDialog').modal('show');
+                                    toastOverlay.fire({
+                                        type: 'warning',
+                                        title: 'Sedang memproses hapus data',
+                                        onBeforeOpen: () => {
+                                            Swal.showLoading();
+                                        }
+                                    });
+                                },
+                                success(result,status,xhr)
+                                {
+                                    if(result.status == 1)
+                                    {
+                                        Toast.fire({
+                                            type: 'success',
+                                            title: result.msg
+                                        });
+                                    }
+                                    else
+                                    {
+                                        if(Array.isArray(result.msg))
+                                        {
+                                            var str = "";
+                                            for(var i = 0 ; i < result.msg.length ; i++ )
+                                            {
+                                                str += result.msg[i]+"<br>";
+                                            }
+                                            Toast.fire({
+                                                type: 'error',
+                                                title: str
+                                            });
+                                        }
+
+                                    }
+                                    reloadTable();
+                                }
+                            });
+                        }
                     }
-                    return par.name || par.text;
                 }
             });
-        });
+            
+            $('#cmdHapusRange').on('click', function(e)
+            {
+                var idx = $('#dgRange').edatagrid('getSelected');
+                
+                if(idx)
+                {
+                    if(!idx.isNewRecord)
+                    {
+                        if(confirm('Apakah anda ingin menghapus Alasan Range data '+idx.sKarText+', dengan alasan '+idx.sAlsText+' ?'))
+                        {
+                            $.ajax(
+                            {
+                                url         : '{{route("delalasankaryawanrange")}}',
+                                dataType    : 'JSON',
+                                type        : 'POST',
+                                data        : {sTanggalAwal : idx.sTanggalAwal, sTanggalAkhir : idx.sTanggalAkhir, sKar : idx.sKar, sAlasan: idx.sAlasan} ,
+                                beforeSend  : function(xhr)
+                                {
+            //                        $('#loadingDialog').modal('show');
+                                    toastOverlay.fire({
+                                        type: 'warning',
+                                        title: 'Sedang memproses hapus data',
+                                        onBeforeOpen: () => {
+                                            Swal.showLoading();
+                                        }
+                                    });
+                                },
+                                success(result,status,xhr)
+                                {
+                                    if(result.status == 1)
+                                    {
+                                        Toast.fire({
+                                            type: 'success',
+                                            title: result.msg
+                                        });
+                                    }
+                                    else
+                                    {
+                                        if(Array.isArray(result.msg))
+                                        {
+                                            var str = "";
+                                            for(var i = 0 ; i < result.msg.length ; i++ )
+                                            {
+                                                str += result.msg[i]+"<br>";
+                                            }
+                                            Toast.fire({
+                                                type: 'error',
+                                                title: str
+                                            });
+                                        }
 
-        var strSel = function(par)
+                                    }
+                                    reloadTableRange();
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            
+            var toastOverlay = Swal.mixin({
+                position: 'center',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false
+            });
+            
+            $('#sTanggal').on('change', function()
+            {
+                reloadTable();
+            });
+            
+            $('#sRangeTanggal').on('change', function()
+            {
+                reloadTableRange();
+            });
+            
+            dg = $('#dg').edatagrid({
+                method: 'post',
+                queryParams:{
+                    sTanggal: $('#sTanggal').val()
+                },
+                url: '{{ route('tabletalasankaryawan') }}',
+                toolbar: '#toolbar',
+                idField: 'id',
+                rownumbers: 'true',
+                fitColumns: 'true',
+                singleSelect: 'true',
+                onAdd: onAdd,
+                onEndEdit: onEndEdit,
+                onClickCell: onClickCell,
+                onBeginEdit: function(index,row){
+                    var dg = $(this);
+                    var editors = dg.edatagrid('getEditors',index);
+//                    console.log(editors);
+                    for(var i=0; i<editors.length; i++)
+                    {
+                        $(editors[i].target).text('textbox').bind('keydown',function(e)
+                        {
+                            if (e.keyCode == 13)
+                            {
+                                dg.edatagrid('endEdit', index);
+                                dg.edatagrid('addRow',0);
+                            }
+                        })
+                    }
+                }
+            });
+            
+            dgRange = $('#dgRange').edatagrid({
+                method: 'post',
+                queryParams:{
+                    sRangeTanggal: $('#sRangeTanggal').val()
+                },
+                url: '{{ route('tabletalasanrangekaryawan') }}',
+                toolbar: '#toolbarRange',
+                idField: 'id',
+                rownumbers: 'true',
+                fitColumns: 'true',
+                singleSelect: 'true',
+                onAdd: onAddRange,
+                onEndEdit: onEndEditRange,
+                onClickCell: onClickCellRange,
+                onBeginEdit: function(index,row){
+                    var dg = $(this);
+                    var editors = dg.edatagrid('getEditors',index);
+                    for(var i=0; i<editors.length; i++)
+                    {
+                        $(editors[i].target).text('textbox').bind('keydown',function(e)
+                        {
+                            if (e.keyCode == 13)
+                            {
+                                dg.edatagrid('endEdit', index);
+                                dg.edatagrid('addRow',0);
+                            }
+                        })
+                    }
+                }
+            });
+
+        });
+        
+        var onAdd = function(index,row)
         {
-            return '<span class="badge" style="background-color:'+par.warna+'">'+par.kode+' - '+par.deskripsi+'</span>';
+            var ed1 = $('#dg').datagrid('getEditor', {
+                index: index,
+                field: 'sKar'
+            });
+            var t = $(ed1.target).combogrid('textbox').focus();
+            t.focus();
         }
         
-        var detFormat = function(dt)
+        var onAddRange = function(index,row)
         {
-            var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Kode Alasan</th><th>Nama Alasan</th><th>Waktu Alasan</th><th>Keterangan</th></tr>';
-            
-            dt.alasan.forEach(function(i,x)
-            {
-                if(i.pivot.tanggal == $('#sTanggal').val())
-                {
-                    ret += '<tr>'+
-                                '<td><button class="btn btn-danger btn-xs btnSet" value="'+i.id+'"><i class="fa fa-eraser"></i></button></td>'+
-                                '<td>'+i.kode+'</td>'+
-                                '<td>'+i.deskripsi+'</td>'+
-                                '<td>'+((i.pivot.waktu)?i.pivot.waktu:'&nbsp;')+'</td>'+
-                                '<td>'+((i.pivot.keterangan)?i.pivot.keterangan:'&nbsp;')+'</td>'+
-                            '</tr>';
-                }
-                
+            var ed1 = $('#dgRange').datagrid('getEditor', {
+                index: index,
+                field: 'sTanggalAwal'
             });
+            var t = $(ed1.target).datebox('textbox').focus();
+            t.focus();
+        }
+        
+        var onEndEdit = function(index, row)
+        {
+            var sKar = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sKar'
+            });
+            row.sKarText = $(sKar.target).combobox('getText');
             
-            ret += '</table>';
-            return ret;
-        };
+            var sAlasan = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sAlasan'
+            });
+            row.sAlsText = $(sAlasan.target).combobox('getText');
+        }
+        
+        var onEndEditRange = function(index, row)
+        {
+            var sKar = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sKar'
+            });
+            row.sKarText = $(sKar.target).combobox('getText');
+            
+            var sAlasan = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sAlasan'
+            });
+            row.sAlsText = $(sAlasan.target).combobox('getText');
+        }
+        
+        var endEditing = function()
+        {
+            if (editIndex == undefined){return true}
+            if ($('#dg').datagrid('validateRow', editIndex))
+            {
+                $('#dg').datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } 
+            else 
+            {
+                return false;
+            }
+        }
+        
+        var endEditingRange = function()
+        {
+            if (editRangeIndex == undefined)
+            {
+                return true;
+            }
+            if ($('#dgRange').datagrid('validateRow', editIndex))
+            {
+                $('#dgRange').datagrid('endEdit', editIndex);
+                editRangeIndex = undefined;
+                return true;
+            } 
+            else 
+            {
+                // console.log('kesini');
+                return false;
+            }
+        }
+        
+        var onClickCell = function(index, field)
+        {
+//            console.log(index);
+            if (editIndex != index)
+            {
+//                console.log(endEditing());
+                if (endEditing())
+                {
+                    $('#dg').datagrid('selectRow', index)
+                            .datagrid('beginEdit', index);
+                    var ed = $('#dg').datagrid('getEditor', {index:index,field:field});
+                    if (ed)
+                    {
+//                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } 
+                else 
+                {
+                    setTimeout(function()
+                    {
+                        $('#dg').datagrid('selectRow', editIndex);
+                    },0);
+                }
+            }
+        }
+        
+        var onClickCellRange = function(index, field)
+        {
+//            console.log(index);
+            if (editRangeIndex != index)
+            {
+//                console.log(endEditing());
+                if (endEditing())
+                {
+                    $('#dgRange').datagrid('selectRow', index)
+                            .datagrid('beginEdit', index);
+                    var ed = $('#dgRange').datagrid('getEditor', {index:index,field:field});
+                    if (ed)
+                    {
+//                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editRangeIndex = index;
+                } 
+                else 
+                {
+                    setTimeout(function()
+                    {
+                        $('#dgRange').datagrid('selectRow', editIndex);
+                    },0);
+                }
+            }
+        }
+        
+        var reloadTable = function()
+        {
+//            var dt = $('#sTanggal').datebox('getDate');
+//            console.log(myformatter(dt));
+            var dt = $('#sTanggal').val();
+            
+            $('#dg').edatagrid('reload', {sTanggal: dt});
+        }
+        
+        var reloadTableRange = function()
+        {
+//            var dt = $('#sTanggal').datebox('getDate');
+//            console.log(myformatter(dt));
+            var dt = $('#sRangeTanggal').val();
+            
+            $('#dgRange').edatagrid('reload', {sRangeTanggal: dt});
+        }
+        
+        var myformatter = function(date)
+        {
+            
+            if(!date)
+            {
+                return '';
+            }
+            else
+            {
+                console.log(date);
+                var y = date.getFullYear();
+                var m = date.getMonth()+1;
+                var d = date.getDate();
+                return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+            }
+        }
+        var myparser = function(s)
+        {
+            if (!s) return new Date();
+            var ss = (s.split('-'));
+            var y = parseInt(ss[0],10);
+            var m = parseInt(ss[1],10);
+            var d = parseInt(ss[2],10);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d))
+            {
+                return new Date(y,m-1,d);
+            } 
+            else 
+            {
+                return new Date();
+            }
+        }
+        
+        var onSelectTanggal = function()
+        {
+            reloadTable();
+        }
+        
+        var addDg = function(e)
+        {
+            if(e.which == 13) 
+            {
+                $('#dg').edatagrid('addRow',0);
+
+            }
+        }
     </script>
 @endsection
 
@@ -573,109 +676,204 @@
 @endsection
 
 @section('content')
-<div class="row">      
+
+<div class="row">  
     <div class="col-12">
-        <div class="row">
-            <div class="col-12">
-                <div class="card card-primary card-outline">
-                    <div class="card-header">
-                        {{Form::open(['url' => route('savealasankaryawan'),'class'=>'form-data', 'id' => 'frmTransAlasan'])}}
-                        {{Form::hidden('sAlasanOld', null, ['id' => 'sAlasanOld'])}}
-                            <div class="row">
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('sTanggal', 'Tanggal') }}
-                                        <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('sTanggal', null, ['id' => 'sTanggal', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
-                                            <div class="input-group-append" data-target="#tanggal_masuk">
-                                                <div class="input-group-text"><i class="far fa-calendar"></i></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('sTanggalAkhir', 'Tanggal Akhir') }}
-                                        <div class="input-group" data-target-input="nearest">
-                                            {{ Form::text('sTanggalAkhir',null, ['id' => 'sTanggalAkhir', 'class' => 'form-control form-control-sm', 'placeholder' => 'Tanggal Alasan']) }}
-                                            <div class="input-group-append" data-target="#tanggal_masuk">
-                                                <div class="input-group-text"><i class="far fa-calendar"></i></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @if(Auth::user()->type->nama != 'REKANAN')
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('perusahaan', 'Perusahaan') }}
-                                        {{ Form::select('perusahaan', [], null, ['id' => 'perusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>
-                                @endif
-                                <div class="col-1">
-                                    <div class="form-group">
-                                        <button class="btn btn-xs btn-warning" alt="Upload" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i><br>Upload</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    <div class="form-group">                                        
-                                        {{ Form::label('sKar', 'Karyawan') }}
-                                        {{ Form::select('sKar', [], null, ['id' => 'sKar', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('sAlasan', 'Alasan') }}
-                                        {{ Form::select('sAlasan', [], null, ['id' => 'sAlasan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        {{ Form::label('sWaktu', 'Waktu') }}
-                                        {{ Form::text('sWaktu',  null, ['id' => 'sWaktu', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        {{ Form::label('sKeterangan', 'Keterangan') }}
-                                        {{ Form::text('sKeterangan',  null, ['id' => 'sKeterangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
-                                    </div>
-                                </div>
-                                <div class="col-1">
-                                    <div class="form-group">
-                                        <button class="btn btn-success btn-xs" id="cmdTambah"><i class="fa fa-plus-circle"></i><br>Tambah</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="card-body">  
-        <!--                <div class="float-right">
-                            <button id="btnSet" class="btn btn-info">Set >></button>
-                        </div>-->
-                        <table id="dTableKar" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th class="ttanggalawal">Tanggal Awal</th>
-                                    <th class="ttanggalakhir">Tanggal Akhir</th>
-                                    <th class="tpin">PIN</th>
-                                    <!--<th class="tnik">NIK</th>-->
-                                    <th class="tnama">Nama</th>
-                                    <th class="tdivisi">Divisi</th>
-                                    <th class="talasan">Alasan</th>
-                                    <th class="talasanwaktu">Waktu</th>
-<!--                                    <th class="talasan">Alasan</th>
-                                    <th class="twaktu">Waktu</th>-->
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
+        <div class="easyui-tabs" data-options="tabWidth:112" style="width:100%;height:600px">
+            <div title="Harian" style="padding:10px">
+                <table id="dg" title="Transaksi Alasan Harian" style="width:100%;height:500px">
+                    <thead>
+                        <tr>
+                            <th data-options="
+                                field:'sKar', width:150,
+                                formatter:function(value,row){
+                                    return row.sKarText;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        loader: function(param, success, error)
+                                        {
+                                            var q = param.q || '';
+                                            $.ajax({
+                                                url : '{{route('selectkaryawan')}}',
+                                                method : 'post',
+                                                dataType: 'json',
+                                                data: {
+                                                    q: q
+                                                },
+                                                success: function(data)
+                                                {
+                                                    var items = $.map(data, function(item, index)
+                                                    {
+                                                        return {
+                                                            sKar : item.sKar,
+                                                            sKarText : item.sKarText
+                                                        };
+                                                    });
+                                                    success(data);
+                                                }
+                                            });
+                                        },
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'sKar',
+                                        textField: 'sKarText'
+                                    },
+
+                                }
+                                ">PIN</th>
+                            <th data-options="
+                                field:'sAlasan', width:150,
+                                formatter:function(value,row){
+                                    return row.sAlsText;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        url:'{{route('selectalasan')}}',
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'id',
+                                        textField: 'sAlsText'
+                                    },
+
+                                }
+                                ">Alasan</th>
+                            <th data-options="
+                                field:'sWaktu', width:50, editor:'text'
+                                ">Waktu</th>
+                            <th data-options="
+                                field:'sKeterangan', width:150, editor:'text'
+                                ">Keterangan</th>
+                            <th data-options="
+                                field: 'sAlasanOld',
+                                formatter:function(value,row){
+                                    return row.sAlasanOld;
+                                }" hidden="true">                       
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <div id="toolbar">
+<!--                    <input id="sTanggal" class="easyui-datebox" label="Tanggal : " labelPosition="left" data-options="formatter:myformatter, 
+                           parser:myparser, 
+                           onChange:onSelectTanggal, options : { setValue : myformatter(new Date())}" style="width: 30%">-->
+                    <input type="date" id="sTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow',0)">Tambah</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapus">Hapus</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSave">Simpan</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Batal</a>
+
+                </div>
+            </div>
+            <div title="Range" style="padding:10px">
+                <table id="dgRange" title="Transaksi Alasan Range" style="width:100%;height:500px">
+                    <thead>
+                        <tr>
+                            <th data-options="
+                                field:'sTanggalAwal', width:70,
+                                editor:{
+                                    type: 'datebox'
+                                }
+                            ">Tanggal Awal</th>
+
+                            <th data-options="
+                                field:'sTanggalAkhir', width:70,
+                                editor:{
+                                    type: 'datebox'
+                                }
+                            ">Tanggal Akhir</th>
+
+                            <th data-options="
+                                field:'sKar', width:150,
+                                formatter:function(value,row){
+                                    return row.sKarText;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        loader: function(param, success, error)
+                                        {
+                                            var q = param.q || '';
+
+                                            $.ajax({
+                                                url : '{{route('selectkaryawan')}}',
+                                                method : 'post',
+                                                dataType: 'json',
+                                                data: {
+                                                    q: q
+                                                },
+                                                success: function(data)
+                                                {
+                                                    var items = $.map(data, function(item, index)
+                                                    {
+                                                        return {
+                                                            sKar : item.sKar,
+                                                            sKarText : item.sKarText
+                                                        };
+                                                    });
+                                                    success(data);
+                                                }
+                                            });
+                                        },
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'sKar',
+                                        textField: 'sKarText'
+                                    },
+
+                                }
+                                ">PIN</th>
+
+                            <th data-options="
+                                field:'sAlasan', width:150,
+                                formatter:function(value,row){
+                                    return row.sAlsText;
+                                },
+                                editor:{
+                                    type:'combobox',
+                                    options:{
+                                        url:'{{route('selectalasan')}}',
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'id',
+                                        textField: 'sAlsText'
+                                    },
+
+                                }
+                                ">Alasan</th>
+
+                            <th data-options="
+                                field:'sWaktu', width:50, editor:'text'
+                                ">Waktu</th>
+
+                            <th data-options="
+                                field:'sKeterangan', width:150, editor:'text'
+                                ">Keterangan</th>
+
+                            <th data-options="
+                                field: 'sAlasanOld',
+                                formatter:function(value,row){
+                                    return row.sAlasanOld;
+                                }" hidden="true">                       
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <div id="toolbarRange">
+<!--                    <input id="sTanggalRange" class="easyui-datebox" label="Tanggal : " labelPosition="left" data-options="formatter:myformatter, 
+                           parser:myparser, 
+                           onChange:onSelectTanggal, options : { setValue : myformatter(new Date())}" style="width: 30%">-->
+                    <input type="date" id="sRangeTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dgRange').edatagrid('addRow',0)">Tambah</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapusRange">Hapus</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSaveRange">Simpan</a>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgRange').edatagrid('cancelRow')">Batal</a>
+
                 </div>
             </div>
         </div>
-    </div>  
+    </div>
 </div>
 @endsection

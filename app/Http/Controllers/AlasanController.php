@@ -311,10 +311,13 @@ class AlasanController extends Controller
                        isset($v['sTanggalAkhir']) &&
                        isset($v['sAlasan']))
                     {
+                        $tglAwal = Carbon::createFromFormat('m/d/Y', $v['sTanggalAwal']);
+                        $tglAkhir = Carbon::createFromFormat('m/d/Y', $v['sTanggalAkhir']);
+
                         $kar = Karyawan::find($v['sKar']);
 
-                        $pvt = $kar->alasanRange()->wherePivot('tanggal_awal', $v['sTanggalAwal'])
-                                ->wherePivot('tanggal_akhir', $v['sTanggalAkhir']);
+                        $pvt = $kar->alasanRange()->wherePivot('tanggal_awal', $tglAwal->toDateString())
+                                ->wherePivot('tanggal_akhir', $tglAkhir->toDateString());
 
                         if(isset($v['sAlasanOld']))
                         {
@@ -324,15 +327,15 @@ class AlasanController extends Controller
                             }
                         }
 
-                        $attach = ['tanggal_awal' => $v['sTanggalAwal'], 
-                                   'tanggal_akhir' => $v['sTanggalAkhir'], 
+                        $attach = ['tanggal_awal' => $tglAwal->toDateString(), 
+                                   'tanggal_akhir' =>  $tglAkhir->toDateString(), 
                                    'keterangan' => $v['sKeterangan'], 
                                    'waktu' => $v['sWaktu'],
                                    'created_by' => Auth::user()->id, 
                                    'created_at' => Carbon::now()];
 
                         $kar->alasanRange()->attach($v['sAlasan'], $attach);
-                        $this->prosesAbsTanggalRange($kar->id, $v['sTanggalAwal'], $v['sTanggalAkhir']);
+                        $this->prosesAbsTanggalRange($kar->id, $tglAwal->toDateString(), $tglAkhir->toDateString());
                     }
                     
                 }
@@ -453,7 +456,7 @@ class AlasanController extends Controller
                 $kar = Karyawan::find($req['sKar']);
                 
                 $par = $kar->alasan()->wherePivot('tanggal', $req['sTanggal']);
-                
+                // dd($par);
 //                dd($par->detach());
 //                
                 if($par)
@@ -461,6 +464,72 @@ class AlasanController extends Controller
                     $par->detach($req['sAlasan']);
                 }
                 $this->prosesAbsTanggal($kar->id, $req['sTanggal']);
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil dihapus'
+                ));
+                    
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal dihapus',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Karyawan  $Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyAlasanKaryawanRange(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sTanggalAwal'   => 'required',
+                'sTanggalAkhir'   => 'required',
+                'sAlasan'   => 'required',
+                'sKar'   => 'required'
+            ],
+            [
+                'sTanggalAwal.required'  => 'Tanggal Awal harus diisi.',
+                'sTanggalAkhir.required'  => 'Tanggal Akhir harus diisi.',
+                'sAlasan.required'  => 'Alasan harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.'
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+
+                $kar = Karyawan::find($req['sKar']);
+                
+                $tglAwal = Carbon::createFromFormat('m/d/Y', $req['sTanggalAwal']);
+                $tglAkhir = Carbon::createFromFormat('m/d/Y', $req['sTanggalAkhir']);
+
+                $par = $kar->alasanRange()->wherePivot('tanggal_awal', $tglAwal->toDateString())
+                                          ->wherePivot('tanggal_akhir', $tglAkhir->toDateString());
+                                          
+                if($par)
+                {
+                    $par->detach($req['sAlasan']);
+                }
+                $this->prosesAbsTanggalRange($kar->id, $tglAwal->toDateString(), $tglAkhir->toDateString());
                 echo json_encode(array(
                     'status' => 1,
                     'msg'   => 'Data berhasil dihapus'
@@ -589,8 +658,8 @@ class AlasanController extends Controller
         $req    = $request->all();
         
         $datas = DB::table('alasan_karyawan_range')
-                  ->selectRaw('alasan_karyawan_range.tanggal_awal as tanggal_awal, '
-                          . 'alasan_karyawan_range.tanggal_akhir as tanggal_akhir, '
+                  ->selectRaw('date_format(alasan_karyawan_range.tanggal_awal, \'%m/%d/%Y\') as tanggal_awal, '
+                          . 'date_format(alasan_karyawan_range.tanggal_akhir, \'%m/%d/%Y\') as tanggal_akhir, '
                           . 'alasan_karyawan_range.alasan_id as alasan_id, '
                           . 'alasan_karyawan_range.waktu as waktu, '
                           . 'alasan_karyawan_range.keterangan as keterangan, '
@@ -615,6 +684,9 @@ class AlasanController extends Controller
         if(isset($req['sRangeTanggal']))
         {
             $datas->where('alasan_karyawan_range.tanggal_awal', '<=',$req['sRangeTanggal']);
+            $datas->where('alasan_karyawan_range.tanggal_akhir', '>=',$req['sRangeTanggal']);
+
+            $total->where('alasan_karyawan_range.tanggal_awal', '<=',$req['sRangeTanggal']);
             $total->where('alasan_karyawan_range.tanggal_akhir', '>=',$req['sRangeTanggal']);
             
         }
@@ -640,17 +712,17 @@ class AlasanController extends Controller
         foreach($res as $val)
         {
             $ret[] = [
-                'sRangeKar' => $val->karyawan_id,
-                'sRangeKarText' => $val->pin.' - '.$val->nama,
-                'sRangeAlasan' => $val->alasan_id,
-                'sRangeAlasanOld' => $val->alasan_id,
-                'sRangeAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
-                'sRangeAlasanKode' => $val->alasan_kode,
-                'sRangeAlasanNama' => $val->alasan_deskripsi,
-                'sRangeWaktu' => $val->waktu,
-                'sRangeTanggalAwal' => $val->tanggal_awal,
-                'sRangeTanggalAkhir' => $val->tanggal_akhir,
-                'sRangeKeterangan' => $val->keterangan
+                'sKar' => $val->karyawan_id,
+                'sKarText' => $val->pin.' - '.$val->nama,
+                'sAlasan' => $val->alasan_id,
+                'sAlasanOld' => $val->alasan_id,
+                'sAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
+                'sAlasanKode' => $val->alasan_kode,
+                'sAlasanNama' => $val->alasan_deskripsi,
+                'sWaktu' => $val->waktu,
+                'sTanggalAwal' => $val->tanggal_awal,
+                'sTanggalAkhir' => $val->tanggal_akhir,
+                'sKeterangan' => $val->keterangan
             ];
         }
         

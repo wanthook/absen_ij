@@ -216,6 +216,7 @@ class Karyawan extends Model
     public function alasan()
     {
         return $this->belongsToMany('App\Alasan')
+                    ->using(PivotRequestAlasan::class)
                     ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at');
     }
     

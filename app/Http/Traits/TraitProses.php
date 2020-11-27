@@ -313,8 +313,6 @@ trait TraitProses
                 if(!$alasan->count())
                 {
                     $alasan = $karyawan->alasanRangeTanggal($key);
-
-                    
                 }
                 
                 /*
