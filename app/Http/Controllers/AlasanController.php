@@ -439,13 +439,9 @@ class AlasanController extends Controller
                         {
                             $karId = $karyawan->first()->id;
                             $kar = Karyawan::find($karId);
-                            $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
                             $alasan = Alasan::where('kode', trim($sD[$arrKey->alasan]))->first();
 //                            dd($alasan);
-                            if($par)
-                            {
-                                $par->detach($alasan->id);
-                            }
+                            
                     
                             if(trim($sD[$arrKey->waktu]))
                             {
@@ -458,12 +454,22 @@ class AlasanController extends Controller
                             
                             if(trim($sD[$arrKey->tanggal_akhir]))
                             {
-                                $attach = ['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal]),'created_by' => Auth::user()->id];
+                                $par = $kar->alasanRange()->wherePivot('tanggal_awal', trim($sD[$arrKey->tanggal]))->wherePivot('tanggal_akhir', trim($sD[$arrKey->tanggal_akhir]);
+                                if($par)
+                                {
+                                    $par->detach($alasan->id);
+                                }
+                                $attach = ['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal_akhir]),'created_by' => Auth::user()->id];
                                 $kar->alasanRange()->attach($alasan->id, $attach);
-                                $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal]));
+                                $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal_akhir]));
                             }
                             else
                             {
+                                $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
+                                if($par)
+                                {
+                                    $par->detach($alasan->id);
+                                }
                                 $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id];
                                 $kar->alasan()->attach($alasan->id, $attach);
                                 $this->prosesAbsTanggal($kar->id, trim($sD[$arrKey->tanggal]));

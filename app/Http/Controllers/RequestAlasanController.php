@@ -591,11 +591,7 @@ class RequestAlasanController extends Controller
             $req = $request->only(['id']);
             try 
             {
-                RequestAlasan::find($req['id'])->fill([
-                    'status' => 'approve',
-                    'approved_by' => Auth::user()->id,
-                    'approved_at' => Carbon::now()                                    
-                ])->save();
+                
                 
                 $det = RequestAlasanDetail::where('request_alasan_id', $req['id'])->where(function($q)
                 {
@@ -606,38 +602,52 @@ class RequestAlasanController extends Controller
                 foreach($det->get() as $rDet)
                 {
                     $kAls = Karyawan::find($rDet->karyawan_id);
+
                     $dStart = Carbon::createFromFormat('Y-m-d', $rDet->tanggal);
-                    $dEnd = Carbon::createFromFormat('Y-m-d', $rDet->tanggal);
+                    $dEnd = null;
+
                     if($rDet->tanggal_akhir)
                     {
                         $dEnd = Carbon::createFromFormat('Y-m-d', $rDet->tanggal_akhir);
                     }
-                    
-                    $tglPer = CarbonPeriod::create($dStart->toDateString(), $dEnd->toDateString())->toArray();                    
-                    
-                    foreach($tglPer as $vTgl)
+
+                    if($dEnd)
                     {
-                        $par = $kAls->alasan()->wherePivot('tanggal', $vTgl);
-    //                
+                        $par = $kAls->alasanRange()->wherePivot('tanggal_awal', $dStart->toDateString())->wherePivot('tanggal_akhir', $dEnd->toDateString());
                         if($par)
                         {
                             $par->detach($rDet->alasan_id);
                         }
 
-                        if($rDet->alasan_id)
-                        {
-                            $attach = ['tanggal' => $vTgl, 'keterangan' => $rDet->catatan, 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()];
-//                            dd($attach);
-                            if($rDet->waktu)
-                            {
-                                $attach['waktu'] = $rDet->waktu;
-                            }
+                        $attach = ['tanggal_awal' => $dStart->toDateString(), 
+                                   'tanggal_akhir' => $dEnd->toDateString(), 
+                                   'keterangan' => $rDet->catatan, 
+                                   'created_by' => Auth::user()->id];
 
-                            $kAls->alasan()->attach($rDet->alasan_id, $attach);
-                            $this->prosesAbsTanggal($kAls->id, $vTgl);
+                        $kAls->alasanRange()->attach($rDet->alasan_id, $attach);
+                        $this->prosesAbsTanggalRange($kAls->id, $dStart->toDateString(), $dEnd->toDateString());
+                    }
+                    else
+                    {
+                        $par = $kAls->alasan()->wherePivot('tanggal', $dStart->toDateString());
+                        if($par)
+                        {
+                            $par->detach($rDet->alasan_id);
                         }
+
+                        $attach = ['tanggal' => $dStart->toDateString(),
+                                   'keterangan' => $rDet->catatan, 
+                                   'created_by' => Auth::user()->id];
+
+                        $kAls->alasan()->attach($rDet->alasan_id, $attach);
+                        $this->prosesAbsTanggal($kAls->id, $dStart->toDateString());
                     }
                 }
+                RequestAlasan::find($req['id'])->fill([
+                    'status' => 'approve',
+                    'approved_by' => Auth::user()->id,
+                    'approved_at' => Carbon::now()                                    
+                ])->save();
                 $det->update(['status' => 'approve',
                     'approved_by' => Auth::user()->id,
                     'approved_at' => Carbon::now()  ]);
