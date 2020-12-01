@@ -244,6 +244,13 @@ class AlasanController extends Controller
                                 $pvt->detach($v['sAlasanOld']);
                             }
                         }
+                        else
+                        {
+                            if($v['sAlasan'])
+                            {
+                                $pvt->detach($v['sAlasan']);
+                            }
+                        }
 
                         $attach = ['tanggal' => $req['sTanggal'], 
                                    'keterangan' => $v['sKeterangan'], 
@@ -324,6 +331,13 @@ class AlasanController extends Controller
                             if($v['sAlasanOld'])
                             {
                                 $pvt->detach($v['sAlasanOld']);
+                            }
+                        }
+                        else
+                        {
+                            if($v['sAlasan'])
+                            {
+                                $pvt->detach($v['sAlasan']);
                             }
                         }
 
