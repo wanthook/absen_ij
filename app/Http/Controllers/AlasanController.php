@@ -454,7 +454,9 @@ class AlasanController extends Controller
                             
                             if(trim($sD[$arrKey->tanggal_akhir]))
                             {
-                                $par = $kar->alasanRange()->wherePivot('tanggal_awal', trim($sD[$arrKey->tanggal]))->wherePivot('tanggal_akhir', trim($sD[$arrKey->tanggal_akhir]);
+                                $par = $kar->alasanRange()
+                                            ->wherePivot('tanggal_awal', trim($sD[$arrKey->tanggal]))
+                                            ->wherePivot('tanggal_akhir', trim($sD[$arrKey->tanggal_akhir]));
                                 if($par)
                                 {
                                     $par->detach($alasan->id);
