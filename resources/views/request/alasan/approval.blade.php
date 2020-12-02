@@ -70,12 +70,21 @@ $(function(e)
     }).on('apply.daterangepicker', function (ev, picker) {
         $(this).val(picker.startDate.format('YYYY-MM-DD'));
     });
+
     @if($var->status == 'send')
+    $('#chkAll').on('change', function(e)
+    {
+        var checked = $(this).prop('checked');
+
+        $('.chkapp').prop('checked', checked);
+    });
+
     $('#cmdSimpanDetail').on('click', function(e)
     {
         e.preventDefault();
         
         var obj = {
+            id : $('#id').val(),
             did : $('#did').val(),
             dtanggal : $('#dtanggal').val(),
             dtanggalAkhir : $('#dtanggalAkhir').val(),
@@ -84,7 +93,7 @@ $(function(e)
             dalasan : $('#dalasan').val(),
             dcatatan : $('#dcatatan').val()
         };
-        
+
         $.ajax(
         {
             url         : '{{route('saverequestalasandet')}}',
@@ -126,12 +135,22 @@ $(function(e)
         e.preventDefault();
         
         var ids = $('#id').val();
+
+        var checked = [];
+
+        $('.chkapp:checked').each(function(e)
+        {
+            checked[e] = $(this).val();
+        });
+
+        // console.table(checked);
+
         $.ajax(
         {
             url         : '{{route('apirequestalasanapp')}}',
             dataType    : 'JSON',
             type        : 'POST',
-            data        : { id : ids},
+            data        : { id : ids, d:checked},
             beforeSend  : function(xhr)
             {
                 callToastOverlay('warning', 'Loading');
@@ -210,53 +229,6 @@ $(function(e)
         }
     });
     
-    $('.btndetdec').on('click', function(e)
-    {
-        e.preventDefault();
-        
-        if($conf = prompt('Silakan masukkan alasan penolakan'))
-        {
-            var ids = $(this).val();
-            $.ajax(
-            {
-                url         : '{{route('apirequestalasandetdec')}}',
-                dataType    : 'JSON',
-                type        : 'POST',
-                data        : { id : ids,
-                                catatan : $conf},
-                beforeSend  : function(xhr)
-                {
-                    callToastOverlay('warning', 'Loading');
-                },
-                success(result,status,xhr)
-                {
-                    toastOverlay.close();
-                    if (result.status == 1)
-                    {
-                        callToast('success', result.msg);
-                        location.reload();
-                    } 
-                    else
-                    {
-                        if (Array.isArray(result.msg))
-                        {
-                            var str = "";
-                            for (var i = 0; i < result.msg.length; i++)
-                            {
-                                str += result.msg[i] + "<br>";
-                            }
-                            callToast('error', str);
-                        }
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) { 
-                    toastOverlay.close();
-                    console.log(jqXHR.responseText);
-                }
-            });
-        }
-    });
-    
     $('.btnedit').on('click', function(e)
     {
         e.preventDefault();
@@ -278,9 +250,12 @@ $(function(e)
                 {
                     var option = new Option($(strSel(result.alasan)).html(), result.alasan.id, true, true);
                     var dalasan = $('#dalasan').append(option).trigger('change');
+
+                    var option = new Option(result.karyawan.pin+' - '+result.karyawan.nama, result.karyawan.id, true, true);
+                    var dkaryawanid = $('#dkaryawanid').append(option).trigger('change');
                     
-                    $('#dkaryawan').val(result.karyawan.pin+' - '+result.karyawan.nama);
-                    $('#dkaryawanid').val(result.karyawan.id);
+                    // $('#dkaryawan').val(result.karyawan.pin+' - '+result.karyawan.nama);
+                    // $('#dkaryawanid').val(result.karyawan.id);
 
                     $('#dcatatan').val(result.catatan);
                     $('#dtanggal').val(result.tanggal);
@@ -337,13 +312,42 @@ $(function(e)
             return par.name || par.text;
         }
     });
+
+
+    $('#dkaryawanid').select2({
+        // placeholder: 'Silakan Pilih',
+        placeholder: "",
+        allowClear: true,
+        minimumInputLength: 0,
+        delay: 250,
+        ajax: {
+            url: "{{route('selkaryawan')}}",
+            dataType: 'json',
+            type: 'post',
+            data: function (params)
+            {
+                var query = {
+                    q: params.term
+                }
+
+                return query;
+            },
+            processResults: function (data)
+            {
+                return {
+                    results: data.items
+                };
+            },
+            cache: true
+        }
+    });
     
 });
 
 
 function resetDetail()
 {
-    $('#dpin').val(null).trigger('change');
+    $('#dkaryawanid').val(null).trigger('change');
     $('#dalasan').val(null).trigger('change');
     $('#dcatatan').val(null);
     $('#did').val(null);
@@ -456,8 +460,7 @@ var strSel = function (par)
                                     <div class="form-group row">
                                         {{ Form::label('dkaryawan', 'Karyawan', ['class' => 'col-sm-3 col-form-label']) }}
                                         <div class="col-sm-9">
-                                            {{ Form::text('dkaryawan', null, ['id' => 'dkaryawan', 'class' => 'form-control form-control-sm', 'readonly' => 'readonly']) }}   
-                                            {{ Form::hidden('dkaryawanid', null, ['id' => 'dkaryawanid']) }}                                
+                                        {{ Form::select('dkaryawanid', [], null, ['id' => 'dkaryawanid', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                         </div>
                                     </div>
                                 </div>
@@ -490,7 +493,7 @@ var strSel = function (par)
                             <div class="col-12">
                                 <table class="table table-hover table-sm">
                                     <thead>
-                                        <th></th>
+                                        <th style="width: 75px"><input type="checkbox" id="chkAll"></th>
                                         <th class='ttanggal'>Tanggal</th>
                                         <th class='tpin'>PIN</th>
                                         <th class='tnama'>Nama</th>
@@ -508,7 +511,7 @@ var strSel = function (par)
                                                 $btn = null;
                                                 if(!$rKar->status && $var->status == 'send')
                                                 {
-                                                    $btn = '<button class="btn btn-danger btn-sm btndetdec" value="'.$rKar->id.'"><i class="fa fa-user-times"></i></button>'.
+                                                    $btn = '<input type="checkbox" class="chkapp" name="chkapp[]" value="'.$rKar->id.'">'.
                                                     '<button class="btn btn-primary btn-sm btnedit" value="'.$rKar->id.'"><i class="fa fa-edit"></i></button>';
                                                 }
                                             

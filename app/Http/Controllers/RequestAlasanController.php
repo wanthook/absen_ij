@@ -191,18 +191,21 @@ class RequestAlasanController extends Controller
             }
             else
             {
+                $rDet = RequestAlasanDetail::whereNull('request_alasan_id')->where('created_by', Auth::user()->id);
+
                 $id = RequestAlasan::create([
                     'uid_dokumen' => Uuid::uuid4()->getHex(),
                     'file_dokumen' => $fileName,
                     'no_dokumen' => Carbon::now()->format('Y/m/d').'/IJ/REQ/'.sprintf('%05d',$cnt),
                     'status' => 'new',
+                    'tdetail' => $rDet->count(),
                     'tanggal' => $req['tanggal'],
                     'catatan' => $req['catatan'],
                     'created_by' => Auth::user()->id,
                     'updated_by' => Auth::user()->id
                 ]);
                 
-                RequestAlasanDetail::whereNull('request_alasan_id')->where('created_by', Auth::user()->id)->update([
+                $rDet->update([
                     'request_alasan_id' => $id->id
                 ]);
             }
@@ -251,7 +254,10 @@ class RequestAlasanController extends Controller
 
             if(isset($req['id']))
             {
-                $id = $req['id'];
+                if($req['id'])
+                {
+                    $id = $req['id'];
+                }
             }
             
             if(isset($req['did']))
@@ -574,10 +580,12 @@ class RequestAlasanController extends Controller
     public function appApi(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id' => 'required'
+            'id' => 'required',
+            'd' => 'required'
         ],
         [
-            'id.required' => 'Dokumen Tidak dipilih'
+            'id.required' => 'Dokumen Tidak dipilih',
+            'd.required' => 'Tidak ada detail yang dipilih, lebih baik decline dokumen.'
         ]);
         if($validation->fails())
         {
@@ -588,16 +596,15 @@ class RequestAlasanController extends Controller
         }
         else
         {
-            $req = $request->only(['id']);
+            $req = $request->only(['id', 'd']);
+
             try 
             {
-                
-                
                 $det = RequestAlasanDetail::where('request_alasan_id', $req['id'])->where(function($q)
                 {
                     $q->whereNull('status');
                     $q->orWhere('status','approve');
-                });
+                })->whereIn('id', $req['d']);
                 
                 foreach($det->get() as $rDet)
                 {
@@ -621,6 +628,7 @@ class RequestAlasanController extends Controller
 
                         $attach = ['tanggal_awal' => $dStart->toDateString(), 
                                    'tanggal_akhir' => $dEnd->toDateString(), 
+                                   'request_alasan_id' => $req['id'],
                                    'keterangan' => $rDet->catatan, 
                                    'created_by' => Auth::user()->id];
 
@@ -636,6 +644,7 @@ class RequestAlasanController extends Controller
                         }
 
                         $attach = ['tanggal' => $dStart->toDateString(),
+                                   'request_alasan_id' => $req['id'],
                                    'keterangan' => $rDet->catatan, 
                                    'created_by' => Auth::user()->id];
 
@@ -648,9 +657,20 @@ class RequestAlasanController extends Controller
                     'approved_by' => Auth::user()->id,
                     'approved_at' => Carbon::now()                                    
                 ])->save();
+
                 $det->update(['status' => 'approve',
                     'approved_by' => Auth::user()->id,
-                    'approved_at' => Carbon::now()  ]);
+                    'approved_at' => Carbon::now()]);
+
+                $dec = RequestAlasanDetail::where('request_alasan_id', $req['id'])->whereNotIn('id', $req['d']);
+
+                if($dec)
+                {
+                    $dec->update(['status' => 'decline',
+                                    'declined_by' => Auth::user()->id,
+                                    'declined_at' => Carbon::now()]);
+                }
+
                 echo json_encode(array(
                    "status" => 1,
                     "msg"   => "Data berhasil disetujui."
