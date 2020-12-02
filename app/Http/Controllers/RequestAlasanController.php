@@ -310,6 +310,13 @@ class RequestAlasanController extends Controller
                     'updated_by' => Auth::user()->id
                 ]))
                 {
+                    $det = RequestAlasanDetail::where('request_alasan_id', $id);
+                    RequestAlasan::find($id)->fill([
+                        'tdetail' => $det->count(),
+                        'updated_by' => Auth::user()->id,
+                        'updated_at' => Carbon::now()
+                    ])->save();
+
                     echo json_encode(array(
                         'status' => 1,
                         'msg'   => 'Data berhasil disimpan'
@@ -541,19 +548,22 @@ class RequestAlasanController extends Controller
             $req = $request->only(['id', 'catatan']);
             try 
             {
-                RequestAlasan::find($req['id'])->fill([
-                    'status' => 'decline',
-                    'declined_by' => Auth::user()->id,
-                    'declined_at' => Carbon::now(),
-                    'declined_note' => $req['catatan']                    
-                ])->save();
-                
                 RequestAlasanDetail::where('request_alasan_id', $req['id'])->update([
                     'status' => 'decline',
                     'declined_by' => Auth::user()->id,
                     'declined_at' => Carbon::now(),
                     'declined_note' => $req['catatan']                    
                 ]);
+
+                $dec = RequestAlasanDetail::where('request_alasan_id', $req['id']);
+
+                RequestAlasan::find($req['id'])->fill([
+                    'status' => 'decline',
+                    'tdecline' => $dec->count(),
+                    'declined_by' => Auth::user()->id,
+                    'declined_at' => Carbon::now(),
+                    'declined_note' => $req['catatan']                    
+                ])->save();
 
                 echo json_encode(array(
                    "status" => 1,
@@ -652,11 +662,6 @@ class RequestAlasanController extends Controller
                         $this->prosesAbsTanggal($kAls->id, $dStart->toDateString());
                     }
                 }
-                RequestAlasan::find($req['id'])->fill([
-                    'status' => 'approve',
-                    'approved_by' => Auth::user()->id,
-                    'approved_at' => Carbon::now()                                    
-                ])->save();
 
                 $det->update(['status' => 'approve',
                     'approved_by' => Auth::user()->id,
@@ -670,6 +675,15 @@ class RequestAlasanController extends Controller
                                     'declined_by' => Auth::user()->id,
                                     'declined_at' => Carbon::now()]);
                 }
+
+
+                RequestAlasan::find($req['id'])->fill([
+                    'status' => 'approve',
+                    'tapprove' => $det->count(),
+                    'tdecline' => $dec->count(),
+                    'approved_by' => Auth::user()->id,
+                    'approved_at' => Carbon::now()                                    
+                ])->save();
 
                 echo json_encode(array(
                    "status" => 1,

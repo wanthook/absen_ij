@@ -511,8 +511,8 @@ var strSel = function (par)
                                                 $btn = null;
                                                 if(!$rKar->status && $var->status == 'send')
                                                 {
-                                                    $btn = '<input type="checkbox" class="chkapp" name="chkapp[]" value="'.$rKar->id.'">'.
-                                                    '<button class="btn btn-primary btn-sm btnedit" value="'.$rKar->id.'"><i class="fa fa-edit"></i></button>';
+                                                    $btn = '<input type="checkbox" class="chkapp" name="chkapp[]" value="'.$rKar->id.'">&nbsp;&nbsp;'.
+                                                    '<button class="btn btn-primary btn-xs btnedit" value="'.$rKar->id.'"><i class="fa fa-edit"></i></button>';
                                                 }
                                             
                                                 $arr = [

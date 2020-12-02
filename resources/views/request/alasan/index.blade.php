@@ -223,6 +223,18 @@
                     }
                 },
                 {
+                    targets : 'ttdetail',
+                    data: "tdetail"
+                },
+                {
+                    targets : 'ttapprove',
+                    data: "tapprove"
+                },
+                {
+                    targets : 'ttdecline',
+                    data: "tdecline"
+                },
+                {
                     targets : 'tcatatan',
                     data: "catatan"
                 }        
@@ -455,6 +467,9 @@
                                     <th class="tstatus">Status</th>
                                     <th class="tapprove">Approve</th>
                                     <th class="tdecline">Decline</th>
+                                    <th class="ttdetail">Tot. Det</th>
+                                    <th class="ttapprove">Tot. App</th>
+                                    <th class="ttdecline">Tot. Dec</th>
                                     <th class="tcatatan">Catatan</th>
                                 </tr>
                             </thead>
