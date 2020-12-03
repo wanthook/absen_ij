@@ -198,7 +198,6 @@ class RequestAlasanController extends Controller
                     'file_dokumen' => $fileName,
                     'no_dokumen' => Carbon::now()->format('Y/m/d').'/IJ/REQ/'.sprintf('%05d',$cnt),
                     'status' => 'new',
-                    'tdetail' => $rDet->count(),
                     'tanggal' => $req['tanggal'],
                     'catatan' => $req['catatan'],
                     'created_by' => Auth::user()->id,
@@ -310,12 +309,6 @@ class RequestAlasanController extends Controller
                     'updated_by' => Auth::user()->id
                 ]))
                 {
-                    $det = RequestAlasanDetail::where('request_alasan_id', $id);
-                    RequestAlasan::find($id)->fill([
-                        'tdetail' => $det->count(),
-                        'updated_by' => Auth::user()->id,
-                        'updated_at' => Carbon::now()
-                    ])->save();
 
                     echo json_encode(array(
                         'status' => 1,
@@ -887,6 +880,21 @@ class RequestAlasanController extends Controller
                     }
                         
                     return $str;
+                })
+                ->addColumn('totdetail', function($datas)
+                {
+                    $tot = $datas->detail()->count();
+                    return $tot;
+                })
+                ->addColumn('totapprove', function($datas)
+                {
+                    $tot = $datas->detail()->where('status', 'approve')->count();
+                    return $tot;
+                })
+                ->addColumn('totdecline', function($datas)
+                {
+                    $tot = $datas->detail()->where('status', 'decline')->count();
+                    return $tot;
                 })
                 ->make(true);
     }

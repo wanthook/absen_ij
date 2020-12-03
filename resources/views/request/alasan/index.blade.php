@@ -224,15 +224,15 @@
                 },
                 {
                     targets : 'ttdetail',
-                    data: "tdetail"
+                    data: "totdetail"
                 },
                 {
                     targets : 'ttapprove',
-                    data: "tapprove"
+                    data: "totapprove"
                 },
                 {
                     targets : 'ttdecline',
-                    data: "tdecline"
+                    data: "totdecline"
                 },
                 {
                     targets : 'tcatatan',
