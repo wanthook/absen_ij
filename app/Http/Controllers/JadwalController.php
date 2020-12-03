@@ -403,7 +403,7 @@ class JadwalController extends Controller
             else
             {
                 $req = $request->all();
-
+                // dd($req['data']);
                 if(empty($req['id']))
                 {
                     $req['tipe']        = 'S'; 
@@ -422,7 +422,7 @@ class JadwalController extends Controller
                         {
                             if(isset($valX['id']))
                             {
-                                if($valX['date_start'] == $valX['date_end'])
+                                if($valX['date_end'] == 'Invalid date')
                                 {
                                     $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date_start'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                                 }
@@ -460,21 +460,21 @@ class JadwalController extends Controller
                     {
                         if(isset($valX['id']))
                         {
-                            if($valX['date_start'] == $valX['date_end'])
-                                {
-                                    $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date_start'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                                }
-                                else
-                                {
-                                    $sDate = Carbon::createFromFormat('Y-m-d', $valX['date_start']);
-                                    $eDate = Carbon::createFromFormat('Y-m-d', $valX['date_end']);
+                            if($valX['date_end'] == 'Invalid date')
+                            {
+                                $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date_start'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                            }
+                            else
+                            {
+                                $sDate = Carbon::createFromFormat('Y-m-d', $valX['date_start']);
+                                $eDate = Carbon::createFromFormat('Y-m-d', $valX['date_end']);
 
-                                    $rDate = CarbonPeriod::create($sDate, $eDate)->toArray();
-                                    foreach($rDate as $vD)
-                                    {
-                                        $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $vD->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                                    }
+                                $rDate = CarbonPeriod::create($sDate, $eDate)->toArray();
+                                foreach($rDate as $vD)
+                                {
+                                    $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $vD->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                                 }
+                            }
                         }
                     }                    
 
