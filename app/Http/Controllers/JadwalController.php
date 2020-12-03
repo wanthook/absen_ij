@@ -422,7 +422,21 @@ class JadwalController extends Controller
                         {
                             if(isset($valX['id']))
                             {
-                                $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                if($valX['date_start'] == $valX['date_end'])
+                                {
+                                    $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date_start'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                }
+                                else
+                                {
+                                    $sDate = Carbon::createFromFormat('Y-m-d', $valX['date_start']);
+                                    $eDate = Carbon::createFromFormat('Y-m-d', $valX['date_end']);
+
+                                    $rDate = CarbonPeriod::create($sDate, $eDate)->toArray();
+                                    foreach($rDate as $vD)
+                                    {
+                                        $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $vD->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                    }
+                                }
                             }
                         }
                     }
@@ -446,10 +460,23 @@ class JadwalController extends Controller
                     {
                         if(isset($valX['id']))
                         {
-                            $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                            if($valX['date_start'] == $valX['date_end'])
+                                {
+                                    $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $valX['date_start'], 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                }
+                                else
+                                {
+                                    $sDate = Carbon::createFromFormat('Y-m-d', $valX['date_start']);
+                                    $eDate = Carbon::createFromFormat('Y-m-d', $valX['date_end']);
+
+                                    $rDate = CarbonPeriod::create($sDate, $eDate)->toArray();
+                                    foreach($rDate as $vD)
+                                    {
+                                        $jd->jadwal_kerja()->attach($valX['id'],['tanggal' => $vD->toDateString(), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                    }
+                                }
                         }
-                    }
-                    
+                    }                    
 
                     echo json_encode(array(
                         'status' => 1,
@@ -975,17 +1002,67 @@ class JadwalController extends Controller
                 
                 $ret = array();
                 
+                $cTitle = null;
+                $cStart = null;
+                $cEnd = null;
+                $cColor = null;
+                $cId = null;
+
                 foreach($res->jadwal_kerja as $jk)
                 {
+
+                    if(empty($cId))
+                    {
+                        $cTitle = $jk->kode."\n".$jk->jam_masuk." - ".$jk->jam_keluar;
+                        $cStart = $jk->pivot->tanggal;
+                        $cEnd = $jk->pivot->tanggal;
+                        $cColor = $jk->warna;
+                        $cId = $jk->id;
+                    }
+                    else
+                    {
+                        if($jk->id != $cId)
+                        {
+                            $ret[] = array(
+                                'title' => $cTitle,
+                                'start' => $cStart.'T00:00:00',
+                                'end' => $cEnd.'T01:00:00',
+                                'allDay'=> false,
+                                'color' => $cColor,
+                                'id' => $cId
+                            );
+
+                            $cTitle = $jk->kode."\n".$jk->jam_masuk." - ".$jk->jam_keluar;
+                            $cStart = $jk->pivot->tanggal;
+                            $cEnd = $jk->pivot->tanggal;
+                            $cColor = $jk->warna;
+                            $cId = $jk->id;
+                        }
+                        else
+                        {
+                            $cEnd = $jk->pivot->tanggal;
+                        }
+                    }
+                    // $ret[] = array(
+                    //     'title' => $jk->kode."\n".$jk->jam_masuk." - ".$jk->jam_keluar,
+                    //     'start' => $jk->pivot->tanggal,
+                    //     'end' => $jk->pivot->tanggal,
+                    //     'color' => $jk->warna,
+                    //     'id' => $jk->id
+                    // );
+                }
+
+                if($cId)
+                {
                     $ret[] = array(
-                        'title' => $jk->kode."\n".$jk->jam_masuk." - ".$jk->jam_keluar,
-                        'start' => $jk->pivot->tanggal,
-                        'end' => $jk->pivot->tanggal,
-                        'color' => $jk->warna,
-                        'id' => $jk->id
+                        'title' => $cTitle,
+                        'start' => $cStart.'T00:00:00',
+                        'end' => $cEnd.'T01:00:00',
+                        'color' => $cColor,
+                        'id' => $cId
                     );
                 }
-                
+                // dd($ret);
                 echo json_encode($ret);
             }
             else

@@ -632,6 +632,7 @@ class RequestAlasanController extends Controller
                         $attach = ['tanggal_awal' => $dStart->toDateString(), 
                                    'tanggal_akhir' => $dEnd->toDateString(), 
                                    'request_alasan_id' => $req['id'],
+                                   'waktu' => $rDet->waktu,
                                    'keterangan' => $rDet->catatan, 
                                    'created_by' => Auth::user()->id];
 
@@ -649,6 +650,7 @@ class RequestAlasanController extends Controller
                         $attach = ['tanggal' => $dStart->toDateString(),
                                    'request_alasan_id' => $req['id'],
                                    'keterangan' => $rDet->catatan, 
+                                   'waktu' => $rDet->waktu,
                                    'created_by' => Auth::user()->id];
 
                         $kAls->alasan()->attach($rDet->alasan_id, $attach);

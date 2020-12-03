@@ -33,7 +33,8 @@ class Jadwal extends Model
     public function jadwal_kerja()
     {
         return $this->belongsToMany('App\JamKerja')
-                    ->withPivot('day','tanggal','created_by','created_at');
+                    ->withPivot('day','tanggal','created_by','created_at')
+                    ->orderBy('tanggal', 'asc');
     }
     
     public function jadwalKerjaDay($hari)

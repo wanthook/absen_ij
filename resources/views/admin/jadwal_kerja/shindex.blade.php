@@ -43,6 +43,9 @@ if(config('global.perusahaan_short') == 'AIC')
         .fc-day-number{
             font-size: 10pt;
         }
+        .fc-time{
+            display : none;
+        }
     </style>
 @endsection
 
@@ -112,6 +115,7 @@ if(config('global.perusahaan_short') == 'AIC')
                 themeSystem: 'bootstrap',
                 locale: 'id',
                 firstDay: 1,
+                nextDayThreshold: '00:00:00',
                 showNonCurrentDates: false,
                 header    : {
                     left  : 'prev,next today',
@@ -149,14 +153,12 @@ if(config('global.perusahaan_short') == 'AIC')
                                 };
                             if( !exists )
                             {
-                                updateDataObject(arrEv);
-                                // console.log(objJadwal);
+                                // updateDataObject(arrEv);
                                 calendar.addEvent(arrEv);
                             }
                             else
                             {
-                                updateDataObject(arrEv);
-                                // console.log(objJadwal);
+                                // updateDataObject(arrEv);
                                 calEv.remove();
                                 calendar.addEvent(arrEv);
                             }
@@ -164,9 +166,13 @@ if(config('global.perusahaan_short') == 'AIC')
                     }
                     else
                     {
-                        updateDataObject({title:"",start:info.dateStr});
+                        // updateDataObject({title:"",start:info.dateStr});
                         calEv.remove();
                     }
+                },
+                datesRender: function(view, element){
+                    // console.log(view.view.currentStart);
+                    //console.log(element);
                 },
                 editable  : true,
                 selectable: true
@@ -277,7 +283,6 @@ if(config('global.perusahaan_short') == 'AIC')
                                     type: 'error',
                                     title: str
                                 });
-                                $('#tipe_exim').attr('disabled','disabled');
                             }
                             
                         }
@@ -296,9 +301,23 @@ if(config('global.perusahaan_short') == 'AIC')
                 e.preventDefault();
                 
                 let formData = $(this).serializeFormJSON();
+                var obj = {};
+                calendar.getEvents().forEach(function(data, index)
+                {
+                    sDate = moment(data.start);
+                    eDate = moment(data.end);
+                    
+                    if(eDate.format('HH:mm:ss') === '00:00:00')
+                    {
+                        eDate = eDate.subtract(1, 'days');
+                    }
+                    obj[index] = {id:data.id,
+                             date_start:sDate.format('YYYY-MM-DD'),
+                             date_end:eDate.format('YYYY-MM-DD')};
+                });
 
-                formData.data = objJadwal;
-
+                formData.data = obj;
+                // console.table(objJadwal);
                 $.ajax(
                 {
                     url         : $(this).attr('action'),
@@ -655,7 +674,7 @@ if(config('global.perusahaan_short') == 'AIC')
         let updateDataObject = function(data)
         {
             let ada = false;
-            let dtX = {id:data.id,date:data.start};
+            let dtX = {id:data.id,date_start:data.start,date_end:data.end};
             let idxDel = null;
             
             objJadwal.forEach(function(el, idx)
@@ -702,6 +721,16 @@ if(config('global.perusahaan_short') == 'AIC')
             {
                 data.remove();
             });
+
+            var date = calendar.getDate();
+
+            var y = date.getFullYear();
+            var m = date.getMonth()+1;
+            var d = date.getDate();
+            var strFormat =  y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+
+            // console.log(strFormat);
+
             let ids = $('#id').val();
             if(ids != "")
             {
@@ -716,7 +745,8 @@ if(config('global.perusahaan_short') == 'AIC')
                         {
                             result.forEach(function(itm, idx)
                             {
-                                updateDataObject(itm);
+                                // console.table(itm);
+                                // updateDataObject(itm);
                                 calendar.addEvent(itm);
                             });
                         }
