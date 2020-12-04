@@ -2365,40 +2365,67 @@ class LaporanController
         $ret = [];
         
         $datas = DB::table('alasan_karyawan')
-                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.hitung_lembur as hitung_lembur')
+                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur')
                   ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
                   ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
                   ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
-                  ->leftJoin('prosesabsens', function($join)
-                  {
-                      $join->on('prosesabsens.karyawan_id', '=', 'karyawans.id')
-                           ->where('prosesabsens.tanggal', '=', 'alasan_karyawan.tanggal');
+                  ->leftJoin('prosesabsens', function($q){
+                        $q->on('prosesabsens.tanggal', '=','alasan_karyawan.tanggal');
+                        $q->on('prosesabsens.karyawan_id', '=', 'alasan_karyawan.karyawan_id')
+                        ->whereRaw('locate(`alasan_karyawan`.`alasan_id`, `prosesabsens`.`alasan_id`)');
                   });
+        $datasRange = DB::table('alasan_karyawan_range')
+                ->selectRaw('alasan_karyawan_range.tanggal_awal as tanggal, alasan_karyawan_range.tanggal_akhir as tanggal_akhir,alasan_karyawan_range.alasan_id as alasan_id, alasan_karyawan_range.waktu as waktu, alasan_karyawan_range.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur')
+                ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan_range.karyawan_id')
+                ->join('alasans', 'alasans.id', '=', 'alasan_karyawan_range.alasan_id')
+                ->join('request_alasan', 'request_alasan.id', '=', 'alasan_karyawan_range.request_alasan_id')
+                ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
+                ->leftJoin('prosesabsens', function($q){
+                      $q->whereRaw('prosesabsens.tanggal between (alasan_karyawan_range.tanggal_awal and alasan_karyawan_range.tanggal_akhir)');
+                      $q->on('prosesabsens.karyawan_id', '=', 'alasan_karyawan_range.karyawan_id');
+                      $q->whereRaw('locate(`alasan_karyawan_range`.`alasan_id`, `prosesabsens`.`alasan_id`)');
+                });
         $tgl = [];
         if(isset($req['tanggal']))
         {
             $tgl = explode(" - ", $req['tanggal']);
             $datas->whereBetween('alasan_karyawan.tanggal',$tgl);
+            $datasRange->where(function($q) use($tgl)
+            {
+                $q->whereBetween('alasan_karyawan_range.tanggal_awal', $tgl);
+                $q->orWhereBetween('alasan_karyawan_range.tanggal_akhir', $tgl);
+            });
         }
         
         if(isset($req['divisi']))
         {
             $datas->where('karyawans.divisi_id', $req['divisi']);
+            $datasRange->where('karyawans.divisi_id', $req['divisi']);
         }
         
         if(isset($req['pin']))
         {
             $datas->where('alasan_karyawan.karyawan_id', $req['pin']);
+            $datasRange->where('alasan_karyawan_range.karyawan_id', $req['pin']);
         }
         
         $datas->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan.tanggal', 'desc');
+        $datasRange->orderBy('karyawans.pin', 'asc')->orderBy('alasan_karyawan_range.tanggal_awal', 'desc');
+
         $kar = [];
         foreach($datas->get() as $rowKar)
         {
             $rowKar->tanggal = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal)->format('d-m-Y');
             $kar[] = $rowKar;
         }
-        
+
+        foreach($datasRange->get() as $rowKar)
+        {
+            $rowKar->tanggal= Carbon::createFromFormat('Y-m-d',$rowKar->tanggal)->format('d-m-Y');
+            $rowKar->tanggal_akhir = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal_akhir)->format('d-m-Y');
+            $kar[] = $rowKar;
+        }
+
         $ret[] = [
             'tgl_awal' => Carbon::createFromFormat('Y-m-d',reset($tgl))->format('d-m-Y'),
             'tgl_akhir' => Carbon::createFromFormat('Y-m-d',end($tgl))->format('d-m-Y'),
@@ -2428,8 +2455,8 @@ class LaporanController
                     $pdf->setHeaderData(config('global.img_laporan'), 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
                     $pdf->AddPage();
                                         
-                    $headTbl1 = array('No', 'Tanggal', 'PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kode Alasan','Nama Alasan', 'Waktu', 'Hitung');
-                    $headW = array(10,20,20,60,20,60,20,60,20,20);
+                    $headTbl1 = array('No', 'Tanggal', 'PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kode Alasan','Nama Alasan', 'Waktu', 'L, Akt', 'L, Kom');
+                    $headW = array(10,20,20,60,20,60,20,50,15,20,20);
 
                     foreach($headTbl1 as $kH => $vH)
                     {
@@ -2448,7 +2475,8 @@ class LaporanController
                         $pdf->Cell($headW[6], $sizeCell, $v->alasan_kode, 1, 0, 'C');
                         $pdf->cell($headW[7], $sizeCell, $v->alasan_deskripsi, 1, 0, 'C');
                         $pdf->Cell($headW[8], $sizeCell, $v->waktu, 1, 0, 'C');
-                        $pdf->Cell($headW[8], $sizeCell, $v->hitung_lembur, 1, 0, 'C');
+                        $pdf->Cell($headW[9], $sizeCell, $v->lembur_aktual, 1, 0, 'C');
+                        $pdf->Cell($headW[10], $sizeCell, $v->hitung_lembur, 1, 0, 'C');
                         $pdf->Ln();
                     }
                 }
@@ -2523,7 +2551,7 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','Tanggal', 'PIN','Nama Karyawan', 'Kode Divisi', 'Nama Divisi', 'Kode Alasan', 'Nama Alasan', 'Waktu', 'Hitung');
+            $headTbl1 = array('No','Tanggal', 'PIN','Nama Karyawan', 'Kode Divisi', 'Nama Divisi', 'Kode Alasan', 'Nama Alasan', 'Waktu', 'L. Akt', 'L. Kom');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -2568,6 +2596,7 @@ class LaporanController
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->alasan_kode)?$rRet->alasan_kode:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->alasan_deskripsi)?$rRet->alasan_deskripsi:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->waktu)?$rRet->waktu:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->lembur_aktual)?$rRet->lembur_aktual:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->hitung_lembur)?$rRet->hitung_lembur:'');
                                 
                 $rowStart++;

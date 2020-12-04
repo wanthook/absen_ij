@@ -139,7 +139,8 @@
                 <th>Kode Alasan</th>
                 <th>Nama Alasan</th>
                 <th>Waktu</th>
-                <th>Hitung</th>
+                <th>L. Akt</th>
+                <th>L. Kom</th>
             </tr>
         </thead>
         <tbody>
@@ -154,6 +155,7 @@
                 <td>{{$vData->alasan_kode}}</td>
                 <td>{{$vData->alasan_deskripsi}}</td>
                 <td>{{$vData->waktu}}</td>
+                <td>{{$vData->lembur_aktual}}</td>
                 <td>{{$vData->hitung_lembur}}</td>
             </tr>
             @endforeach
