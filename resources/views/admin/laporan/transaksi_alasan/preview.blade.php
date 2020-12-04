@@ -132,6 +132,7 @@
             <tr>
                 <th>No</th>
                 <th>Tanggal</th>
+                <th>No. Doc</th>
                 <th>PIN</th>
                 <th>Nama Karyawan</th>
                 <th>Kode Divisi</th>
@@ -148,6 +149,7 @@
             <tr style="line-height: 9px;">
                 <td>{{$kData+1}}</td>
                 <td class="dc">{{$vData->tanggal}}</td>
+                <td class="dc">{{$vData->no_dokumen}}</td>
                 <td class="dc">{{$vData->pin}}</td>
                 <td>{{$vData->nama}}</td>
                 <td class="dc">{{$vData->divisi_kode}}</td>

@@ -2365,7 +2365,7 @@ class LaporanController
         $ret = [];
         
         $datas = DB::table('alasan_karyawan')
-                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur')
+                  ->selectRaw('alasan_karyawan.tanggal as tanggal, alasan_karyawan.alasan_id as alasan_id, alasan_karyawan.waktu as waktu, alasan_karyawan.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur, request_alasan.no_dokumen as no_dokumen')
                   ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
                   ->join('alasans', 'alasans.id', '=', 'alasan_karyawan.alasan_id')
                   ->join('divisis', 'divisis.id', '=', 'karyawans.divisi_id')
@@ -2373,9 +2373,10 @@ class LaporanController
                         $q->on('prosesabsens.tanggal', '=','alasan_karyawan.tanggal');
                         $q->on('prosesabsens.karyawan_id', '=', 'alasan_karyawan.karyawan_id')
                         ->whereRaw('locate(`alasan_karyawan`.`alasan_id`, `prosesabsens`.`alasan_id`)');
-                  });
+                  })
+                  ->leftJoin('request_alasan', 'request_alasan.id', '=', 'alasan_karyawan.request_alasan_id');
         $datasRange = DB::table('alasan_karyawan_range')
-                ->selectRaw('alasan_karyawan_range.tanggal_awal as tanggal, alasan_karyawan_range.tanggal_akhir as tanggal_akhir,alasan_karyawan_range.alasan_id as alasan_id, alasan_karyawan_range.waktu as waktu, alasan_karyawan_range.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur')
+                ->selectRaw('alasan_karyawan_range.tanggal_awal as tanggal, alasan_karyawan_range.tanggal_akhir as tanggal_akhir,alasan_karyawan_range.alasan_id as alasan_id, alasan_karyawan_range.waktu as waktu, alasan_karyawan_range.keterangan as keterangan, karyawans.id as karyawan_id, karyawans.pin as pin, karyawans.nik as nik, karyawans.nama as nama, divisis.kode as divisi_kode, divisis.deskripsi as divisi_deskripsi, alasans.kode as alasan_kode, alasans.deskripsi as alasan_deskripsi, prosesabsens.lembur_aktual as lembur_aktual, prosesabsens.hitung_lembur as hitung_lembur, request_alasan.no_dokumen as no_dokumen')
                 ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan_range.karyawan_id')
                 ->join('alasans', 'alasans.id', '=', 'alasan_karyawan_range.alasan_id')
                 ->join('request_alasan', 'request_alasan.id', '=', 'alasan_karyawan_range.request_alasan_id')
@@ -2455,8 +2456,8 @@ class LaporanController
                     $pdf->setHeaderData(config('global.img_laporan'), 10, "Rekap Absen Karyawan","Periode : ".$vRet['tgl_awal'].' S/D '.$vRet['tgl_akhir']);
                     $pdf->AddPage();
                                         
-                    $headTbl1 = array('No', 'Tanggal', 'PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kode Alasan','Nama Alasan', 'Waktu', 'L, Akt', 'L, Kom');
-                    $headW = array(10,20,20,60,20,60,20,50,15,20,20);
+                    $headTbl1 = array('No', 'Tanggal', 'No. Dok','PIN', 'Nama Karyawan',  'Kode Divisi', 'Nama Divisi','Kd. Als','Nama Alasan', 'Waktu', 'L, Akt', 'L, Kom');
+                    $headW = array(10,17,35,15,60,20,60,15,50,10,15,15);
 
                     foreach($headTbl1 as $kH => $vH)
                     {
@@ -2466,17 +2467,19 @@ class LaporanController
                     foreach($vRet['data'] as $k => $v)
                     {
                         $sizeCell = 4;
-                        $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
-                        $pdf->Cell($headW[1], $sizeCell, $v->tanggal, 1, 0, 'C');
-                        $pdf->Cell($headW[2], $sizeCell, $v->pin, 1, 0, 'C');
-                        $pdf->Cell($headW[3], $sizeCell, $v->nama, 1, 0, 'C');
-                        $pdf->Cell($headW[4], $sizeCell, $v->divisi_kode, 1, 0, 'C');
-                        $pdf->Cell($headW[5], $sizeCell, $v->divisi_deskripsi, 1, 0, 'C');
-                        $pdf->Cell($headW[6], $sizeCell, $v->alasan_kode, 1, 0, 'C');
-                        $pdf->cell($headW[7], $sizeCell, $v->alasan_deskripsi, 1, 0, 'C');
-                        $pdf->Cell($headW[8], $sizeCell, $v->waktu, 1, 0, 'C');
-                        $pdf->Cell($headW[9], $sizeCell, $v->lembur_aktual, 1, 0, 'C');
-                        $pdf->Cell($headW[10], $sizeCell, $v->hitung_lembur, 1, 0, 'C');
+                        $i = 0;
+                        $pdf->Cell($headW[$i++], $sizeCell, $k+1, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->tanggal, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->no_dokumen, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->pin, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->nama, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->divisi_kode, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->divisi_deskripsi, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->alasan_kode, 1, 0, 'C');
+                        $pdf->cell($headW[$i++], $sizeCell, $v->alasan_deskripsi, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->waktu, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->lembur_aktual, 1, 0, 'C');
+                        $pdf->Cell($headW[$i++], $sizeCell, $v->hitung_lembur, 1, 0, 'C');
                         $pdf->Ln();
                     }
                 }
@@ -2551,7 +2554,7 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','Tanggal', 'PIN','Nama Karyawan', 'Kode Divisi', 'Nama Divisi', 'Kode Alasan', 'Nama Alasan', 'Waktu', 'L. Akt', 'L. Kom');
+            $headTbl1 = array('No','Tanggal', 'No. Dok','PIN','Nama Karyawan', 'Kode Divisi', 'Nama Divisi', 'Kode Alasan', 'Nama Alasan', 'Waktu', 'L. Akt', 'L. Kom');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
@@ -2589,6 +2592,7 @@ class LaporanController
                 $colStat = 1;
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->tanggal)?$rRet->tanggal:'');
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->no_dokumen)?$rRet->no_dokumen:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->pin)?$rRet->pin:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->nama)?$rRet->nama:'');
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($rRet->divisi_kode)?$rRet->divisi_kode:'');
