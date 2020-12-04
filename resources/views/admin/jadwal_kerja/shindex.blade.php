@@ -531,7 +531,8 @@ if(config('global.perusahaan_short') == 'AIC')
                     { data    : "kode_url", name : "kode_url" },
                     { data    : "deskripsi", name : "deskripsi" },
                     { data    : "created_by.name", name : "created_by" },
-                    { data    : "created_at", name : "created_at" }              
+                    { data    : "created_at", name : "created_at" },
+                    { data    : "updated_at", name : "creatupdated_ated_at" }              
 
                 ],
                 "drawCallback": function( settings, json ) 
@@ -1001,6 +1002,7 @@ if(config('global.perusahaan_short') == 'AIC')
                         <th>Deskripsi</th>
                         <th>Dibuat Oleh</th>
                         <th>Tanggal Buat</th>
+                        <th>Tanggal Ubah</th>
                     </tr>
                 </thead>
             </table>
