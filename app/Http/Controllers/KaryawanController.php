@@ -96,6 +96,16 @@ class KaryawanController extends Controller
     {
         return view('admin.transaksi.golongan.index');
     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexHamil()
+    {
+        return view('admin.transaksi.hamil.index');
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -303,6 +313,7 @@ class KaryawanController extends Controller
                     $dS = array();
                     
                     $karyawan = Karyawan::where('pin',$csv[$arrKey->pin])->first();
+                    // dd($karyawan);
                     if(!$karyawan)
                     {
                         $row = array();
@@ -417,10 +428,10 @@ class KaryawanController extends Controller
                     }
                     else
                     {
+                        
                         $row = array();
                         
                         $row['pin'] = $csv[$arrKey->pin];
-                        
                         $perusahaan = Perusahaan::where('pin_min', '<=', $csv[$arrKey->pin])->where('pin_max', '>=', $csv[$arrKey->pin])->first();
                         if($perusahaan)
                         {
@@ -432,88 +443,147 @@ class KaryawanController extends Controller
                             'message' => 'perusahaan_id kosong']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
                             continue;
                         }
-                        $row['key'] = trim($csv[$arrKey->key]);
-                        $row['nik'] = trim($csv[$arrKey->kode]);
-                        $row['nama'] = trim($csv[$arrKey->nama]);
-                        $row['ktp'] = trim($csv[$arrKey->ktp]);
-                        
-                        if(!empty(trim($csv[$arrKey->tanggal_lahir])))
+
+                        if(isset($arrKey->key))
                         {
-                            $row['tanggal_lahir'] = trim($csv[$arrKey->tanggal_lahir]);
+                            $row['key'] = trim($csv[$arrKey->key]);
                         }
                         
-                        $row['hp'] = trim($csv[$arrKey->hp]);
-                        $row['kota'] = trim($csv[$arrKey->kota]);
-                        $row['kode_pos'] = trim($csv[$arrKey->kode_pos]);
-                        $row['alamat'] = trim($csv[$arrKey->alamat]);
-                        
-                        if(!empty($csv[$arrKey->tanggal_status]))
+                        if(isset($arrKey->kode))
                         {
-                            $row['tanggal_masuk'] = trim($csv[$arrKey->tanggal_status]);
+                            $row['nik'] = trim($csv[$arrKey->kode]);
                         }
                         
-                        $status = MasterOption::where('kode','STATUS')->where('nama', trim($csv[$arrKey->status_karyawan]))->first();
-                        if($status)
+                        if(isset($arrKey->nama))
                         {
-                            $row['status_karyawan_id'] = $status->id;
-                        }
-                        else
-                        {
-                            ExceptionLog::create(['file_target' => 'KaryawanController.php', 'message_log' => json_encode(['PIN' => $csv[$arrKey->pin], 
-                            'message' => 'status_karyawan_id kosong']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                            continue;
-                        }
-                         
-                       $status = MasterOption::where('kode','JENKEL')->where('nama', trim($csv[$arrKey->jenis_kelamin]))->first();
-                        if($status)
-                        {
-                            $row['jenis_kelamin_id'] = $status->id;
+                            $row['nama'] = trim($csv[$arrKey->nama]);
                         }
                         
-                        $jabatan = Jabatan::where('kode', trim($csv[$arrKey->kode_jabatan]))->first();
-                        if($jabatan)
+                        if(isset($arrKey->ktp))
                         {
-                            $row['jabatan_id'] = $jabatan->id;
+                            $row['ktp'] = trim($csv[$arrKey->ktp]);
                         }
-                        
-                        $divisi = Divisi::where('kode', trim($csv[$arrKey->kode_divisi]))->first();
-                        if($divisi)
-                        {      
-                            $row['divisi_id'] = $divisi->id;
-                        }
-                        
-                        $jadwal = Jadwal::where('kode',trim($csv[$arrKey->kode_jadwal]))->first();
-                        $tanggalJadwal = trim($csv[$arrKey->tanggal_jadwal]);
-                        if($jadwal && $tanggalJadwal)
+
+                        if(isset($arrKey->tanggal_lahir))
                         {
-                            Karyawan::find($karyawan->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
-                        }
-                        
-                        if(!empty(trim($csv[$arrKey->tanggal_kontrak])))
-                        {
-                            $row['tanggal_kontrak'] = trim($csv[$arrKey->tanggal_kontrak]);
-                        }
-                        
-                        if(!empty(trim($csv[$arrKey->active_status])))
-                        {
-                            $row['active_status'] = (int)trim($csv[$arrKey->active_status]);
-                            
-                            if($row['active_status'] > 1)
+                            if(!empty(trim($csv[$arrKey->tanggal_lahir])))
                             {
-                                if(!empty($csv[$arrKey->active_status_date]))
-                                {
-                                    $row['active_status_date'] = $csv[$arrKey->active_status_date];
-                                }
-                                
-                                if(!empty($csv[$arrKey->active_comment]))
-                                {
-                                    $row['active_comment'] = $csv[$arrKey->active_comment];
-                                }
+                                $row['tanggal_lahir'] = trim($csv[$arrKey->tanggal_lahir]);
                             }
                         }
                         
-                        $row['updated_by']   = Auth::user()->id;  
+                        if(isset($arrKey->hp))
+                        {
+                            $row['hp'] = trim($csv[$arrKey->hp]);
+                        }
                         
+                        if(isset($arrKey->kota))
+                        {
+                            $row['kota'] = trim($csv[$arrKey->kota]);
+                        }
+                        
+                        if(isset($arrKey->kode_pos))
+                        {
+                            $row['kode_pos'] = trim($csv[$arrKey->kode_pos]);
+                        }
+                        
+                        if(isset($arrKey->alamat))
+                        {
+                            $row['alamat'] = trim($csv[$arrKey->alamat]);
+                        }
+
+                        if(isset($arrKey->tanggal_status))
+                        {
+                            if(!empty($csv[$arrKey->tanggal_status]))
+                            {
+                                $row['tanggal_masuk'] = trim($csv[$arrKey->tanggal_status]);
+                            }
+                        }
+
+                        if(isset($arrKey->status_karyawan))
+                        {
+                            $status = MasterOption::where('kode','STATUS')->where('nama', trim($csv[$arrKey->status_karyawan]))->first();
+                            if($status)
+                            {
+                                $row['status_karyawan_id'] = $status->id;
+                            }
+                            else
+                            {
+                                ExceptionLog::create(['file_target' => 'KaryawanController.php', 'message_log' => json_encode(['PIN' => $csv[$arrKey->pin], 
+                                'message' => 'status_karyawan_id kosong']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                                continue;
+                            }
+                        }
+                        
+                        if(isset($arrKey->jenis_kelamin))
+                        {
+                            $status = MasterOption::where('kode','JENKEL')->where('nama', trim($csv[$arrKey->jenis_kelamin]))->first();
+                            if($status)
+                            {
+                                $row['jenis_kelamin_id'] = $status->id;
+                            }
+                        }
+                        
+                        if(isset($arrKey->kode_jabatan))
+                        {
+                            $jabatan = Jabatan::where('kode', trim($csv[$arrKey->kode_jabatan]))->first();
+                            if($jabatan)
+                            {
+                                $row['jabatan_id'] = $jabatan->id;
+                            }
+                        }
+                        
+                        if(isset($arrKey->kode_divisi))
+                        {
+                            $divisi = Divisi::where('kode', trim($csv[$arrKey->kode_divisi]))->first();
+                            if($divisi)
+                            {      
+                                $row['divisi_id'] = $divisi->id;
+                            }
+                        }
+                        
+                        if(isset($arrKey->kode_jadwal) && isset($arrKey->tanggal_jadwal))
+                        {                                
+                            $jadwal = Jadwal::where('kode',trim($csv[$arrKey->kode_jadwal]))->first();
+                            $tanggalJadwal = trim($csv[$arrKey->tanggal_jadwal]);
+                            if($jadwal && $tanggalJadwal)
+                            {
+                                Karyawan::find($karyawan->id)->jadwals()->attach($jadwal->id, ['tanggal' => $tanggalJadwal, 'keterangan' => 'Upload Karyawan']);
+                            }
+                        }
+                        
+                        if(isset($arrKey->tanggal_kontrak))
+                        {
+                            if(!empty(trim($csv[$arrKey->tanggal_kontrak])))
+                            {
+                                $row['tanggal_kontrak'] = trim($csv[$arrKey->tanggal_kontrak]);
+                            }
+                        }
+                        
+                        if(isset($arrKey->active_status))
+                        {
+                            if(!empty(trim($csv[$arrKey->active_status])))
+                            {
+                                $row['active_status'] = (int)trim($csv[$arrKey->active_status]);
+                                
+                                if($row['active_status'] > 1)
+                                {
+                                    if(!empty($csv[$arrKey->active_status_date]))
+                                    {
+                                        $row['active_status_date'] = $csv[$arrKey->active_status_date];
+                                    }
+                                    
+                                    if(!empty($csv[$arrKey->active_comment]))
+                                    {
+                                        $row['active_comment'] = $csv[$arrKey->active_comment];
+                                    }
+                                }
+                            }
+                        }
+
+                        $row['updated_by']   = Auth::user()->id; 
+                        $row['updated_at']   = Carbon::now(); 
+                        // dd($row);
                         Karyawan::find($karyawan->id)->fill($row)->save();
                     }
                 }
@@ -1001,6 +1071,121 @@ class KaryawanController extends Controller
                                    'updated_at' => Carbon::now()];
 
                         $kar->log_off()->attach($alasan->id, $attach);
+
+                        $kar->fill(['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil disimpan'
+                ));
+        }
+        catch (QueryException $er)
+        {
+            // echo print_r($er->getMessage());
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage()
+            ));
+        }
+    }
+    
+    public function storeUploadHamil(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'formUpload'   => 'required',
+            ],
+            [
+                'formUpload.required'  => 'File harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                
+                $fileVar = $req['formUpload'];
+                
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadJadwalKaryawan');
+                
+                $sheetData = [];
+                
+                if($fileVar->getClientMimeType() == 'text/csv')
+                {
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
+                    while(! feof($fileStorage))
+                    {
+                        $csv = fgetcsv($fileStorage, 1024, "\t");
+                        $sheetData[] = $csv;
+                    }
+                }
+                else
+                {
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
+
+                    $sheetData = $spreadsheet->getActiveSheet()->toArray();
+                }
+                
+                $x = 0;    
+                $arrKey = null;
+                
+                foreach($sheetData as $sD)
+                {
+                    if(empty($sD[0]))
+                    {
+                        break;
+                    }
+                    if($x == 0)
+                    {
+                        foreach($sD as $k => $v)
+                        {
+                            if(empty($v))
+                            {
+                                break;
+                            }
+                            $arrKey[$v] = $k;
+                        }
+                        $arrKey = (object) $arrKey;
+                        
+                        $x++;
+                        continue;
+                    }
+                    
+                    $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
+                    
+                    if($karyawan->count())
+                    {
+                        
+                        $karId = $karyawan->first()->id;
+                        $kar = Karyawan::find($karId);
+                        $par = $kar->hamil()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
+                        $alasan = Alasan::where('kode', trim($sD[$arrKey->kode_alasan]))->where('show', 'N')->first();
+                        if($par)
+                        {
+                            $par->detach();
+                        }
+
+                        $attach = ['tanggal' => trim($sD[$arrKey->tanggal]),
+                                   'keterangan' => trim($sD[$arrKey->catatan]),
+                                   'created_by' => Auth::user()->id,
+                                   'created_at' => Carbon::now()];
+
+                        $kar->hamil()->attach($alasan->id, $attach);
 
                         $kar->fill(['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
                         
@@ -1731,6 +1916,86 @@ class KaryawanController extends Controller
         }
     }
 
+    public function storeHamilKaryawan($kode, Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sTanggal'   => 'required',
+                'sKar'   => 'required',
+                'sAlasan'   => 'required',
+            ],
+            [
+                'sTanggal.required'  => 'Tanggal harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.',
+                'sAlasan.required'  => 'Alasan harus dipilih.'
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+
+                $req['created_by']   = Auth::user()->id;  
+
+                $kar = Karyawan::find($req['sKar']);
+
+                if($kar->id)
+                {
+                    $tgl = Carbon::createFromFormat('Y-m-d', $req['sTanggal']);
+                    $log = $kar->log_off()->wherePivot('tanggal', $tgl->toDateString());
+
+                    if($log)
+                    {
+                        $log->detach();
+                    }
+
+                    $kar->log_off()->attach($req['sAlasan'], [
+                        'tanggal' => $req['sTanggal'], 
+                        'keterangan' => $req['sKeterangan'],
+                        'created_by' => Auth::user()->id,
+                        'updated_by' => Auth::user()->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                    $kar->updated_by = Auth::user()->id;
+                    $kar->updated_at = Carbon::now();
+
+                    $kar->save();
+                    
+                    echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Data gagal diubah'
+                    ));
+                }
+
+            }
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+
     public function storeDivisi(Request $request)
     {
         try
@@ -2041,6 +2306,66 @@ class KaryawanController extends Controller
      * @param  \App\Karyawan  $Request $request
      * @return \Illuminate\Http\Response
      */
+    public function destroyHamilKaryawan(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'sTanggal'   => 'required',
+                'sKar'   => 'required'
+            ],
+            [
+                'sTanggal.required'  => 'Tanggal harus diisi.',
+                'sKar.required'  => 'Karyawan harus dipilih.'
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+
+                $jd = Karyawan::find($req['sKar']);
+                
+                $par = $jd->hamil()->wherePivot('tanggal', $req['sTanggal']);
+                
+//                dd($par->detach());
+//                
+                if($par)
+                {
+                    $par->detach();
+                }
+
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil dihapus'
+                ));
+                    
+            }
+            
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal dihapus',
+                'err' => $er->getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Karyawan  $Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function destroyKeluarga(Request $request)
     {
         $req = $request->all();
@@ -2164,6 +2489,34 @@ class KaryawanController extends Controller
 //        }
         
         $datas->karyawanAktif()->author()->orderBy('id','desc');
+        
+        return  Datatables::of($datas)
+                ->make(true);
+    }
+    
+    public function dtHamil(Request $request)
+    {
+        $req    = $request->all();
+        
+        $datas   = Karyawan::with(['jabatan', 'divisi', 'perusahaan',  'hamil' => function($q)
+        {
+            $q->orderBy('tanggal', 'desc');
+        }, 'createdBy'])->orderBy('updated_at', 'desc');  
+        
+        if(!empty($req['sPin']))
+        {
+            $datas->where('pin', $req['sPin']);
+        }
+        
+//        if(!empty($req['sTanggal']))
+//        {
+//            $datas->where('off_date', $req['sTanggal']);
+//        }
+        
+        $datas->karyawanAktif()->whereHas('jeniskelamin', function($q)
+        {
+            $q->where('nama', 'P');
+        })->author()->orderBy('id','desc');
         
         return  Datatables::of($datas)
                 ->make(true);
@@ -2384,6 +2737,49 @@ class KaryawanController extends Controller
         else if(isset($req['id']))
         {
             $tags = Karyawan::where('id', $req['id'])->karyawanAktif();
+        }
+        
+        $formatted_tags = [];
+        foreach ($tags->get() as $tag) {
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama];
+        }
+        
+        echo json_encode(array('items' => $formatted_tags));
+    }
+    
+    public function select2hamil(Request $request)
+    {
+        $tags = null;
+        $req = $request->all();
+        
+//        $term = trim($req['q']);
+        if(isset($req['q']))
+        {
+            $term = $req['q'];
+            $tags = Karyawan::author()->where(function($q) use($term)
+            {
+                $q->where('pin','like','%'.$term.'%')
+                  ->orWhere('nik','like','%'.$term.'%')
+                  ->orWhere('nama','like','%'.$term.'%');
+//                  ->orWhere('id',$term);
+            })->karyawanAktif()->whereHas('jeniskelamin', function($q)
+            {
+                $q->where('nama', 'P');
+            })->limit(50);
+        }
+        else if(isset($req['pin']))
+        {
+            $tags = Karyawan::where('pin', $req['pin'])->karyawanAktif()->karyawanAktif()->whereHas('jeniskelamin', function($q)
+            {
+                $q->where('nama', 'P');
+            });
+        }
+        else if(isset($req['id']))
+        {
+            $tags = Karyawan::where('id', $req['id'])->karyawanAktif()->karyawanAktif()->whereHas('jeniskelamin', function($q)
+            {
+                $q->where('nama', 'P');
+            });
         }
         
         $formatted_tags = [];
