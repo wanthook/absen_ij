@@ -133,13 +133,13 @@ class DivisiController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-                $fileVar->move(storage_path('tmp'),'tempFileUploadDivisi');
+//                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
                 
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
                 {
-                    $fileStorage = fopen(storage_path('tmp').'/tempFileUploadDivisi','r');
+                    $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
@@ -149,7 +149,7 @@ class DivisiController extends Controller
                 }
                 else
                 {
-                    $spreadsheet = IOFactory::load(storage_path('tmp').'/tempFileUploadDivisi');
+                    $spreadsheet = IOFactory::load($fileVar->getRealPath());
 
                     $sheetData = $spreadsheet->getActiveSheet()->toArray();
                 }
