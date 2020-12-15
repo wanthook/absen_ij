@@ -254,7 +254,14 @@
                         targets : 'tjabatan',
                         data: function(data)
                         {
-                            return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            if(typeof data.jabatan != 'undefined')
+                            {
+                                return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
                         }
                 },
                 {
