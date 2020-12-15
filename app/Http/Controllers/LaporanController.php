@@ -2701,16 +2701,18 @@ class LaporanController
                         'nama' => $kar->nama,
                         'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
                         'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                        'jam_pulang' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_pulang,0,5):null),
                         'kode_divisi' => $kar->divisi->kode,
                         'nama_divisi' => $kar->divisi->deskripsi,
                         'tanggal_absen' => $per->format('d-m-Y'),
                         'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                        'jam_absen_pulang' => (isset($abs['activity_out'])?substr($abs['activity_out']->tanggal,11,5):null),
                         'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
                     ];
                 }
             }
         }
-        
+        dd($action);
         $ret = [
             'periode' => $periode,
             'data' => $action
@@ -2965,32 +2967,27 @@ class LaporanController
                 $abs = $this->absenMasuk($per, $kar->id,$sf);
                 if($abs)
                 {
-                    if(isset($abs['activity']))
-                    {
-                        $gol = null;
+                    $gol = null;
                         
-                        if($kar->logGolonganTanggal($per->toDateString())->first())
-                        {
-                            $gol = $kar->logGolonganTanggal($per->toDateString())->first()->nama;
-                        }
-                        
-                        $action[] = [
-                            'pin' => $kar->pin,
-                            'nama' => $kar->nama,
-                            'golongan' => $gol,
-                            'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
-                            'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
-                            'kode_divisi' => $kar->divisi->kode,
-                            'nama_divisi' => $kar->divisi->deskripsi,
-                            'tanggal_absen' => $per->format('d-m-Y'),
-                            'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
-                            'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null)
-                        ];
-                    }
-                    else
+                    if($kar->logGolonganTanggal($per->toDateString())->first())
                     {
-                        continue;
+                        $gol = $kar->logGolonganTanggal($per->toDateString())->first()->nama;
                     }
+                    $action[] = [
+                        'pin' => $kar->pin,
+                        'nama' => $kar->nama,
+                        'golongan' => $gol,
+                        'kode_jam' => (isset($abs['jadwal'])?$abs['jadwal']->kode:null),
+                        'jam_masuk' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_masuk,0,5):null),
+                        'jam_pulang' => (isset($abs['jadwal'])?substr($abs['jadwal']->jam_keluar,0,5):null),
+                        'kode_divisi' => $kar->divisi->kode,
+                        'nama_divisi' => $kar->divisi->deskripsi,
+                        'tanggal_absen' => $per->format('d-m-Y'),
+                        'jam_absen' => (isset($abs['activity'])?substr($abs['activity']->tanggal,11,5):null),
+                        'jam_absen_keluar' => (isset($abs['activity_out'])?substr($abs['activity_out']->tanggal,11,5):null),
+                        'lokasi_mesin' => (isset($abs['activity'])?$abs['activity']->mesin->lokasi:null),
+                        'lokasi_mesin_keluar' => (isset($abs['activity_out'])?$abs['activity_out']->mesin->lokasi:null)
+                    ];
                 }
             }
         }
@@ -3111,7 +3108,7 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','PIN', 'Nama', 'Gol','Kode Jam', 'Jadwal Masuk', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen', 'Lokasi Mesin');
+            $headTbl1 = array('No','PIN', 'Nama', 'Gol','Kode Jam', 'Jadwal Masuk', 'Jadwal Pulang', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen Masuk', 'Jam Absen Pulang', 'Mesin Masuk', 'Mesin Pulang');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);

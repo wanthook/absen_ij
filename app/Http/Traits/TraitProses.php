@@ -323,6 +323,10 @@ trait TraitProses
                  * Ambil libur nasional
                  */
                 $lN = Libur::where('tanggal', $key)->first();
+                if($lN)
+                {
+                    $isLn = true;
+                }
                 /*
                  * End
                  */
@@ -1041,7 +1045,7 @@ trait TraitProses
                     'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
                     'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
                     'libur' => $isLibur,
-                    'libur_nasional' => (!empty($isLn)?1:null),
+                    'libur_nasional' => (($isLn)?1:null),
                     'pendek' => $pendek,
                     'mangkir' => $isMangkir,
                     'ta' => $isTa,
@@ -1140,6 +1144,11 @@ trait TraitProses
         $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 07:00:00");
         $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 14:00:00");
         $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 23:00:00");
+
+        $out = null;
+        $outS1 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 14:00:00");
+        $outS2 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 23:00:00");
+        $outS3 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->copy()->addDay()->toDateString()." 07:00:00");
         
         if($karyawan)
         {
@@ -1148,10 +1157,12 @@ trait TraitProses
             if($jadwal)
             {
                 $in = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
+                $out = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_keluar.":00");
                 
                 if($sf == 1)
                 {
-                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)))
+                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)) ||
+                       $out->between($outS1->copy()->subMinutes($this->rangeAbs), $outS1->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
@@ -1162,7 +1173,8 @@ trait TraitProses
                 }
                 else if($sf == 2)
                 {
-                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)))
+                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)) ||
+                       $out->between($outS2->copy()->subMinutes($this->rangeAbs), $outS2->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
@@ -1173,7 +1185,8 @@ trait TraitProses
                 }
                 else if($sf == 3)
                 {
-                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)))
+                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)) ||
+                       $out->between($outS3->copy()->subMinutes($this->rangeAbs), $outS3->copy()->addMinute($this->rangeAbs)))
                     {
                         goto proses;
                     }
@@ -1188,6 +1201,10 @@ trait TraitProses
                                     ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
+                $actOut = Activity::with('mesin')->where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$out->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'asc')
+                                    ->first();
                 
                 if(!$actIn && $sf != null)
                 {
@@ -1195,9 +1212,13 @@ trait TraitProses
                                     ->whereDate('tanggal', $tanggal->toDateString())
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
+                    $actOut = Activity::with('mesin')->where('pin', $karyawan->key)
+                                    ->whereDate('tanggal', $tanggal->toDateString())
+                                    ->orderBy('tanggal', 'desc')
+                                    ->first();
                 }
 
-                return ['jadwal' => $jadwal, 'activity' => $actIn];
+                return ['jadwal' => $jadwal, 'activity' => $actIn, 'activity_out' => $actOut];
             }
             return null;
             

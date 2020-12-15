@@ -1950,20 +1950,18 @@ class KaryawanController extends Controller
                 if($kar->id)
                 {
                     $tgl = Carbon::createFromFormat('Y-m-d', $req['sTanggal']);
-                    $log = $kar->log_off()->wherePivot('tanggal', $tgl->toDateString());
+                    $log = $kar->hamil()->wherePivot('tanggal', $tgl->toDateString());
 
                     if($log)
                     {
                         $log->detach();
                     }
 
-                    $kar->log_off()->attach($req['sAlasan'], [
+                    $kar->hamil()->attach($req['sAlasan'], [
                         'tanggal' => $req['sTanggal'], 
                         'keterangan' => $req['sKeterangan'],
                         'created_by' => Auth::user()->id,
-                        'updated_by' => Auth::user()->id,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
+                        'created_at' => Carbon::now()
                     ]);
 
                     $kar->updated_by = Auth::user()->id;

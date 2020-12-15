@@ -32,7 +32,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             height: 29.7cm; 
         }
         page[size="A4"][layout="landscape"] {
-            width: 29.7cm;
+            width: 33.7cm;
             height: auto;  
         }
         page[size="A3"] {
@@ -135,11 +135,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>Gol</th>
                 <th>Kode Jam</th>
                 <th>Jadwal Masuk</th>
+                <th>Jadwal Pulang</th>
                 <th>Kode Divisi</th>
                 <th>Nama Divisi</th>
                 <th>Tanggal Absen</th>
-                <th>Jam Absen</th>
-                <th>Lokasi Mesin</th>
+                <th>Jam Absen Masuk</th>
+                <th>Jam Absen Pulang</th>
+                <th>Mesin Masuk</th>
+                <th>Mesin Pulang</th>
             </tr>
         </thead>
         <tbody>
