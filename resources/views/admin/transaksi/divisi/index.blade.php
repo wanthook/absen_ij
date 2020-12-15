@@ -254,7 +254,7 @@
                         targets : 'tjabatan',
                         data: function(data)
                         {
-                            if(typeof data.jabatan != 'undefined')
+                            if(data.jabatan)
                             {
                                 return data.jabatan.kode+" - "+data.jabatan.deskripsi;
                             }
