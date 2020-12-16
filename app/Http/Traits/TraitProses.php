@@ -773,7 +773,7 @@ trait TraitProses
                     if($kodeJadwal)
                     {
 //                        dd($val->kode);
-                        if(substr($kodeJadwal,0,1) == "J")
+                        if(substr($kodeJadwal,0,1) == "J" && !$isLn)
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -805,7 +805,7 @@ trait TraitProses
                             //3.5 hitung lembur kalau gak telat sama gak gp
                             
                         }
-                        else if(substr($kodeJadwal,0,1) == "S")
+                        else if(substr($kodeJadwal,0,1) == "S" && !$isLn)
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -825,7 +825,7 @@ trait TraitProses
 //                            $lemburAktual += 0.5;
 //                            $hitungLembur = 0.75;
                         }
-                        else if(substr($kodeJadwal,0,1) == "P")
+                        else if(substr($kodeJadwal,0,1) == "P" && !$isLn)
                         {
                             if(isset($jumlahActivityKerja))
                             {
@@ -902,12 +902,6 @@ trait TraitProses
                                     {
                                         $lAkt = $wkt;
                                         $lemburAktual += $lAkt;
-
-//                                        if($lAkt>5)
-//                                        {
-//                                            $lAkt -= 1;
-//                                            $lemburAktual -= 1;
-//                                        }
                                     }
                                     else
                                     {
@@ -931,22 +925,32 @@ trait TraitProses
                                     {
                                         $lemburLN += $wkt;
 
-//                                        if($wkt>5)
-//                                        {
-//                                            $lemburLN -= 1;
-//                                        }
                                     }
                                     else
                                     {
                                         $lemburLN += (float) $this->roundDec($jDiff);
-//                                        if($jDiff>5)
-//                                        {
-//                                            $lemburLN -= 1;
-//                                        }
                                     }
 
                                     $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
-                                    $hitungLemburLN = $lemburLN * 2;
+                                    
+                                    $wktKerja = 7;
+                                    // dd($lemburLN <= $wktKerja);
+                                    if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
+                                    {
+                                        $wktKerja = 5;
+                                    }
+
+                                    if($lemburLN <= $wktKerja)
+                                    {
+                                        $hitungLemburLN = $lemburLN * 2;
+                                    }
+                                    else
+                                    {
+                                        $hitungLemburLN += $wktKerja * 2;
+                                        $hitungLemburLN += 1 * 3;
+                                        $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
+
+                                    }
                                 }
                             }
                         }
