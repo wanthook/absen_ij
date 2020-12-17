@@ -139,6 +139,66 @@
                 }
             });
             
+            $('#cmdUpload').on('click', function(e)
+            {
+                let frm = document.getElementById('form_data_upload');
+                let datas = new FormData(frm);
+//                console.log($('#form_data_upload').attr('action'));
+                $.ajax(
+                {
+                    url         : $('#form_data_upload').attr('action'),
+                    dataType    : 'JSON',
+                    type        : 'POST',
+                    data        : datas ,
+                    processData: false,
+                    contentType: false,
+                    beforeSend  : function(xhr)
+                    {
+//                        $('#loadingDialog').modal('show');
+                        toastOverlay.fire({
+                            type: 'warning',
+                            title: 'Sedang memproses data upload',
+                            onBeforeOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success(result,status,xhr)
+                    {
+                        toastOverlay.close();
+                        if(result.status == 1)
+                        {
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
+                        }
+                        else
+                        {
+                            if(Array.isArray(result.msg))
+                            {
+                                var str = "";
+                                for(var i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                            }
+                            
+                        }
+                        dTableKar.ajax.reload();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { 
+                        /* implementation goes here */ 
+                        toastOverlay.close();
+                        console.log(jqXHR.responseText);
+                    }
+                });
+            });
+            
             $('#cmdSaveRange').on('click', function(e)
             {
                 e.preventDefault();
