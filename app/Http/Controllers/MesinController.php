@@ -400,6 +400,143 @@ class MesinController extends Controller
         }
     }
     
+    public function hapusAbsen(Request $request)
+    {
+        $timeProcess = microtime(true);
+        try
+        {
+            $validation = Validator::make($request->all(), 
+            [
+                'id'   => 'required',
+            ],
+            [
+                'id.required'  => 'Id mesin harus diisi.',
+            ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all(),
+                    'time'  => intval(microtime(true) - $timeProcess)
+                ));
+            }
+            else
+            {
+                
+                $req = $request->all();
+                
+                foreach($req['id'] as $valId)
+                {
+                    $mesin = Mesin::find($valId);
+                    
+                    if($mesin->api_address)
+                    {
+                        $countData = 0;
+                        $req = new Client(); 
+                        $res = null;
+                        if($mesin->api_db != 'Y')
+                        {
+                            $res = $req->request('GET', $mesin->api_address.'/api/v1/hapus?ip='.$mesin->ip.'&key='.$mesin->key);
+                        }
+                        
+                        sleep(1);
+                        $rets = json_decode($res->getBody()->getContents());
+                        
+                        if($rets->status)
+                        {
+                            
+                        }
+                    }
+                    else
+                    {
+                        $con = fsockopen($mesin->ip, 80);
+
+                        if($con)
+                        {
+                            $soapReq = '<GetAttLog><ArgComKey xsi:type="xsd:integer">'.$mesin->key.'</ArgComKey><Arg><PIN xsi:type="xsd:integer">All</PIN></Arg></GetAttLog>';
+                            $new_line = "\r\n";
+
+                            fputs($con, "POST /iWsService HTTP/1.0".$new_line);
+                            fputs($con, "Host:".$mesin->ip.$new_line);
+                            fputs($con, "Content-Type: text/xml".$new_line);
+                            fputs($con, "Content-Length: ".strlen($soapReq).$new_line.$new_line);
+                            fputs($con, $soapReq.$new_line);
+
+                            $countData = 0;
+
+                            while($res = fgets($con,1024))
+                            {
+
+                                if(substr($res,0,1)!="<")
+                                {
+                                    continue;
+                                }
+
+                                if(stristr($res, "GetAttLogResponse"))
+                                {
+                                    continue;
+                                }
+
+                                $vals = null;
+                                $req = null;
+
+                                $parser = xml_parser_create();
+                                xml_parse_into_struct($parser, $res, $vals);
+
+                                $cnt = Activity::where('pin', $vals[1]['value'])
+                                               ->where('tanggal', $vals[2]['value'])
+                                               ->where('mesin_id', $mesin->id)->count();
+
+                                if($cnt == 0)
+                                {
+                                    if(array_key_exists(1, $vals) && array_key_exists(2, $vals) && array_key_exists(3, $vals) && array_key_exists(4, $vals) && array_key_exists(5, $vals))
+                                    {
+                                        $storeAct = array(
+                                            "pin" => $vals[1]['value'],
+                                            "tanggal" => $vals[2]['value'],
+                                            "verified"=>$vals[3]['value'],
+                                            "status" => $vals[4]['value'],
+                                            "workcode" => $vals[5]['value'],
+                                            "mesin_id" => $mesin->id,
+                                            "created_by" => Auth::user()->id
+                                        );
+
+                                        Activity::create($storeAct);
+                                    }
+
+                                }
+                                $countData++;
+                                xml_parser_free($parser);
+                            }
+
+                            $mesin->lastlog = Carbon::now();
+                            $mesin->total_log = $countData;
+                            $mesin->save();
+                        }
+                    }
+                    
+                }
+//                $request->session()->put('tarik.percent', 100);
+
+                echo json_encode(array(
+                    'status' => 1,
+                    'msg'   => 'Data berhasil diubah',
+                    'time'  => intval(microtime(true) - $timeProcess)
+                ));
+            }
+//            $request->session()->forget('tarik');
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'.$er->getMessage(),
+                'time'  => intval(microtime(true) - $timeProcess)
+            ));
+        }
+    }
+    
     public function dt(Request $request)
     {
         $req    = $request->all();

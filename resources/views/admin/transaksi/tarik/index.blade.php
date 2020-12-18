@@ -75,21 +75,6 @@
                 dTable.ajax.reload();
             });
             
-            $('#cmdHapus').on('click', function(e)
-            {
-                e.preventDefault();
-                
-                if(confirm("Apakah anda yakin untuk menghapus Log Mesin ini"))
-                {
-                    var promises = [];
-                
-                    var selectedId = dTable.$('input:checked').map(function () 
-                    {
-
-                    });
-                }
-            });
-            
             $('#cmdTarik').on('click', function(e)
             {
                 e.preventDefault();
@@ -167,6 +152,88 @@
                     }
 
                 });
+            });
+            
+            $('#cmdHapus').on('click', function(e)
+            {
+                e.preventDefault();
+                var selectedId = [];
+                if(confirm('Apakah anda yakin ingin menghapus log mesin ini?'))
+                {
+                    dTable.$('input:checked').map(function () 
+                    {
+                        var _this	= $(this);
+                        var datas       = dTable.row(_this.parents('tr')).data();
+
+                        selectedId.push(datas.id);
+                    });
+
+                    $.ajax(
+                    {
+                        url         : '{{route("hapusmesin")}}',
+                        dataType    : 'json',
+                        type        : 'POST',
+                        data        : {id : selectedId} ,
+                        beforeSend  : function(xhr)
+                        {
+    //                        $('#loadingDialog').modal('show');
+                            toastOverlay.fire({
+                                type: 'warning',
+                                title: 'Sedang memproses hapus mesin <b><b>',
+                                onBeforeOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            toastOverlay.getTitle();
+                        },
+                        success(result,status,xhr)
+                        {
+                            toastOverlay.close();
+                            if(result.status == 1)
+                            {
+    //                                document.getElementById("form_data").reset(); 
+
+                                Toast.fire({
+                                    type: 'success',
+                                    title: result.msg
+                                });
+
+                                dTable.ajax.reload();
+                            }
+                            else
+                            {
+                                if(Array.isArray(result.msg))
+                                {
+                                    var str = "";
+                                    for(var i = 0 ; i < result.msg.length ; i++ )
+                                    {
+                                        str += result.msg[i]+"<br>";
+                                    }
+                                    Toast.fire({
+                                        type: 'error',
+                                        title: str
+                                    });
+                                }
+                                else
+                                {
+                                    Toast.fire({
+                                        type: 'error',
+                                        title: result.msg
+                                    });
+                                }
+
+                            }
+
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) { 
+                            /* implementation goes here */ 
+                            toastOverlay.close();
+                            console.log(jqXHR.responseText);
+                        }
+
+                    });
+                }
             });
             
             $('#selChk').on('click', function(e)
