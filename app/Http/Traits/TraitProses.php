@@ -288,18 +288,18 @@ trait TraitProses
                  * Jika Tidak, kode Jadwal adalah S / Shift
                  * Ambil Jadwal sebelumnya berdasarkan tanggal kemarin
                  */
-                if(isset($jadwalArr[$curDate->copy()->subDays(1)->toDateString()]))
-                {
-                    $jadwalBefore = $jadwalArr[$curDate->copy()->subDays(1)->toDateString()];
-                }
-                else
-                {
-                    $jadwalBeforeArr = $this->jadwals([$curDate->copy()->subDays(1)], $karyawan);
-                    if($jadwalArr)
-                    {
-                        $jadwalBefore = reset($jadwalBeforeArr);
-                    }
-                }
+                // if(isset($jadwalArr[$curDate->copy()->subDays(1)->toDateString()]))
+                // {
+                //     $jadwalBefore = $jadwalArr[$curDate->copy()->subDays(1)->toDateString()];
+                // }
+                // else
+                // {
+                //     $jadwalBeforeArr = $this->jadwals([$curDate->copy()->subDays(1)], $karyawan);
+                //     if($jadwalArr)
+                //     {
+                //         $jadwalBefore = reset($jadwalBeforeArr);
+                //     }
+                // }
 
                 /*
                  * End If
@@ -561,45 +561,48 @@ trait TraitProses
                     $actOut = null;
                     
                     $tglBefore  = $curDate->copy()->subDay();
-
-                    $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
-                    $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
-
-                    if($inBefore->greaterThan($outBefore))
+                    $jadwalBefore = $this->jadwalSingle($tglBefore, $karyawan);
+                    
+                    if($jadwalBefore)
                     {
-                        $tmpAct = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'ASC')
-                                ->first();
-                        /*
-                         * apakah shift2
-                         */
-                        if($tmpAct)
+                        $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
+                        $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
+                        if($inBefore->greaterThan($outBefore))
                         {
-                            $actIn = $tmpAct;
-                            $actOut = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'DESC')
-                                ->first();
+                            $tmpAct = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+                            /*
+                            * apakah shift2
+                            */
+                            if($tmpAct)
+                            {
+                                $actIn = $tmpAct;
+                                $actOut = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'DESC')
+                                    ->first();
 
-                            $jMasukId = ($actIn)?$actIn->id:null;
-                            $jKeluarId = ($actOut)?$actOut->id:null;
-                        }
-                        else
-                        {
-                            $actIn = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'ASC')
-                                ->first();
-                            
-                            $actOut = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'DESC')
-                                ->first();
-                            $shift3 = 1;
+                                $jMasukId = ($actIn)?$actIn->id:null;
+                                $jKeluarId = ($actOut)?$actOut->id:null;
+                            }
+                            else
+                            {
+                                $actIn = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+                                
+                                $actOut = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'DESC')
+                                    ->first();
+                                $shift3 = 1;
 
-                            $jMasukId = ($actIn)?$actIn->id:null;
-                            $jKeluarId = ($actOut)?$actOut->id:null;                            
+                                $jMasukId = ($actIn)?$actIn->id:null;
+                                $jKeluarId = ($actOut)?$actOut->id:null;                            
+                            }
                         }
                     }
                     else

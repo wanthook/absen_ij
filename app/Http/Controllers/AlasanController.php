@@ -451,6 +451,7 @@ class AlasanController extends Controller
                     {
                         if(!empty(trim($sD[$arrKey->alasan])))
                         {
+                            $attach = array();
                             $karId = $karyawan->first()->id;
                             $kar = Karyawan::find($karId);
                             $alasan = Alasan::where('kode', trim($sD[$arrKey->alasan]))->first();
@@ -475,9 +476,9 @@ class AlasanController extends Controller
                                 {
                                     $par->detach($alasan->id);
                                 }
-                                $attach = ['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal_akhir]),'created_by' => Auth::user()->id];
+                                $attach = array_merge($attach,['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal_akhir]),'created_by' => Auth::user()->id]);
                                 $kar->alasanRange()->attach($alasan->id, $attach);
-                                $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal_akhir]));
+                                // $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal_akhir]));
                             }
                             else
                             {
@@ -486,9 +487,9 @@ class AlasanController extends Controller
                                 {
                                     $par->detach($alasan->id);
                                 }
-                                $attach = ['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id];
+                                $attach = array_merge($attach,['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id]);
                                 $kar->alasan()->attach($alasan->id, $attach);
-                                $this->prosesAbsTanggal($kar->id, trim($sD[$arrKey->tanggal]));
+                                // $this->prosesAbsTanggal($kar->id, trim($sD[$arrKey->tanggal]));
                             }
 
                             
@@ -766,6 +767,7 @@ class AlasanController extends Controller
                   ->groupBy('alasan_karyawan.alasan_id', 'alasan_karyawan.karyawan_id');
         
         $total = DB::table('alasan_karyawan')
+                        ->join('karyawans', 'karyawans.id', '=', 'alasan_karyawan.karyawan_id')
                         ->selectRaw('count(*) as cnt');
         
         if(isset($req['sTanggal']))
