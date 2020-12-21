@@ -467,6 +467,7 @@ class LaporanController
                 $pm = 0;
                 $jm = 0;
                 $ins = 0; //insentif
+                $lN = 0;
                                 
                 $siTukangLembur = 0; //rutin banget sih lemburnya
                 
@@ -679,10 +680,17 @@ class LaporanController
                     }
                     if(isset($vabs->kode_jam_kerja))
                     {
-                        if(substr($vabs->kode_jam_kerja,0,1) == "J" || substr($vabs->kode_jam_kerja,0,1) == "S" || substr($vabs->kode_jam_kerja,0,1) == "P")
+                        if(substr($vabs->kode_jam_kerja,0,1) == "J" || 
+                           substr($vabs->kode_jam_kerja,0,1) == "S" || 
+                           substr($vabs->kode_jam_kerja,0,1) == "P")
                         {
                             $siTukangLembur++;
                         }
+                    }
+
+                    if(isset($vabs->lembur_ln) && config('global.perusahaan_short') == 'AIC')
+                    {
+                        $lemburAktual += ((float) $vabs->lembur_ln);
                     }
                     
                     $sendTemp['detail'][] = $lbl;
@@ -695,6 +703,7 @@ class LaporanController
                     if($gapok)
                     {
                         $gapok = $gapok->pivot->nilai;
+                        // dd($siTukangLembur);
                         if($gapok >= 2350000)
                         {
                             if($lemburAktual)
