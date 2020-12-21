@@ -2965,6 +2965,7 @@ class LaporanController
             foreach($periode as $per)
             {
                 $abs = $this->absenMasuk($per, $kar->id,$sf);
+                
                 if($abs)
                 {
                     $gol = null;

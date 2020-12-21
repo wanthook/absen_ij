@@ -1171,6 +1171,8 @@ trait TraitProses
                     if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)) ||
                        $out->between($outS1->copy()->subMinutes($this->rangeAbs), $outS1->copy()->addMinute($this->rangeAbs)))
                     {
+                        $in = $inS1;
+                        $out = $outS1;
                         goto proses;
                     }
                     else
@@ -1183,6 +1185,8 @@ trait TraitProses
                     if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)) ||
                        $out->between($outS2->copy()->subMinutes($this->rangeAbs), $outS2->copy()->addMinute($this->rangeAbs)))
                     {
+                        $in = $inS2;
+                        $out = $outS2;
                         goto proses;
                     }
                     else
@@ -1195,6 +1199,8 @@ trait TraitProses
                     if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)) ||
                        $out->between($outS3->copy()->subMinutes($this->rangeAbs), $outS3->copy()->addMinute($this->rangeAbs)))
                     {
+                        $in = $inS3;
+                        $out = $outS3;
                         goto proses;
                     }
                     else
@@ -1205,14 +1211,14 @@ trait TraitProses
                 
                 proses:
                 $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
                 $actOut = Activity::with('mesin')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$out->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'asc')
                                     ->first();
-                
+                                    
                 if(!$actIn && $sf != null)
                 {
                     $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
