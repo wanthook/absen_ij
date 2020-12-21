@@ -864,7 +864,7 @@ trait TraitProses
                                 if($vAlasan->kode == 'SPL')
                                 {
                                     $waktuMenit = $addRangeEnd;
-
+                                    
                                     if(abs($nKeluar) >= $waktuMenit)
                                     {
                                         $lAkt = (float) $vAlasan->pivot->waktu;
@@ -875,7 +875,7 @@ trait TraitProses
                                         $lAkt = (float) $this->roundDec($nKeluar);
                                         $lemburAktual += $lAkt;
                                     }
-                                    $keterangan[] = "SPL ".$lAkt;
+                                    $keterangan[] = "SPL ".((float) $vAlasan->pivot->waktu);
                                     $hitungLembur = $this->hitungLembur($lemburAktual);
                                 }
                                 else if($vAlasan->kode == 'SLA')
@@ -893,7 +893,7 @@ trait TraitProses
                                         $lAkt = (float) $this->roundDec($nMasuk);
                                         $lemburAktual += $lAkt;
                                     }
-                                    $keterangan[] = "SLA ".$lAkt;
+                                    $keterangan[] = "SLA ".((float) $vAlasan->pivot->waktu);
                                     $hitungLembur = $this->hitungLembur($lemburAktual);
                                 }
                                 else if($vAlasan->kode == 'SPO')
@@ -916,7 +916,7 @@ trait TraitProses
                                             $lemburAktual -= 1;
                                         }
                                     }
-                                    $keterangan[] = "SPO ".$lAkt;
+                                    $keterangan[] = "SPO ".((float) $vAlasan->pivot->waktu);
                                     $hitungLembur = $lemburAktual * 2;
                                 }
                                 else if($vAlasan->kode == 'LN')
