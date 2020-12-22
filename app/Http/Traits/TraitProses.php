@@ -562,11 +562,12 @@ trait TraitProses
                     
                     $tglBefore  = $curDate->copy()->subDay();
                     $jadwalBefore = $this->jadwalSingle($tglBefore, $karyawan);
-                    
+
                     if($jadwalBefore)
                     {
                         $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
                         $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
+                        // dd(['in' => $inBefore, 'out'=> $outBefore, 'check' => $inBefore->greaterThan($outBefore)]);
                         if($inBefore->greaterThan($outBefore))
                         {
                             $tmpAct = Activity::where('pin', $karyawan->key)
@@ -602,6 +603,40 @@ trait TraitProses
 
                                 $jMasukId = ($actIn)?$actIn->id:null;
                                 $jKeluarId = ($actOut)?$actOut->id:null;                            
+                            }
+                        }
+                        else
+                        {
+                            $tmpAct = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'ASC')
+                                    ->first();
+                            //Jika Sf1
+                            if($tmpAct)
+                            {
+                                $actIn = $tmpAct;
+                                $actOut = Activity::where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->orderBy('tanggal', 'DESC')
+                                    ->first();
+
+                                $jMasukId = ($actIn)?$actIn->id:null;
+                                $jKeluarId = ($actOut)?$actOut->id:null;
+                            }
+                            else
+                            {
+                                $actIn = Activity::where('pin', $karyawan->key)
+                                            ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                            ->orderBy('tanggal', 'ASC')
+                                            ->first();
+                                
+                                $actOut = Activity::where('pin', $karyawan->key)
+                                            ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                            ->orderBy('tanggal', 'DESC')
+                                            ->first();
+
+                                $jMasukId = ($actIn)?$actIn->id:null;
+                                $jKeluarId = ($actOut)?$actOut->id:null;
                             }
                         }
                     }
@@ -661,6 +696,7 @@ trait TraitProses
                             }
                         }
                     }
+                    // dd($actIn);
                     if($actIn && $actOut)
                     {
                         $aIn = Carbon::createFromFormat("Y-m-d H:i:s", $actIn->tanggal);
