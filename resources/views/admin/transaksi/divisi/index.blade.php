@@ -265,6 +265,20 @@
                         }
                 },
                 {
+                        targets : 'ttunjanganjabatan',
+                        data: function(data)
+                        {
+                            if(data.jabatan)
+                            {
+                                return data.jabatan.kode+" - "+data.jabatan.deskripsi;
+                            }
+                            else
+                            {
+                                return '';
+                            }
+                        }
+                },
+                {
                         targets : 'ttanggal',
                         data: function(data)
                         {
@@ -344,7 +358,6 @@
                                                 type: 'error',
                                                 title: str
                                             });
-                                            $('#tipe_exim').attr('disabled','disabled');
                                         }
 
                                     }
@@ -414,7 +427,40 @@
                 }
             });
             
-            @if(Auth::user()->type->nama == 'ADMIN')
+            @if(config('global.perusahaan_short') == 'AIC')
+                @if(Auth::user()->type->nama == 'ADMIN')
+                $('#sJabatan').select2({
+                    // placeholder: 'Silakan Pilih',
+                    minimumInputLength: 0,
+                    allowClear: true,
+                    delay: 250,
+                    placeholder: {
+                        id: "",
+                        placeholder: ""
+                    },
+                    ajax: {
+                        url: "{{route('seljabatan')}}",
+                        dataType    : 'json',
+                        type : 'post',
+                        data: function (params) 
+                        {
+                            let query = {
+                                q: params.term
+                            }
+                            
+                            return query;
+                        },
+                        processResults: function (data) 
+                        {
+                            return {
+                                results: data.items
+                            };
+                        },
+                        cache: true
+                    }
+                });
+                @endif
+            @else
             $('#sJabatan').select2({
                 // placeholder: 'Silakan Pilih',
                 minimumInputLength: 0,
@@ -538,14 +584,35 @@
                                         {{ Form::label('sDivisi', 'Divisi') }}
                                         {{ Form::select('sDivisi', [], null, ['id' => 'sDivisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
-                                </div>       
-                                @if(Auth::user()->type->nama == 'ADMIN')
+                                </div>   
+                                @if(config('global.perusahaan_short') == 'AIC')    
+                                    @if(Auth::user()->type->nama == 'ADMIN')
+                                    <div class="col-2">
+                                        <div class="form-group">                                        
+                                            {{ Form::label('sJabatan', 'Jabatan') }}
+                                            {{ Form::select('sJabatan', [], null, ['id' => 'sJabatan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                                        </div>
+                                    </div> 
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            {{ Form::label('sTunjangan', 'Tunjangan') }}
+                                            {{ Form::text('sTunjangan',  null, ['id' => 'sTunjangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
+                                        </div>
+                                    </div>
+                                    @endif
+                                @else
                                 <div class="col-2">
                                     <div class="form-group">                                        
                                         {{ Form::label('sJabatan', 'Jabatan') }}
                                         {{ Form::select('sJabatan', [], null, ['id' => 'sJabatan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                                     </div>
                                 </div> 
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        {{ Form::label('sTunjangan', 'Tunjangan') }}
+                                        {{ Form::text('sTunjangan',  null, ['id' => 'sTunjangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
+                                    </div>
+                                </div>
                                 @endif
                                 <div class="col-2">
                                     <div class="form-group">
@@ -576,6 +643,7 @@
                                     <th class="tnama">Nama</th>
                                     <th class="tdivisi">Divisi</th>
                                     <th class="tjabatan">Jabatan</th>
+                                    <th class="ttunjanganjabatan">Tunjangan Jabatan</th>
                                 </tr>
                             </thead>
                         </table>

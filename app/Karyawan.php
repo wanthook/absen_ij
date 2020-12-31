@@ -84,8 +84,13 @@ class Karyawan extends Model
     public function log_jabatan()
     {
         return $this->belongsToMany('App\Jabatan','jabatan_karyawan_log','karyawan_id','jabatan_id')
-                    ->withPivot('tanggal', 'keterangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
+                    ->withPivot('tanggal', 'keterangan', 'tunjangan', 'created_by', 'updated_by', 'created_at', 'updated_at')
                     ->orderBy('tanggal', 'desc');
+    }
+    
+    public function logJabatanTanggal($tanggal)
+    {
+        return $this->log_jabatan()->wherePivot('tanggal', '<=', $tanggal);
     }
     
     public function log_golongan()
@@ -110,6 +115,18 @@ class Karyawan extends Model
     public function logOffTanggal($tanggal)
     {
         return $this->log_off()->wherePivot('tanggal','<=', $tanggal);
+    }
+    
+    public function hamil()
+    {
+        return $this->belongsToMany('App\Alasan','karyawan_hamil','karyawan_id','alasan_id')
+                    ->withPivot('tanggal', 'keterangan', 'created_by', 'created_at')
+                    ->orderBy('tanggal', 'desc');
+    }
+    
+    public function hamilTanggal($tanggal)
+    {
+        return $this->hamil()->wherePivot('tanggal','<=', $tanggal);
     }
     
     public function prosesabsen()

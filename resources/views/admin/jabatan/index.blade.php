@@ -121,7 +121,7 @@
                     { data    : "action", orderable: false, searchable: false},
                     { data    : "kode", name : "kode" },
                     { data    : "deskripsi", name : "deskripsi" },
-//                    { data    : "tunjangan", name : "tunjangan" },
+                    { data    : "tunjangan", name : "tunjangan" },
 //                    { data    : "prestasi", name : "prestasi" },
                     { data    : "created_by.name", name : "created_by" },
                     { data    : "created_at", name : "created_at" }              
@@ -175,6 +175,7 @@
                         $('#id').val(datas.id);
                         $('#kode').val(datas.kode);
                         $('#deskripsi').val(datas.deskripsi);
+                        $('#tunjangan').val(datas.tunjangan);
                     });
                     
                     
@@ -208,11 +209,11 @@
                     <label for="kode">Nama Jabatan</label>
                     <input type="text" class="form-control" id="deskripsi" name="deskripsi" placeholder="Nama Jabatan">
                 </div>
-<!--                <div class="form-group">
+                <div class="form-group">
                     <label for="kode">Tunjangan Jabatan</label>
                     <input type="text" class="form-control" id="tunjangan" name="tunjangan" placeholder="Tunjangan Jabatan">
                 </div>
-                <div class="form-group">
+<!--                <div class="form-group">
                     <label for="kode">Tunjangan Prestasi</label>
                     <input type="text" class="form-control" id="prestasi" name="prestasi" placeholder="Tunjangan Prestasi">
                 </div>-->
@@ -268,8 +269,8 @@
                         <th>Aksi</th>
                         <th>Kode Jabatan</th>
                         <th>Nama Jabatan</th>
-<!--                        <th>Tunjangan</th>
-                        <th>Prestasi</th>-->
+                        <th>Tunjangan</th>
+<!--                        <th>Prestasi</th>-->
                         <th>Dibuat Oleh</th>
                         <th>Tanggal Buat</th>
                     </tr>

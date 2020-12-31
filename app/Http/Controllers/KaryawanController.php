@@ -1964,6 +1964,19 @@ class KaryawanController extends Controller
                         'created_at' => Carbon::now()
                     ]);
 
+                    $kd = Alasan::find($req['sAlasan']);
+                    if($kd)
+                    {
+                        if($kd->kode == 'HML')
+                        {
+                            $kar->hamil = 'Y';
+                        }
+                        else
+                        {
+                            $kar->hamil = 'N';
+                        }
+                    }
+
                     $kar->updated_by = Auth::user()->id;
                     $kar->updated_at = Carbon::now();
 
@@ -2040,13 +2053,33 @@ class KaryawanController extends Controller
                         ]);
                         $arrUpd['divisi_id'] = $req['sDivisi'];
                     }
-                    if(Auth::user()->type->nama == 'ADMIN')
-                    {                            
+                    if(config('global.perusahaan_short') == 'AIC')
+                    {
+                        if(Auth::user()->type->nama == 'ADMIN')
+                        {                            
+                            if(isset($req['sJabatan']))
+                            {
+                                $karyawan->log_jabatan()->attach($req['sJabatan'], [
+                                    'tanggal' => $tgl->toDateString(), 
+                                    'keterangan' => $req['sKeterangan'],
+                                    'tunjangan' => $req['sTunjangan'],
+                                    'created_by' => Auth::user()->id,
+                                    'updated_by' => Auth::user()->id,
+                                    'created_at' => Carbon::now(),
+                                    'updated_at' => Carbon::now()
+                                ]);
+                                $arrUpd['jabatan_id'] = $req['sJabatan'];
+                            }
+                        }
+                    }
+                    else
+                    {
                         if(isset($req['sJabatan']))
                         {
                             $karyawan->log_jabatan()->attach($req['sJabatan'], [
                                 'tanggal' => $tgl->toDateString(), 
                                 'keterangan' => $req['sKeterangan'],
+                                'tunjangan' => $req['sTunjangan'],
                                 'created_by' => Auth::user()->id,
                                 'updated_by' => Auth::user()->id,
                                 'created_at' => Carbon::now(),

@@ -18,6 +18,7 @@ class Jabatan extends Model
     protected $fillable = [
         'deskripsi',   
         'kode',        
+        'tunjangan',
         'deleted_at',
         'created_by', 
         'created_at',
