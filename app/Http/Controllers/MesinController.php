@@ -447,6 +447,12 @@ class MesinController extends Controller
                         {
                             
                         }
+
+                        echo json_encode(array(
+                            'status' => 1,
+                            'msg'   => 'Data berhasil dihapus',
+                            'time'  => intval(microtime(true) - $timeProcess)
+                        ));
                     }
                     else
                     {
@@ -454,77 +460,44 @@ class MesinController extends Controller
 
                         if($con)
                         {
-                            $soapReq = '<GetAttLog><ArgComKey xsi:type="xsd:integer">'.$mesin->key.'</ArgComKey><Arg><PIN xsi:type="xsd:integer">All</PIN></Arg></GetAttLog>';
+                            $soap_req = '<ClearData>
+                                <ArgComKey xsi:type="xsd:integer">'.$mesin->key.'</ArgComKey>
+                                <Arg><Value xsi:type="xsd:integer">3</Value></Arg>
+                              </ClearData>';
+
                             $new_line = "\r\n";
 
                             fputs($con, "POST /iWsService HTTP/1.0".$new_line);
-                            fputs($con, "Host:".$mesin->ip.$new_line);
+                            fputs($con, "Host:".$ip.$new_line);
                             fputs($con, "Content-Type: text/xml".$new_line);
-                            fputs($con, "Content-Length: ".strlen($soapReq).$new_line.$new_line);
-                            fputs($con, $soapReq.$new_line);
-
-                            $countData = 0;
+                            fputs($con, "Content-Length: ".strlen($soap_req).$new_line.$new_line);
+                            fputs($con, $soap_req.$new_line);
 
                             while($res = fgets($con,1024))
                             {
-
-                                if(substr($res,0,1)!="<")
-                                {
-                                    continue;
-                                }
-
-                                if(stristr($res, "GetAttLogResponse"))
-                                {
-                                    continue;
-                                }
-
-                                $vals = null;
-                                $req = null;
-
-                                $parser = xml_parser_create();
-                                xml_parse_into_struct($parser, $res, $vals);
-
-                                $cnt = Activity::where('pin', $vals[1]['value'])
-                                               ->where('tanggal', $vals[2]['value'])
-                                               ->where('mesin_id', $mesin->id)->count();
-
-                                if($cnt == 0)
-                                {
-                                    if(array_key_exists(1, $vals) && array_key_exists(2, $vals) && array_key_exists(3, $vals) && array_key_exists(4, $vals) && array_key_exists(5, $vals))
-                                    {
-                                        $storeAct = array(
-                                            "pin" => $vals[1]['value'],
-                                            "tanggal" => $vals[2]['value'],
-                                            "verified"=>$vals[3]['value'],
-                                            "status" => $vals[4]['value'],
-                                            "workcode" => $vals[5]['value'],
-                                            "mesin_id" => $mesin->id,
-                                            "created_by" => Auth::user()->id
-                                        );
-
-                                        Activity::create($storeAct);
-                                    }
-
-                                }
-                                $countData++;
-                                xml_parser_free($parser);
+                            
                             }
+                            echo json_encode(array(
+                                'status' => 1,
+                                'msg'   => 'Data berhasil dihapus',
+                                'time'  => intval(microtime(true) - $timeProcess)
+                            ));
 
-                            $mesin->lastlog = Carbon::now();
-                            $mesin->total_log = $countData;
-                            $mesin->save();
                         }
                     }
-                    
+                    $mesin->lastlog = Carbon::now();
+                    $mesin->total_log = 0;
+                    $mesin->save();
                 }
 //                $request->session()->put('tarik.percent', 100);
 
-                echo json_encode(array(
-                    'status' => 1,
-                    'msg'   => 'Data berhasil diubah',
-                    'time'  => intval(microtime(true) - $timeProcess)
-                ));
+                
             }
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Mesin gagal dihapus',
+                'time'  => intval(microtime(true) - $timeProcess)
+            ));
 //            $request->session()->forget('tarik');
         }
         catch (QueryException $er)
@@ -533,6 +506,94 @@ class MesinController extends Controller
                 'status' => 0,
                 'msg'   => 'Data gagal disimpan'.$er->getMessage(),
                 'time'  => intval(microtime(true) - $timeProcess)
+            ));
+        }
+    }
+
+    public function uploadAbsen(Request $request)
+    {
+        if(Auth::user()->type->nama != 'ADMIN')
+            abort (404);
+        try
+        {
+            $validation = Validator::make($request->all(), 
+                [
+                    'sMesin'   => 'required',
+                    'formUpload'   => 'required',
+                ],
+                [
+                    'sMesin.required'  => 'Data mesin tidak dipilih.',
+                    'formUpload.required'  => 'File kosong.',
+                ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->only(['sMesin', 'formUpload']);
+                $mesin = Mesin::find($req['sMesin']);
+                $fileVar = $req['formUpload'];
+
+                $fileStorage = fopen($fileVar->getRealPath(),'r');
+                $databaru = 0;
+                $tData = 0;
+                while(! feof($fileStorage))
+                {
+                    $csv = fgets($fileStorage, 1024);
+                    $eCsv = explode("\t",$csv);
+                    if(count($eCsv) > 1)
+                    {
+                        $tData += 1;
+                        $cnt = Activity::where('pin', trim($eCsv[0]))
+                                               ->where('tanggal', trim($eCsv[1]))
+                                               ->where('mesin_id', $mesin->id)->count();
+                        if($cnt > 0)
+                        {
+                            $ret = array(
+                                "pin"       => trim($eCsv[0]),
+                                "tanggal"   => trim($eCsv[1]),
+                                "verified"  => trim($eCsv[2]),
+                                "status"    => trim($eCsv[3]),
+                                "workcode"  => trim($eCsv[4]),
+                                "mesin_id"  => $req['sMesin'],
+                                "created_by"=> Auth::user()->id
+                            );
+
+                            Activity::create($ret);
+                            $databaru+=1;
+                        }
+                    }
+
+                }
+                $mesin->lastlog = Carbon::now();
+                $mesin->total_log = $tData;
+                $mesin->save();
+                if($databaru)
+                {
+                    echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => $databaru.' Data berhasil disimpan'
+                    ));
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Tidak ada data baru'
+                    ));
+                }
+            }
+        }
+        catch (QueryException $er)
+        {
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal disimpan'
             ));
         }
     }
@@ -588,6 +649,27 @@ class MesinController extends Controller
                 ->editColumn('id', '{{$id}}')
                 ->rawColumns(['action'])
                 ->make(true);
+    }
+    
+    public function dtActivityShow(Request $request)
+    {
+        $req    = $request->all();
+        
+        $datas   = null;  
+        
+        $datas = Activity::with('mesin', 'karyawan');
+        
+        if(!empty($req['sMesin']))
+        {
+            $datas->where('mesin_id', $req['sMesin']);
+        }
+
+        $datas->orderBy('id','desc');
+
+        return  Datatables::of($datas)
+            ->editColumn('id', '{{$id}}')
+            ->make(true);
+        
     }
     
     public function dtActivity(Request $request)
@@ -666,14 +748,15 @@ class MesinController extends Controller
         $tags = Mesin::where(function($q) use($term)
         {
             $q->where('kode','like','%'.$term.'%')
-              ->orWhere('deskripsi','like','%'.$term.'%')
+              ->orWhere('lokasi','like','%'.$term.'%')
+              ->orWhere('keterangan','like','%'.$term.'%')
               ->orWhere('id',$term);
         })->limit(100)->get();
         $formatted_tags = [];
         foreach ($tags as $tag) {
-            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode_mesin.' - '.$tag->nama_mesin];
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode.' - '.$tag->lokasi];
         }
-        echo json_encode($formatted_tags);
+        echo json_encode(array('items' => $formatted_tags));
     }
     
     private function pingIp($ip)

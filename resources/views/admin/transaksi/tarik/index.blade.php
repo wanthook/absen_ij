@@ -47,6 +47,7 @@
     
     <script>
         let dTable = null;
+        let dTableShow = null;
         $(function(e)
         {
             $.ajaxSetup({
@@ -73,6 +74,58 @@
             $('#cmdSearch').on('click',function(e)
             {
                 dTable.ajax.reload();
+            });
+            
+            $('#cmdUpload').on('click', function(e)
+            {
+                let frm = document.getElementById('form_data_upload');
+                let datas = new FormData(frm);
+                $.ajax(
+                {
+                    url         : $('#form_data_upload').attr('action'),
+                    dataType    : 'JSON',
+                    type        : 'POST',
+                    data        : datas ,
+                    processData: false,
+                    contentType: false,
+                    beforeSend  : function(xhr)
+                    {
+//                        $('#loadingDialog').modal('show');
+                        toastOverlay.fire({
+                            type: 'warning',
+                            title: 'Sedang memproses data upload'
+                        });
+                    },
+                    success(result,status,xhr)
+                    {
+                        toastOverlay.close();
+                        if(result.status == 1)
+                        {
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
+                        }
+                        else
+                        {
+                            if(Array.isArray(result.msg))
+                            {
+                                var str = "";
+                                for(var i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                                $('#tipe_exim').attr('disabled','disabled');
+                            }
+                            
+                        }
+                        dTableKar.ajax.reload();
+                    }
+                });
             });
             
             $('#cmdTarik').on('click', function(e)
@@ -262,6 +315,8 @@
                 "serverSide": true,
                 "autoWidth": true,
                 "select": true,
+                "scrollX": true,
+                "scrollY": 600,
                 "lengthMenu": [100, 500, 1000, 1500, 2000 ],
                 "ajax":
                 {
@@ -331,14 +386,101 @@
                     },
                     { 
                         targets : "tkey", 
-                        data: "total_log" 
+                        searchable: false,  
+                        orderable: false, 
+                        render: function (data, type, full, meta){
+                            return '<a href="#" class="logShow" data-toggle="modal" data-target="#modal-log" value="'+full.id+'">'+full.total_log+'</a>';
+                        }
+                        // data: "total_log" 
                     },
                     { 
                         targets : "tlog", 
                         data: "lastlog" 
-                    }]
+                    }],
+
+                "drawCallback": function( settings, json ) 
+                {
+                    $('.logShow').on('click', function(e)
+                    {
+                        let _this	= $(this);
+                        let datas = dTable.row(_this.parents('tr')).data();
+                        $('#showId').val(datas.id);
+                        $('#lblLog').html(datas.kode);
+                    });
+                }
             });
             
+            dTableShow = $('#dTableShow').DataTable({
+                "sPaginationType": "full_numbers",
+                "searching":false,
+                "ordering": true,
+                "deferRender": true,
+                "processing": false,
+                "serverSide": true,
+                "autoWidth": true,
+                "select": true,
+                "scrollX": true,
+                "scrollY": 400,
+                "lengthMenu": [100, 500, 1000, 1500, 2000 ],
+                "ajax":
+                {
+                    "url"       : "{{ route('dtmesinactivity') }}",
+                    "type"      : 'POST',
+                    data: function (d) 
+                    {
+                        d.sMesin     = $('#showId').val();
+                    }
+                },   
+                "columnDefs":[{ 
+                    targets : 'tshowpin',
+                    data: "pin"
+                },
+                { 
+                    targets : "tshowtanggal", 
+                    data: "tanggal" 
+                },
+                { 
+                    targets : "tshowverified", 
+                    data: "verified" 
+                },
+                { 
+                    targets : "tshowcreated", 
+                    data: "created_at" 
+                }],
+            });
+
+            $('#modal-log').on('show.bs.modal', function (e) 
+            {                  
+                dTableShow.ajax.reload();
+            });
+                        
+            $('#sMesin').select2({
+                // placeholder: 'Silakan Pilih',
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selmesin')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
 
             $('#jm_kerja').select2({
                 // placeholder: 'Silakan Pilih',
@@ -399,6 +541,79 @@
 
 @section('modal_form')
 
+<div class="modal fade" id="modal-log">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-upload"></i>Log Mesin <span id="lblLog"></span></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="showId" id="showId">
+                <table id="dTableShow" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="tshowpin">PIN</th>
+                            <th class="tshowtanggal">Tanggal Absen</th>
+                            <th class="tshowverified">Verified</th>
+                            <th class="tshowcreated">Tanggal Masuk</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>   
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modal-form-upload">
+    <div class="modal-dialog">
+        <div class="modal-content bg-secondary">
+            <div class="modal-header">
+            <h4 class="modal-title"><i class="fa fa-upload"></i>Form Upload Data Absen</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+<!--        <form id="form_data" action="{{route('savejadwalday')}}" accept-charset="UTF-8" >-->
+            {{ Form::open(['route' => ['uploaddataabsen'], 'id' => 'form_data_upload', 'files' => true]) }}
+            {{ Form::hidden('id',null, ['id' => 'uploadId']) }}
+            <input type="hidden" name="id" id="id">
+            <div class="modal-body">   
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">                                        
+                                {{ Form::label('sMesin', 'Mesin') }}
+                                {{ Form::select('sMesin', [], null, ['id' => 'sMesin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                            </div>
+                        </div>            
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="kode">File</label>
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="formUpload" name="formUpload">
+                                        <label class="custom-file-label" for="formUpload">Choose file</label>
+                                    </div>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="cmdUpload">Upload</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                        <div class="col-12">
+                            <a class="btn btn-info btn-xs" href="{{route('app.files', 'file_temp_set_divisi')}}" target="_blank"><i class="fa fa-download"></i>Template Document</a>
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        {{ Form::close() }}
+    </div>
+    <!-- /.modal-content -->
+</div>
+    <!-- /.modal-dialog -->
+</div>
 @endsection
 
 @section('content')
@@ -427,9 +642,12 @@
       <h5 class="m-0">Featured</h5>
     </div>-->
     <!-- /.card-header -->
-        <div class="card-body">  
+        <div class="card-body">
+            <button id="cmdTarik" class="btn btn-xs btn-success float-right" alt="Tarik Absen"><i class="fa fa-download"></i>&nbsp;Tarik Absen</button>&nbsp;
+            @if(Auth::user()->type->nama == 'ADMIN')  
             <button id="cmdHapus" class="btn btn-xs btn-danger float-right" alt="Hapus Absen"><i class="fa fa-eraser"></i>&nbsp;Hapus Absen</button>&nbsp;
-            <button id="cmdTarik" class="btn btn-xs btn-success float-right" alt="Tarik Absen"><i class="fa fa-download"></i>&nbsp;Tarik Absen</button>
+            <button class="btn btn-xs btn-warning float-right" alt="Upload Absen" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i>Upload Absen</button>
+            @endif
             <table id="dTable" class="table table-hover">
                 <thead>
                     <tr>

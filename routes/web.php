@@ -53,6 +53,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('absen-manual', ['as' => 'tabsenmanual', 'uses' => 'ActivityManualController@index']);
             Route::get('divisi', ['as' => 'tdivisi', 'uses' => 'KaryawanController@indexDivisi']);
             Route::get('golongan', ['as' => 'tgolongan', 'uses' => 'KaryawanController@indexGolongan']);
+            Route::get('karyawan-hamil', ['as' => 'thamil', 'uses' => 'KaryawanController@indexHamil']);
         });
 
 
@@ -141,6 +142,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawantabletalasanrange', ['as' => 'tabletalasanrangekaryawan', 'uses' => 'AlasanController@tableTransaksiAlasanRange']);
             Route::post('karyawandtstatus', ['as' => 'dttstatuskaryawan', 'uses' => 'KaryawanController@dtStatus']);
             Route::post('karyawandtstatusoff', ['as' => 'dttstatusoffkaryawan', 'uses' => 'KaryawanController@dtStatusOff']);
+            Route::post('karyawandthamil', ['as' => 'dtthamilkaryawan', 'uses' => 'KaryawanController@dtHamil']);
             
             Route::post('karyawansave', ['as' => 'savekaryawan', 'uses' => 'KaryawanController@store']);
             Route::post('karyawansavealasan', ['as' => 'savealasankaryawan', 'uses' => 'AlasanController@storeAlasanKaryawan']);
@@ -151,6 +153,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawansavegolongan', ['as' => 'savegolongankaryawan', 'uses' => 'KaryawanController@storeGolongan']);
             Route::post('karyawansavestatus/{kode}', ['as' => 'savestatuskaryawan', 'uses' => 'KaryawanController@storeStatusKaryawan']);
             Route::post('karyawansavestatusoff/{kode}', ['as' => 'savestatusoffkaryawan', 'uses' => 'KaryawanController@storeStatusOffKaryawan']);
+            Route::post('karyawansavehamil/{kode}', ['as' => 'savehamilkaryawan', 'uses' => 'KaryawanController@storeHamilKaryawan']);
             
             Route::post('karyawanupload', ['as' => 'uploadkaryawan', 'uses' => 'KaryawanController@storeUpload']);
             Route::post('karyawanalasanupload', ['as' => 'uploadalasankaryawan', 'uses' => 'AlasanController@storeUploadAlasan']);
@@ -160,6 +163,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawandivisiupload', ['as' => 'uploaddivisikaryawan', 'uses' => 'KaryawanController@storeUploadDivisi']);
             Route::post('karyawangolonganupload', ['as' => 'uploadgolongankaryawan', 'uses' => 'KaryawanController@storeUploadGolongan']);
             Route::post('karyawanstatusoffupload', ['as' => 'uploadstatusoffkaryawan', 'uses' => 'KaryawanController@storeUploadOff']);
+            Route::post('karyawanhamilupload', ['as' => 'uploadhamilkaryawan', 'uses' => 'KaryawanController@storeUploadHamil']);
             
             Route::post('karyawandel', ['as' => 'delkaryawan', 'uses' => 'KaryawanController@destroy']);
             Route::post('karyawandelalasan', ['as' => 'delalasankaryawan', 'uses' => 'AlasanController@destroyAlasanKaryawan']);
@@ -167,12 +171,14 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawansel', ['as' => 'selkaryawan', 'uses' => 'KaryawanController@select2']);
             Route::post('karyawanselect', ['as' => 'selectkaryawan', 'uses' => 'KaryawanController@selectKaryawan']);
             Route::post('karyawanseloff', ['as' => 'selkaryawanoff', 'uses' => 'KaryawanController@select2off']);
-            Route::post('karyawanstatussel', ['as' => 'selkaryawanstatus', 'uses' => 'MasterOptionController@select2karyawanstatus']);       
+            Route::post('karyawanstatussel', ['as' => 'selkaryawanstatus', 'uses' => 'MasterOptionController@select2karyawanstatus']);  
+            Route::post('karyawanhamil', ['as' => 'selkaryawanhamil', 'uses' => 'KaryawanController@select2hamil']);     
             Route::post('karyawanjadwalsetdt', ['as' => 'dtjadwalset', 'uses' => 'KaryawanController@dtJadwal']);    
             Route::post('karyawanjadwalsetdelete', ['as' => 'deljadwalkaryawan', 'uses' => 'KaryawanController@destroyJadwalKaryawan']); 
             Route::post('karyawandivisisetdt', ['as' => 'dtdivisiset', 'uses' => 'KaryawanController@dtSetDivisi']);
             Route::post('karyawangolongansetdt', ['as' => 'dtgolonganset', 'uses' => 'KaryawanController@dtSetGolongan']);
             Route::post('karyawanoffdelete', ['as' => 'deloffkaryawan', 'uses' => 'KaryawanController@destroyOffKaryawan']);
+            Route::post('karyawanhamildelete', ['as' => 'delhamilkaryawan', 'uses' => 'KaryawanController@destroyHamilKaryawan']);
             //deljadwalkaryawan
 
             Route::post('karyawankeluargasave', ['as' => 'savekeluargakaryawan', 'uses' => 'KaryawanController@storeKeluarga']);
@@ -180,11 +186,13 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('karyawankeluargadel', ['as' => 'delkeluargakaryawan', 'uses' => 'KaryawanController@destroyKeluarga']);
 
             Route::post('mesindt', ['as' => 'dtmesin', 'uses' => 'MesinController@dt']);
+            Route::post('mesinactivitydt', ['as' => 'dtmesinactivity', 'uses' => 'MesinController@dtActivityShow']);
             Route::post('mesinsave', ['as' => 'savemesin', 'uses' => 'MesinController@store']);
             Route::post('mesindel', ['as' => 'delmesin', 'uses' => 'MesinController@destroy']);
             Route::post('mesinsel', ['as' => 'selmesin', 'uses' => 'MesinController@select2']);
             Route::post('mesintarik', ['as' => 'tarikmesin', 'uses' => 'MesinController@tarikAbsen']);
             Route::post('mesinhapus', ['as' => 'hapusmesin', 'uses' => 'MesinController@hapusAbsen']);
+            Route::post('mesinupload', ['as' => 'uploaddataabsen', 'uses' => 'MesinController@uploadAbsen']);
 
             Route::post('jamkerjadt', ['as' => 'dtjamkerja', 'uses' => 'JamKerjaController@dt']);
             Route::post('jamkerjasave', ['as' => 'savejamkerja', 'uses' => 'JamKerjaController@store']);
@@ -330,7 +338,10 @@ Route::group(['middleware' => 'auth'],function()
                 break;
             case "file_temp_karyawan_status":
                 $path = storage_path('app').'/public/statusKaryawan.xlsx';
-                break;
+                break;            
+            case "file_temp_hamil":
+                    $path = storage_path('app').'/public/hamil.xlsx';
+                    break;
             default:
                 $path = "";
         }
