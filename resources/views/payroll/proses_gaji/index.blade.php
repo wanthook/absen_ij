@@ -1,13 +1,13 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Proses Absensi</p>
+<p>Proses Gaji</p>
 @endsection
 
 
 @section('breadcrumb')
 <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Beranda</a></li>
-<li class="breadcrumb-item active">Proses Absensi</li>
+<li class="breadcrumb-item active">Proses Gaji</li>
 @endsection
 
 @section('add_css')
@@ -147,6 +147,9 @@
                 }
             });
             
+            // $('#tipe').select2({placeholder: "",
+            //     allowClear: true,});
+            
             $('#pin').select2({
                 // placeholder: 'Silakan Pilih',
                 placeholder: "",
@@ -204,10 +207,12 @@
             });
             
             $('#tanggal').daterangepicker({
-                startDate: sD(),
-                endDate: eD(),
+                singleDatePicker: true,
+                showDropdowns: true,
+                minYear: 2001,
+                maxYear: parseInt(moment().format('YYYY'),10),
                 locale: {
-                    format: 'YYYY-MM-DD'
+                    format: 'YYYY-MM'
                 }
             });
 //            console.log(moment());
@@ -227,7 +232,7 @@
             }
             else
             {
-                return moment(dt.format("YYYY-MM")+"-21");
+                return moment(dt.format("YYYY-MM")+"-22");
             }
             return moment();
         }
@@ -238,11 +243,11 @@
             
             if(dt.format("d") > 21)
             {
-                return moment(dt.format("YYYY-MM")+"-22").add(1, 'months');
+                return moment(dt.format("YYYY-MM")+"-21").add(1, 'months');
             }
             else
             {
-                return moment(dt.format("YYYY-MM")+"-22");
+                return moment(dt.format("YYYY-MM")+"-21");
             }
             return moment();
         }
@@ -250,7 +255,7 @@
 @endsection
 
 @section('content')
-{{ Form::open(['route' => ['prosesabsen'], 'id' => 'form_data']) }}
+{{ Form::open(['route' => ['prosesgajisave'], 'id' => 'form_data']) }}
 {{ Form::hidden('id',null, ['id' => 'id']) }}
 <div class="row">
     <div class="col-12">
@@ -289,6 +294,12 @@
                             {{ Form::select('perusahaan', [], null, ['id' => 'perusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
+                    <!-- <div class="col-6">
+                        <div class="form-group">
+                            {{ Form::label('tipe', 'Jenis Proses') }}
+                            {{ Form::select('tipe', ['normal' => 'Normal', 'khusus' => 'Khusus'], null, ['id' => 'tipe', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
+                        </div>
+                    </div> -->
                 </div>
             </div>
             <div class="card-footer">

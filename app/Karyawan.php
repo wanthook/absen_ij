@@ -162,22 +162,37 @@ class Karyawan extends Model
     {
         return $this->belongsToMany('App\MasterOption','salaries','karyawan_id','jenis_id')
                 ->using(SubTransaction::class)
-                ->withPivot('tanggal', 'nilai', 'tipe', 'created_by', 'created_at')
-                ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
-    }
-    
-    public function gapok()
-    {
-        return $this->belongsToMany('App\MasterOption','salaries','karyawan_id','jenis_id')
-                ->using(SubTransaction::class)
-                ->withPivot('tanggal', 'nilai', 'tipe', 'created_by', 'created_at')
-                ->where('master_options.nama','GAPOK')
+                ->withPivot('tanggal', 'nilai', 'tipe', 'keterangan', 'created_by', 'created_at')
                 ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
     }
     
     public function salaryGapokTanggal($tanggal)
     {
-        return $this->gapok()->wherePivot('tanggal', '<=', $tanggal);
+        return $this->salary()->where('master_options.nama','GAPOK')->wherePivot('tanggal', '<=', $tanggal);
+    }
+    
+    public function salaryKoreksiTanggal($tanggalAwal, $tanggalAkhir)
+    {
+        return $this->salary()->where('master_options.nama','KOR')->wherePivot('tanggal', '>=', $tanggalAwal)
+        ->wherePivot('tanggal', '<=', $tanggalAkhir);
+    }
+    
+    public function salarySerikatTanggal($tanggalAwal, $tanggalAkhir)
+    {
+        return $this->salary()->whereIn('master_options.nama',['SPN', 'GARTEK'])->wherePivot('tanggal', '>=', $tanggalAwal)
+        ->wherePivot('tanggal', '<=', $tanggalAkhir);
+    }
+    
+    public function salaryAsuransiTanggal($tanggalAwal, $tanggalAkhir)
+    {
+        return $this->salary()->where('master_options.nama','ASU')->wherePivot('tanggal', '>=', $tanggalAwal)
+        ->wherePivot('tanggal', '<=', $tanggalAkhir);
+    }
+    
+    public function salaryTokoTanggal($tanggalAwal, $tanggalAkhir)
+    {
+        return $this->salary()->where('master_options.nama','TOKO')->wherePivot('tanggal', '>=', $tanggalAwal)
+        ->wherePivot('tanggal', '<=', $tanggalAkhir);
     }
     
     public function jabatan()

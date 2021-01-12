@@ -95,6 +95,7 @@ class SalaryController extends Controller
                                 'tanggal' => $tgl->toDateString(), 
                                 'tipe' => $req['tipe'],
                                 'nilai' => Crypt::encryptString($req['nilai']),
+                                'keterangan' => $req['keterangan'],
                                 'created_by' => Auth::user()->id
                             ]);
                     
@@ -125,8 +126,6 @@ class SalaryController extends Controller
             ));
         }
     }
-    
-    
     
     public function storeUploadSalary(Request $request)
     {

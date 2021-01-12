@@ -38,6 +38,8 @@
     <script src="{{asset('bower_components/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js')}}"></script>
     <!-- select2 -->
     <script src="{{asset('bower_components/admin-lte/plugins/select2/js/select2.full.min.js')}}"></script>
+    <!-- currency.js -->
+    <script src="{{asset('js/currency.min.js')}}"></script>
     
     <script>
         let dTableKar = null;
@@ -117,7 +119,6 @@
                                     type: 'error',
                                     title: str
                                 });
-                                $('#tipe_exim').attr('disabled','disabled');
                             }
                             
                         }
@@ -422,21 +423,23 @@
         {
             if(dt.salary.length > 0)
             {
-                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Jenis</th><th>Nilai</th><th>Created By</th><th>Created At</th></tr>';
+                var ret = '<table cellpadding="5" cellspacing="0" border="0" style="table"><thead><tr><th>&nbsp;</th><th>Tanggal</th><th>Jenis</th><th>Nilai</th><th>Keterangan</th><th>Created By</th><th>Created At</th></tr>';
             
                 dt.salary.forEach(function(i,x)
                 {
                     var val = JSON.stringify({
                         karyawan_id : i.pivot.karyawan_id, 
                         tanggal : i.pivot.tanggal, 
-                        jenis_id : i.pivot.jenis_id
+                        jenis_id : i.pivot.jenis_id, 
+                        keterangan : i.pivot.keterangan
                     });
                     
                     ret += '<tr><input class="jdId" type="hidden" value=\''+val+'\'>'+
                                 '<td><button class="btn btn-danger btn-xs btnSet"><i class="fa fa-eraser"></i></button></td>'+
                                 '<td>'+i.pivot.tanggal+'</td>'+
-                                '<td>'+i.nama+' - '+i.deskripsi+'</td>'+
-                                '<td>'+((i.pivot.nilai)?((i.pivot.nilai.length < 50)?i.pivot.nilai:i.pivot.nilai.substr(0,10)):'&nbsp;')+'</td>'+
+                                '<td>'+i.deskripsi+'</td>'+
+                                '<td>'+((i.pivot.nilai)?((i.pivot.nilai.length < 50)?currency(i.pivot.nilai, {separator: ',', symbol: 'Rp. '}).format():currency(i.pivot.nilai.substr(0,10), {separator: ',', symbol: 'Rp. '}).format()):'&nbsp;')+'</td>'+
+                                '<td>'+i.pivot.keterangan+'</td>'+
                                 '<td>'+i.pivot.created_by.name+'</td>'+
                                 '<td>'+i.pivot.created_at+'</td>'+
                             '</tr>';
@@ -540,6 +543,12 @@
                             <div class="form-group">                                        
                                 {{ Form::label('nilai', 'Nilai') }}
                                 {{ Form::text('nilai', null, ['id' => 'nilai', 'class' => 'form-control']) }}
+                            </div>
+                        </div>  
+                        <div class="col-12">
+                            <div class="form-group">                                        
+                                {{ Form::label('keterangan', 'Keterangan') }}
+                                {{ Form::text('keterangan', null, ['id' => 'keterangan', 'class' => 'form-control']) }}
                             </div>
                         </div>  
                     </div>
