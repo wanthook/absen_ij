@@ -309,11 +309,11 @@ trait TraitGaji
             return false;
         }
 
-        $jabatan = $karyawan->logJabatanTanggal(reset($periode)->toDateString())->first();
+        $jabatan = $karyawan->salaryJabatanTanggal(reset($periode)->toDateString())->first();
 
         if($jabatan)
         {
-            return $jabatan->pivot->tunjangan;
+            return $jabatan->pivot->nilai;
         }
         else
         {
