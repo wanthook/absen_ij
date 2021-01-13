@@ -189,6 +189,12 @@ class Karyawan extends Model
         ->wherePivot('tanggal', '<=', $tanggalAkhir);
     }
     
+    public function salaryOtherTanggal($tanggalAwal, $tanggalAkhir)
+    {
+        return $this->salary()->where('master_options.nama','OTHERS')->wherePivot('tanggal', '>=', $tanggalAwal)
+        ->wherePivot('tanggal', '<=', $tanggalAkhir);
+    }
+    
     public function salaryTokoTanggal($tanggalAwal, $tanggalAkhir)
     {
         return $this->salary()->where('master_options.nama','TOKO')->wherePivot('tanggal', '>=', $tanggalAwal)
