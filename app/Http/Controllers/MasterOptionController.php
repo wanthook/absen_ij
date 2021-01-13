@@ -342,7 +342,7 @@ class MasterOptionController extends Controller
         })->where('kode','SALARY')->where('nilai',null)->limit(100)->get();
         $formatted_tags = [];
         foreach ($tags as $tag) {
-            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->deskripsi];
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->nama.' - '.$tag->deskripsi];
         }
         echo json_encode(array('items' => $formatted_tags));
     }
