@@ -447,7 +447,7 @@ class AlasanController extends Controller
                         $arrRet = array(
                             'status' => 0,
                             'msg'   => 'Header PIN tidak ada'
-                        ))
+                        );
                         break;
                     }
 
