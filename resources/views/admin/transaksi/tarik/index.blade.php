@@ -602,9 +602,9 @@
                                 </div>
                             </div>
                         </div>  
-                        <div class="col-12">
+                        <!-- <div class="col-12">
                             <a class="btn btn-info btn-xs" href="{{route('app.files', 'file_temp_set_divisi')}}" target="_blank"><i class="fa fa-download"></i>Template Document</a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>   

@@ -44,6 +44,7 @@ use App\ExceptionLog;
 use App\Alasan;
 use App\Divisi;
 use App\Activity;
+use App\Prosesgaji;
 
 use DB;
 
@@ -157,6 +158,11 @@ class LaporanController
     public function indexStatusNonAktif()
     {
         return view('admin.laporan.status_non_aktif.index');
+    }
+    
+    public function indexListGaji()
+    {
+        return view('payroll.laporan.list_gaji.index');
     }
     
     public function laporanDetail(Request $request)
@@ -3119,6 +3125,224 @@ class LaporanController
             $rowStart = 4;
             $colStat = 1;
             $headTbl1 = array('No','PIN', 'Nama', 'Gol','Kode Jam', 'Jadwal Masuk', 'Jadwal Pulang', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen Masuk', 'Jam Absen Pulang', 'Mesin Masuk', 'Mesin Pulang');
+            foreach($headTbl1 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'a0a0a0'
+                            ]
+                    ]
+                ]);
+            
+            $rowStart++;
+            $colStat = 1;
+            foreach($ret['data'] as $kRet => $vRet)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+                foreach($vRet as $v)
+                {
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $v);
+                }
+                $colStat = 1;
+                $rowStart++;
+                
+            }
+            $ss->getActiveSheet()
+               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+               ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 10
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ]
+                ]);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="Transaksi Log Masuk Karyawan.xls"');
+            header('Cache-Control: max-age=0');
+            
+            $writer = IOFactory::createWriter($ss, 'Xlsx');
+            $writer->setPreCalculateFormulas(true);
+            $writer->save('php://output');
+            exit;
+        }
+        else
+        {
+            return abort(404,'Not Found');
+        }
+        
+    }
+
+    public function laporanListGaji(Request $request)
+    {
+        $req = $request->all();
+        
+        $ret = [];
+        
+        $periode = null;
+        $sf = null;
+        
+        $action = [];
+        
+        $karyawan = Karyawan::with('divisi');
+//        
+        if(isset($req['pin']))
+        {
+//            $kar = Karyawan::find($req['pin']);
+            $karyawan->where('id', $req['pin']);
+        }
+//        
+        if(isset($req['divisi']))
+        {
+//            $kar = Karyawan::where('divisi_id',$req['divisi'])->pluck('key');
+            $div = Divisi::descendantsAndSelf($req['divisi'])->pluck('id');
+            $karyawan->whereIn('divisi_id',$div);
+        }
+//        
+        if(isset($req['perusahaan']))
+        {
+//            $kar = Karyawan::where('perusahaan_id',$req['perusahaan'])->pluck('key');
+            $karyawan->where('perusahaan_id',$req['perusahaan']);
+        }
+//        
+        // if(isset($req['tanggal']))
+        // {            
+        //     $periode = CarbonPeriod::create($req['tanggal'], $req['tanggal'])->toArray();
+        // }
+//        
+        if(isset($req['tanggal']))
+        {            
+            $tgl = Carbon::createFromFormat('Y-m-d', $req['tanggal'].'-22')->subMonth();
+
+            $periode = CarbonPeriod::create($tgl, $tgl->copy()->addMonth(1)->subDay(1))->toArray();
+        }
+        
+        foreach($karyawan->karyawanTerlihat()->get() as $kar)
+        {
+            $proc = Prosesgaji::with(['karyawan'])->where('periode_awal', '>=', reset($periode)->toDateString())
+                              ->where('periode_akhir', '<=', end($periode)->toDateString())
+                              ->where('karyawan_id', $kar['id'])->orderBy('periode_awal', 'asc');
+            
+            if($proc->count())
+            {
+                foreach($proc->get() as $valProc)
+                {
+                    $action[] = $valProc;
+                }
+            }
+            
+            
+        }
+        $ret = [
+            'periode' => $periode,
+            'data' => $action
+        ];
+        // dd($ret);
+        if($req['btnSubmit'] == "preview")
+        {
+            return view('payroll.laporan.list_gaji.preview', ['var' => $ret, 
+                'printDate' => Carbon::now()->format('d-m-Y H:i:s')]
+            );
+        }
+        else if($req['btnSubmit'] == "excel")
+        {
+            $ss = new Spreadsheet();
+            $ss->getProperties()
+                ->setCreator('Taufiq Hari Widodo')
+                ->setLastModifiedBy('Taufiq Hari Widodo')
+                ->setTitle('Laporan List Gaji Karyawan')
+                ->setSubject('Laporan List Gaji Karyawan')
+                ->setDescription('Laporan List Gaji Karyawan')
+                ->setKeywords('laporan '.config('global.perusahaan_short').' karyawan')
+                ->setCategory('Laporan Excel');
+            
+            $styleHead1 = [
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders' => [
+                        'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN
+                        ]
+                ],
+                'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => [
+                                'rgb' => 'a0a0a0'
+                        ]
+                ]
+            ];
+            $ss->createSheet(0);
+            $ss->setActiveSheetIndex(0);
+            $ss->getActiveSheet()->setTitle('Laporan List Gaji');
+            
+            $ss->getActiveSheet()->setCellValue('A1', 'Laporan List Gaji');
+            $ss->getActiveSheet()->setCellValue('A2', "Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
+            $mergeHead = 10;
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
+            $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
+            
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,1,$mergeHead,1)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 16,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+            $ss->getActiveSheet()->getStyleByColumnAndRow(1,2,$mergeHead,2)->applyFromArray([
+                'font' => [
+                        'name' => 'sans-serif',
+                        'size' => 10,
+                        'bold' => true
+                ],
+                'alignment' => [
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ]
+            ]);
+             
+            $rowStart = 4;
+            $colStat = 1;
+            $headTbl1 = array('NO', 'NAMA', 'PIN', 'TANGGAL', 'NAMA', 'GAJI', 'POT. ABSEN', 'JUMLAH OFF', 'MASUK KERJA', 'POT. OFF', 'GAJI POKOK', 'UPAH LEMBUR', 'SHIFT 3', 'TUNJANGAN', 'GETPAS', 'KOREKSI', 'PENDAPATAN', 'POTONGAN', 'TOTAL', 'TOTAL');
+            $headTbl1 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'Jadwal Pulang', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen Masuk', 'Jam Absen Pulang', 'Mesin Masuk', 'Mesin Pulang');
             foreach($headTbl1 as $rHead)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);

@@ -738,7 +738,7 @@ trait TraitGaji
 
             $toko = $this->toko($karyawan, $periode);
 
-            $other = $this->other($karyawan, $periode);
+            $other = $this->others($karyawan, $periode);
 
             $absensiList = $this->absensiList($karyawan, $periode);
 
@@ -746,6 +746,8 @@ trait TraitGaji
             $prosesSave['periode_akhir'] = end($periode)->toDateString();
             $prosesSave['karyawan_id'] = $karyawan_id;
             $prosesSave['gaji_pokok'] = $gajiPokok;
+            $prosesSave['gaji_pokok_dibayar'] = $gajiPokokDibayar;
+            $prosesSave['harian_rp'] = $harian;
             $prosesSave['tunjangan_jabatan'] = (float)$tunjanganJabatan;
             $prosesSave['tunjangan_prestasi'] = $tunjanganPrestasi;
             $prosesSave['tunjangan_haid'] = $tunjanganHaid;
@@ -758,8 +760,9 @@ trait TraitGaji
             $prosesSave['out'] = $potAbsArr['OUT'];
             
             // $prosesSave['gp'] = $gp;
+            $prosesSave['periode_hari'] = $hariKerja;
+            $prosesSave['jumlah_absen'] = $hariKerja-$potonganAbsen;
 
-            $prosesSave['jumlah_absen'] = $hariKerja;
             $prosesSave['potongan_absen'] = $potonganAbsen;
             $prosesSave['potongan_absen_rp'] = $potonganAbsenRp;
             $prosesSave['jumlah_off'] = $jumlahOff;

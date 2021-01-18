@@ -166,7 +166,7 @@ class Karyawan extends Model
                 ->orderBy('tanggal', 'desc')->orderBy('jenis_id', 'asc');
     }
     
-    public function salaryJabatanTanggal($tanggalAwal, $tanggalAkhir)
+    public function salaryJabatanTanggal($tanggal)
     {
         return $this->salary()->where('master_options.nama','TUNJABATAN')->wherePivot('tanggal', '<=', $tanggal);
     }

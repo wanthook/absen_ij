@@ -104,7 +104,6 @@ if(config('global.perusahaan_short') == 'AIC')
                     left  : 'prev,next today',
                     center: 'title',
                     right : 'dayGridMonth'
-                    // right : 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 editable  : true,
                 selectable: true
@@ -170,9 +169,13 @@ if(config('global.perusahaan_short') == 'AIC')
                         calEv.remove();
                     }
                 },
-                datesRender: function(view, element){
-                    // console.log(view.view.currentStart);
-                    //console.log(element);
+                datesRender: function(info){
+                    var id = $('#id').val();
+                    if(id)
+                    {
+                        // console.log(info.view.activeStart);
+                        console.log(dateString(info.view.activeStart));
+                    }
                 },
                 editable  : true,
                 selectable: true
@@ -240,7 +243,6 @@ if(config('global.perusahaan_short') == 'AIC')
             {
                 let frm = document.getElementById('form_data_upload');
                 let datas = new FormData(frm);
-//                console.log($('#form_data_upload').attr('action'));
                 $.ajax(
                 {
                     url         : $('#form_data_upload').attr('action'),
@@ -251,7 +253,6 @@ if(config('global.perusahaan_short') == 'AIC')
                     contentType: false,
                     beforeSend  : function(xhr)
                     {
-//                        $('#loadingDialog').modal('show');
                         toastOverlay.fire({
                             type: 'warning',
                             title: 'Sedang memproses data upload',
@@ -289,7 +290,6 @@ if(config('global.perusahaan_short') == 'AIC')
                         dTable.ajax.reload();
                     },
                     error: function(jqXHR, textStatus, errorThrown) { 
-                        /* implementation goes here */ 
                         toastOverlay.close();
                         console.log(jqXHR.responseText);
                     }
@@ -327,7 +327,6 @@ if(config('global.perusahaan_short') == 'AIC')
                     data        :JSON.stringify(formData) ,
                     beforeSend  : function(xhr)
                     {
-//                        $('#loadingDialog').modal('show');
                         toastOverlay.fire({
                             type: 'warning',
                             title: 'Sedang memproses data',
@@ -398,7 +397,8 @@ if(config('global.perusahaan_short') == 'AIC')
 
             $('#modal-form').on('show.bs.modal', function (e) 
             {
-//                console.log($('#id').val());
+                var date = calendar.getDate();
+                console.log(date);
                 loadCalendar();
             });
             
@@ -432,7 +432,6 @@ if(config('global.perusahaan_short') == 'AIC')
                                 title: result.msg
                             });
                             loadCalendar();
-//                            reloadCalendar(calendar);
                         }
                         else
                         {
@@ -718,6 +717,8 @@ if(config('global.perusahaan_short') == 'AIC')
         
         let loadCalendar = function()
         {
+            localStorage.removeItem('cal');
+            
             calendar.getEvents().forEach(function(data, index)
             {
                 data.remove();
@@ -725,10 +726,11 @@ if(config('global.perusahaan_short') == 'AIC')
 
             var date = calendar.getDate();
 
-            var y = date.getFullYear();
-            var m = date.getMonth()+1;
-            var d = date.getDate();
-            var strFormat =  y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+            var strFormat =  dateString(date);
+            // var y = date.getFullYear();
+            // var m = date.getMonth()+1;
+            // var d = date.getDate();
+            // var strFormat =  y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
 
             // console.log(strFormat);
 
@@ -791,6 +793,16 @@ if(config('global.perusahaan_short') == 'AIC')
             }
             calendar.render();
         }
+
+        var dateString = function(dt)
+        {
+            var y = dt.getFullYear();
+            var m = dt.getMonth()+1;
+            var d = dt.getDate();
+            var strFormat =  y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+
+            return strFormat;
+        }
     </script>
 @endsection
 
@@ -807,6 +819,7 @@ if(config('global.perusahaan_short') == 'AIC')
         <form id="form_data" action="{{route('savejadwalshift')}}" accept-charset="UTF-8" >
             {{csrf_field()}}
             <input type="hidden" name="id" id="id">
+            <input type="hidden" name="tglCal" id="tglCal">
             <div class="modal-body">   
                 <div class="row">
                     <div class="col-5">

@@ -92,6 +92,11 @@ Route::group(['middleware' => 'auth'],function()
         {
             Route::get('proses-gaji', ['as' => 'preosesgaji', 'uses' => 'ProsesgajiController@index']);
         });
+
+        Route::group(['prefix' => 'laporan'], function()
+        {
+            Route::get('laporan-list-gaji', ['as' => 'llistgaji', 'uses' => 'LaporanController@indexListGaji']);
+        });
     });
     
     Route::group(['prefix' => 'request'], function()
@@ -256,6 +261,7 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('salarydt', ['as' => 'dtsalary', 'uses' => 'SalaryController@dtMaster']);
             
             Route::post('salaryprosesgajisave', ['as' => 'prosesgajisave', 'uses' => 'ProsesgajiController@proses']);
+            Route::post('salarylistgajireport', ['as' => 'reportlistgaji', 'uses' => 'LaporanController@laporanListGaji']);
         });
         
         Route::group(['prefix' => 'request'], function()

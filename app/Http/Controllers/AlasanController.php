@@ -374,6 +374,7 @@ class AlasanController extends Controller
     
     public function storeUploadAlasan(Request $request)
     {
+        $arrRet = [];
         try
         {
             $validation = Validator::make($request->all(), 
@@ -397,17 +398,14 @@ class AlasanController extends Controller
                 
                 $fileVar = $req['formUpload'];
                 
-//                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
-                
                 $sheetData = [];
                 
-                if($fileVar->getClientMimeType() == 'text/csv')
+                if($fileVar->getClientMimeType() == 'text/csv' || $fileVar->getClientMimeType() == 'text/plain')
                 {
                     $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
                     {
                         $csv = fgetcsv($fileStorage, 1024, "\t");
-//                        dd($csv);
                         $sheetData[] = $csv;
                     }
                 }
@@ -420,7 +418,6 @@ class AlasanController extends Controller
                 
                 $x = 0;    
                 $arrKey = null;
-                
                 foreach($sheetData as $sD)
                 {
                    if(empty($sD[0]))
@@ -445,6 +442,15 @@ class AlasanController extends Controller
                     
                     $dS = array();
                     
+                    if(!isset($arrKey->pin))
+                    {                        
+                        $arrRet = array(
+                            'status' => 0,
+                            'msg'   => 'Header PIN tidak ada'
+                        ))
+                        break;
+                    }
+
                     $karyawan = Karyawan::where('pin',trim($sD[$arrKey->pin]));
                     
                     if($karyawan->count())
@@ -455,19 +461,17 @@ class AlasanController extends Controller
                             $karId = $karyawan->first()->id;
                             $kar = Karyawan::find($karId);
                             $alasan = Alasan::where('kode', trim($sD[$arrKey->alasan]))->first();
-//                            dd($alasan);
-                            
-                    
-                            if(trim($sD[$arrKey->waktu]))
+                            //                            dd($alasan);
+                            if(isset($arrKey->waktu))
                             {
                                 $attach['waktu'] = trim($sD[$arrKey->waktu]);
                             }
-                            if(trim($sD[$arrKey->keterangan]))
+                            if(isset($arrKey->keterangan))
                             {
                                 $attach['keterangan'] = trim($sD[$arrKey->keterangan]);
                             }
-                            
-                            if(trim($sD[$arrKey->tanggal_akhir]))
+
+                            if(isset($arrKey->tanggal_akhir))
                             {
                                 $par = $kar->alasanRange()
                                             ->wherePivot('tanggal_awal', trim($sD[$arrKey->tanggal]))
@@ -480,7 +484,7 @@ class AlasanController extends Controller
                                 $kar->alasanRange()->attach($alasan->id, $attach);
                                 // $this->prosesAbsTanggalRange($kar->id, trim($sD[$arrKey->tanggal]), trim($sD[$arrKey->tanggal_akhir]));
                             }
-                            else
+                            else if(isset($arrKey->tanggal))
                             {
                                 $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
                                 if($par)
@@ -489,10 +493,11 @@ class AlasanController extends Controller
                                 }
                                 $attach = array_merge($attach,['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id]);
                                 $kar->alasan()->attach($alasan->id, $attach);
-                                // $this->prosesAbsTanggal($kar->id, trim($sD[$arrKey->tanggal]));
                             }
-
-                            
+                            else
+                            {
+                                continue;
+                            }
                         }
                         else
                         {
@@ -505,10 +510,17 @@ class AlasanController extends Controller
                     }
                 }
             }
-            echo json_encode(array(
-                    'status' => 1,
-                    'msg'   => 'Data berhasil disimpan'
-                ));
+            if(count($arrRet))
+            {
+                echo json_encode($arrRet);
+            }
+            else
+            {
+                echo json_encode(array(
+                        'status' => 1,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+            }
         }
         catch (QueryException $er)
         {
