@@ -491,6 +491,7 @@ class LaporanController
                 foreach($vVar['absen'] as $kabs => $vabs) 
                 {
                     $lbl = '';
+                    $isTa = false;
                     
                     if(isset($vabs->inout))
                     {
@@ -575,17 +576,18 @@ class LaporanController
                     }
                     else if(isset($vabs->ta))
                     {
-                        if(isset($vabs->alasan))
-                        {
-                            if($vabs->alasan[0]->kode != 'LN')
-                            {
-                                $lbl = $vabs->alasan[0]->kode;
-                            }
-                        }
-                        else
-                        {
-                            $lbl = 'TA';
-                        }
+                        $lbl = 'TA';
+                        // if(isset($vabs->alasan))
+                        // {
+                        //     if($vabs->alasan[0]->kode != 'LN')
+                        //     {
+                        //         //$lbl = $vabs->alasan[0]->kode;
+                        //     }
+                        // }
+                        // else
+                        // {
+                        //     $lbl = 'TA';
+                        // }
                     }
                     else if(isset($vabs->gp))
                     {
