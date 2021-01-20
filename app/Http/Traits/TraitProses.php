@@ -752,10 +752,14 @@ trait TraitProses
                     
                     $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
 
+                    
                     if($jMasuk->greaterThan($jKeluar))
                     {
                         $jKeluar->addDay();
-                        $shift3 = 1;
+                        if(!$jadMasuk && !$jadKeluar)
+                        {                            
+                            $shift3 = 1;
+                        }
                     }
 
                     if($jMasuk && $jadMasuk)
