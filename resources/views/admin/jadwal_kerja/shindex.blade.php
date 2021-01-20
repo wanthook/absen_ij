@@ -7,6 +7,13 @@ if(config('global.perusahaan_short') == 'AIC')
         $show = false;
     }
 }
+else
+{
+    if(Auth::user()->type->nama != 'ADMIN')
+    {
+        $show = false;
+    }
+}
 @endphp
 @extends('adminlte3.app')
 

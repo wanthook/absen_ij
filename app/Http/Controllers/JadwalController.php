@@ -815,6 +815,13 @@ class JadwalController extends Controller
                             $show = false;
                         }
                     }
+                    else
+                    {
+                        if(Auth::user()->type->nama != 'ADMIN')
+                        {
+                            $show = false;
+                        }
+                    }
                     
                     $str    = '<div class="btn-group">';
                     if($show)
@@ -853,6 +860,13 @@ class JadwalController extends Controller
                     if(config('global.perusahaan_short') == 'AIC')
                     {
                         if(Auth::user()->id != 1 && Auth::user()->id != 9)
+                        {
+                            $show = false;
+                        }
+                    }
+                    else
+                    {
+                        if(Auth::user()->type->nama != 'ADMIN')
                         {
                             $show = false;
                         }

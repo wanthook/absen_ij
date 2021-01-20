@@ -486,29 +486,55 @@ trait TraitProses
                             {
                                 if(!$jKeluarId)
                                 {
-                                    if(!$shift3)
-                                    {
-                                        $actOut = Activity::where('pin', $karyawan->key)
-                                                ->whereDate('tanggal', $out->copy()->toDateString())
-                                                ->orderBy('tanggal', 'DESC')
-                                                ->first();
+                                    $actOut = Activity::where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal',[
+                                            $out->copy()->toDateTimeString(), 
+                                            $out->copy()->addHours(14)->toDateTimeString()
+                                        ])
+                                        ->orderBy('tanggal', 'DESC')
+                                        ->first();
+                                    // dd($out->copy()->addHours(12)->toDateTimeString());
+                                    $flagNotInOut = "out";
 
-                                        $flagNotInOut = "out";
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
+                                    // if(!$shift3)
+                                    // {
+                                    //     $actOut = Activity::where('pin', $karyawan->key)
+                                    //             ->whereDate('tanggal', $out->copy()->toDateString())
+                                    //             ->orderBy('tanggal', 'DESC')
+                                    //             ->first();
 
-                                        $jKeluarId = ($actOut)?$actOut->id:null;
-                                    }
-                                    else
-                                    {
-                                        $actOut = Activity::where('pin', $karyawan->key)
-                                                ->whereBetween('tanggal', [$out->copy()->toDateString().' 00:00:00', $out->copy()->addDay()->toDateString().' 09:00:00'])
-                                                ->orderBy('tanggal', 'DESC')
-                                                ->first();
+                                    //     $flagNotInOut = "out";
 
-                                        $flagNotInOut = "out";
+                                    //     $jKeluarId = ($actOut)?$actOut->id:null;
+                                    // }
+                                    // else
+                                    // {
+                                    //     $actOut = Activity::where('pin', $karyawan->key)
+                                    //             ->whereBetween('tanggal', [$out->copy()->toDateString().' 00:00:00', $out->copy()->addDay()->toDateString().' 09:00:00'])
+                                    //             ->orderBy('tanggal', 'DESC')
+                                    //             ->first();
+
+                                    //     $flagNotInOut = "out";
                                         
-                                        $jKeluarId = ($actOut)?$actOut->id:null;
-                                    }
+                                    //     $jKeluarId = ($actOut)?$actOut->id:null;
+                                    // }
                                 }
+                                // else
+                                // {
+                                //     //loyalitas tai kucing
+                                //     $actOut = Activity::where('pin', $karyawan->key)
+                                //             ->whereBetween('tanggal',[
+                                //                 $out->copy()->toDateTimeString(), 
+                                //                 $out->copy()->addHours(12)->toDateTimeString()
+                                //             ])
+                                //             ->orderBy('tanggal', 'DESC')
+                                //             ->first();
+                                //     dd($out->copy()->addHours(12)->toDateTimeString());
+                                //     $flagNotInOut = "out";
+
+                                //     $jKeluarId = ($actOut)?$actOut->id:null;
+                                // }
                             }
                             else if($jKeluarId)
                             {
