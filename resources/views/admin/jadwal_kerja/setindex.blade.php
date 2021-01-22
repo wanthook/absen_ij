@@ -248,7 +248,10 @@
                         targets : 'tdivisi',
                         data: function(data)
                         {
-                            return data.divisi.kode+" - "+data.divisi.deskripsi;
+                            if(data.divisi)
+                                return data.divisi.kode+" - "+data.divisi.deskripsi;
+                            else
+                                return '';
                         }
                 },
                 {
