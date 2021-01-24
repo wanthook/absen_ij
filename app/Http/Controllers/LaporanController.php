@@ -368,7 +368,7 @@ class LaporanController
                         $pdf->Ln();
                         $pdf->Cell($infoWidth[0], 3, "Unit Kerja");
                         $pdf->Cell($infoWidth[1], 3, ":");
-                        $pdf->Cell($infoWidth[2], 3, $var['karyawan']->divisi->kode.' - '.$var['karyawan']->divisi->deskripsi);
+                        $pdf->Cell($infoWidth[2], 3, (isset($var['karyawan']->divisi->kode)?$var['karyawan']->divisi->kode:'').' - '.isset($var['karyawan']->divisi->deskripsi)?$var['karyawan']->divisi->deskripsi:'');
                         $pdf->Ln();
                         $pdf->Cell($infoWidth[0], 3, "NIK");
                         $pdf->Cell($infoWidth[1], 3, ":");
