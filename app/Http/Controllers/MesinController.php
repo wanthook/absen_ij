@@ -552,7 +552,7 @@ class MesinController extends Controller
                         $cnt = Activity::where('pin', trim($eCsv[0]))
                                                ->where('tanggal', trim($eCsv[1]))
                                                ->where('mesin_id', $mesin->id)->count();
-                        if($cnt > 0)
+                        if($cnt == 0)
                         {
                             $ret = array(
                                 "pin"       => trim($eCsv[0]),
@@ -563,7 +563,6 @@ class MesinController extends Controller
                                 "mesin_id"  => $req['sMesin'],
                                 "created_by"=> Auth::user()->id
                             );
-
                             Activity::create($ret);
                             $databaru+=1;
                         }
