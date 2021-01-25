@@ -753,7 +753,7 @@ class MesinController extends Controller
         })->limit(100)->get();
         $formatted_tags = [];
         foreach ($tags as $tag) {
-            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode.' - '.$tag->lokasi];
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->kode.' - '.$tag->lokasi.' - '.$tag->ip];
         }
         echo json_encode(array('items' => $formatted_tags));
     }
