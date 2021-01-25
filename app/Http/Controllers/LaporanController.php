@@ -628,7 +628,10 @@ class LaporanController
                             
                             if($curDate->diffInDays($dtProc, false) < 1)
                             {
-                                $s3Total+=1;
+                                if(!$vabs->libur_nasional)
+                                {
+                                    $s3Total+=1;
+                                }
                             }
                             
                             if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
@@ -728,7 +731,6 @@ class LaporanController
                         }
                     }
                 }
-                
                 
                 if($s3Total)
                 {
