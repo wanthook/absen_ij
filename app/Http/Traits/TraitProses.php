@@ -816,7 +816,21 @@ trait TraitProses
                 /*
                  * Hitung GP
                  */
+                // $njMasuk = 0;                
+                // $njKeluar = 0;
+                // if($nMasuk > 0)
+                // {
+                //     $njMasuk = $nMasuk;
+                // }
+                // if($nKeluar > 0)
+                // {
+                //     $njKeluar = $nKeluar;
+                // }
                 $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                // if($key == '2020-12-29')
+                // {
+                //     dd($nilaiGp/60);
+                // }
                 /*
                  * End Hitung GP
                  */
@@ -1018,6 +1032,20 @@ trait TraitProses
                         }
                     }
                 }
+                else
+                {
+                    if(isset($alasan))
+                    {
+                        if($alasan->count())
+                        {
+                           
+                            foreach($alasan->get() as $vAlasan)
+                            {
+                                $keterangan[] = $vAlasan->kode.' '.((float) $vAlasan->pivot->waktu);
+                            }
+                        }
+                    }
+                }
 
                 if(is_array($keterangan))
                 {
@@ -1068,10 +1096,11 @@ trait TraitProses
 
                 if($nilaiGp)
                 {
-                    if(($nilaiGp/60)>4)
+                    if(ceil($nilaiGp/60)>4)
                     {
                         $nilaiGp -= 60;
-                        $jumlahJamKerja = round($jumlahActivityKerja/60);
+                        // $jumlahJamKerja = round($jumlahActivityKerja/60);
+                        $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
                     }
                     else
                     {                                
