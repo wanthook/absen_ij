@@ -445,10 +445,6 @@ trait TraitProses
                         {
                             $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
                         }
-//                        else
-//                        {
-//                            $keterangan[] = $vAlasan->kode;
-//                        }
                     }
                 }
 
@@ -723,6 +719,7 @@ trait TraitProses
                         $jumlahJamKerja = $aOut->diffInHours($aIn);
                     }
                 }
+                //end jika libur tetap masuk
                 
                 if($actIn)
                 {
@@ -826,11 +823,18 @@ trait TraitProses
                 // {
                 //     $njKeluar = $nKeluar;
                 // }
-                $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
-                // if($key == '2020-12-29')
-                // {
-                //     dd($nilaiGp/60);
-                // }
+
+                if(config('global.perusahaan_short') == 'AIC')
+                {
+                    $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                }
+                else
+                {
+                    $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                }
+
+                
+                
                 /*
                  * End Hitung GP
                  */
@@ -872,11 +876,6 @@ trait TraitProses
                                         $hitungLembur = 0;
                                     }
                                 }
-//                                if(($jumlahActivityKerja/60) >= 7)
-//                                {
-//                                    $lemburAktual += 2;
-//                                    $hitungLembur = $this->hitungLembur($lemburAktual);
-//                                }
                             }
                             //3.5 hitung lembur kalau gak telat sama gak gp
                             
@@ -1041,7 +1040,10 @@ trait TraitProses
                            
                             foreach($alasan->get() as $vAlasan)
                             {
-                                $keterangan[] = $vAlasan->kode.' '.((float) $vAlasan->pivot->waktu);
+                                if(in_array($vAlasan->kode, ['SPL', 'SPO', 'SLA', 'LN']))
+                                {
+                                    $keterangan[] = $vAlasan->kode.' '.((float) $vAlasan->pivot->waktu);
+                                }
                             }
                         }
                     }
@@ -1074,7 +1076,7 @@ trait TraitProses
                 
                 if(!$jMasuk && !$jKeluar)
                 {
-                    // dd($key);
+                    
                     if(!$isLibur && !$isInOut && !$isOff)
                     {
                         $today = Carbon::now();
