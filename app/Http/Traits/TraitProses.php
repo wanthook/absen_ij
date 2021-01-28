@@ -1099,8 +1099,8 @@ trait TraitProses
                     if(ceil($nilaiGp/60)>4)
                     {
                         $nilaiGp -= 60;
-                        // $jumlahJamKerja = round($jumlahActivityKerja/60);
-                        $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
+                        $jumlahJamKerja = round($jumlahActivityKerja/60);
+                        // $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
                     }
                     else
                     {                                
