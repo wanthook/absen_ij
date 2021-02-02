@@ -632,6 +632,10 @@ class LaporanController
                                 {
                                     $s3Total+=1;
                                 }
+                                else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
+                                {
+                                    $s3Total+=1;
+                                }
                             }
                             
                             if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
@@ -736,6 +740,7 @@ class LaporanController
                 {
                     if($s3Total >= 3)
                     {
+                        // dd(['s3total' => $s3Total, 's3real' => $shift3Real]);
                         if($s3Total == $shift3Real)
                         {
                             $s3v = 1;
