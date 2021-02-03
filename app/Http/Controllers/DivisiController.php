@@ -84,13 +84,18 @@ class DivisiController extends Controller
                     ));
                 }
                 else
-                {                    
-                    Divisi::find($req['id'])->fill([
+                {        
+                    $arrUpd = [
                         'kode' => $req['kode'],
                         'deskripsi' => $req['deskripsi'],
-                        'parent_id' => $req['parent_id'],
                         'updated_by'   => Auth::user()->id
-                    ])->save();
+                    ];   
+                    
+                    if(isset($req['perent_id']))
+                    {
+                        $arrUpd['parent_id'] = $req['parent_id'];
+                    }
+                    Divisi::find($req['id'])->fill($arrUpd)->save();
                     echo json_encode(array(
                         'status' => 1,
                         'msg'   => 'Data berhasil diubah'
