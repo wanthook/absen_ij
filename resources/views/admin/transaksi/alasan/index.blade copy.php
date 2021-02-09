@@ -50,66 +50,6 @@
                 timer: 3000
             }); 
             
-            $('#cmdUpload').on('click', function(e)
-            {
-                let frm = document.getElementById('form_data_upload');
-                let datas = new FormData(frm);
-//                console.log($('#form_data_upload').attr('action'));
-                $.ajax(
-                {
-                    url         : $('#form_data_upload').attr('action'),
-                    dataType    : 'JSON',
-                    type        : 'POST',
-                    data        : datas ,
-                    processData: false,
-                    contentType: false,
-                    beforeSend  : function(xhr)
-                    {
-//                        $('#loadingDialog').modal('show');
-                        toastOverlay.fire({
-                            type: 'warning',
-                            title: 'Sedang memproses data upload',
-                            onBeforeOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    },
-                    success(result,status,xhr)
-                    {
-                        toastOverlay.close();
-                        if(result.status == 1)
-                        {
-                            Toast.fire({
-                                type: 'success',
-                                title: result.msg
-                            });
-                        }
-                        else
-                        {
-                            if(Array.isArray(result.msg))
-                            {
-                                var str = "";
-                                for(var i = 0 ; i < result.msg.length ; i++ )
-                                {
-                                    str += result.msg[i]+"<br>";
-                                }
-                                Toast.fire({
-                                    type: 'error',
-                                    title: str
-                                });
-                            }
-                            
-                        }
-                        dTableKar.ajax.reload();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) { 
-                        /* implementation goes here */ 
-                        toastOverlay.close();
-                        console.log(jqXHR.responseText);
-                    }
-                });
-            });
-            
             $('#cmdSave').on('click', function(e)
             {
                 e.preventDefault();
@@ -120,22 +60,17 @@
                 
                 $.each(rows, function(i, row)
                 {
-                    if(row.sFlag)
-                    {
-                        if(row.sKar && row.sAlasan)
-                        {
-                            datas[i] = {
-                                sKar : row.sKar, 
-                                sAlasan : row.sAlasan, 
-                                sWaktu : row.sWaktu, 
-                                sKeterangan : row.sKeterangan,
-                                sAlasanOld : row.sAlasanOld,
-                            };
-                        }
-                    }
+                    datas[i] = {
+                        sKar : row.sKar, 
+                        sAlasan : row.sAlasan, 
+                        sWaktu : row.sWaktu, 
+                        sKeterangan : row.sKeterangan,
+                        sAlasanOld : row.sAlasanOld,
+                    };
                 });
                 
                 var obj = {sTanggal : $('#sTanggal').val(), sData : datas}
+                
                 if(datas.length > 0)
                 {
                     $.ajax(
@@ -204,6 +139,66 @@
                 }
             });
             
+            $('#cmdUpload').on('click', function(e)
+            {
+                let frm = document.getElementById('form_data_upload');
+                let datas = new FormData(frm);
+//                console.log($('#form_data_upload').attr('action'));
+                $.ajax(
+                {
+                    url         : $('#form_data_upload').attr('action'),
+                    dataType    : 'JSON',
+                    type        : 'POST',
+                    data        : datas ,
+                    processData: false,
+                    contentType: false,
+                    beforeSend  : function(xhr)
+                    {
+//                        $('#loadingDialog').modal('show');
+                        toastOverlay.fire({
+                            type: 'warning',
+                            title: 'Sedang memproses data upload',
+                            onBeforeOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
+                    success(result,status,xhr)
+                    {
+                        toastOverlay.close();
+                        if(result.status == 1)
+                        {
+                            Toast.fire({
+                                type: 'success',
+                                title: result.msg
+                            });
+                        }
+                        else
+                        {
+                            if(Array.isArray(result.msg))
+                            {
+                                var str = "";
+                                for(var i = 0 ; i < result.msg.length ; i++ )
+                                {
+                                    str += result.msg[i]+"<br>";
+                                }
+                                Toast.fire({
+                                    type: 'error',
+                                    title: str
+                                });
+                            }
+                            
+                        }
+                        dTableKar.ajax.reload();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { 
+                        /* implementation goes here */ 
+                        toastOverlay.close();
+                        console.log(jqXHR.responseText);
+                    }
+                });
+            });
+            
             $('#cmdSaveRange').on('click', function(e)
             {
                 e.preventDefault();
@@ -214,25 +209,19 @@
                 
                 $.each(rows, function(i, row)
                 {
-                    if(row.sRangeFlag)
-                    {
-                        if(row.sRangeKar && row.sRangeAlasan && row.sTanggalAwal && row.sTanggalAkhir)
-                        {
-                            datas[i] = {
-                                sTanggalAwal : row.sTanggalAwal, 
-                                sTanggalAkhir : row.sTanggalAkhir, 
-                                sKar : row.sRangeKar, 
-                                sAlasan : row.sRangeAlasan, 
-                                sWaktu : row.sRangeWaktu, 
-                                sKeterangan : row.sRangeKeterangan,
-                                sAlasanOld : row.sRangeAlasanOld,
-                            };
-                        }
-                    }
+                    datas[i] = {
+                        sTanggalAwal : row.sTanggalAwal, 
+                        sTanggalAkhir : row.sTanggalAkhir, 
+                        sKar : row.sKar, 
+                        sAlasan : row.sAlasan, 
+                        sWaktu : row.sWaktu, 
+                        sKeterangan : row.sKeterangan,
+                        sAlasanOld : row.sAlasanOld,
+                    };
                 });
                 
-                var obj = {sData : datas};
-
+                var obj = {sData : datas}
+                
                 if(datas.length > 0)
                 {
                     $.ajax(
@@ -264,6 +253,8 @@
                                     type: 'success',
                                     title: result.msg
                                 });
+
+//                                $('#sAlasanOld').val(null);
                             }
                             else
                             {
@@ -360,14 +351,14 @@
                 {
                     if(!idx.isNewRecord)
                     {
-                        if(confirm('Apakah anda ingin menghapus Alasan Range data '+idx.sRangePin+', dengan alasan '+idx.sRangeAlasanNama+' ?'))
+                        if(confirm('Apakah anda ingin menghapus Alasan Range data '+idx.sKarText+', dengan alasan '+idx.sAlsText+' ?'))
                         {
                             $.ajax(
                             {
                                 url         : '{{route("delalasankaryawanrange")}}',
                                 dataType    : 'JSON',
                                 type        : 'POST',
-                                data        : {sTanggalAwal : idx.sTanggalAwal, sTanggalAkhir : idx.sTanggalAkhir, sKar : idx.sRangeKar, sAlasan: idx.sRangeAlasan} ,
+                                data        : {sTanggalAwal : idx.sTanggalAwal, sTanggalAkhir : idx.sTanggalAkhir, sKar : idx.sKar, sAlasan: idx.sAlasan} ,
                                 beforeSend  : function(xhr)
                                 {
             //                        $('#loadingDialog').modal('show');
@@ -442,127 +433,23 @@
                 fitColumns: 'true',
                 singleSelect: 'true',
                 onAdd: onAdd,
-                // onEndEdit: onEndEdit,
+                onEndEdit: onEndEdit,
                 onClickCell: onClickCell,
                 onBeginEdit: function(index,row){
                     var dg = $(this);
                     var editors = dg.edatagrid('getEditors',index);
-
-                    var sKar = dg.edatagrid('getEditor', {index:index, field:'sKar'});
-                    var sPin = dg.edatagrid('getEditor', {index:index, field:'sPin'});
-                    var sKarNama = dg.edatagrid('getEditor', {index:index, field:'sKarNama'});
-
-                    var sAlasanKode = dg.edatagrid('getEditor', {index:index, field:'sAlasanKode'});
-                    var sAlasanNama = dg.edatagrid('getEditor', {index:index, field:'sAlasanNama'});
-                    var sAlasan = dg.edatagrid('getEditor', {index:index, field:'sAlasan'});
-
-                    var sWaktu = dg.edatagrid('getEditor', {index:index, field:'sWaktu'});  
-                    var sKeterangan = dg.edatagrid('getEditor', {index:index, field:'sKeterangan'}); 
-
-                    var sFlag = dg.edatagrid('getEditor', {index:index, field:'sFlag'});    
-
-                    $(sPin.target).textbox('textbox').bind('blur',function(e){
-                        var q = $(this).val();
-                        if(q != '')
+//                    console.log(editors);
+                    for(var i=0; i<editors.length; i++)
+                    {
+                        $(editors[i].target).text('textbox').bind('keydown',function(e)
                         {
-                            $.ajax({
-                                url : '{{route('selectkaryawan')}}',
-                                method : 'post',
-                                dataType: 'json',
-                                data: {
-                                    pin: q
-                                },
-                                success: function(data)
-                                {
-                                    
-                                    if(data.length > 0)
-                                    {
-                                        var items = $.map(data, function(item, index)
-                                        {
-                                            $(sKar.target).textbox('setValue',item.sKar);
-                                            $(sKarNama.target).textbox('setValue',item.sKarNama);
-                                        });
-                                        $(sAlasanKode.target).textbox('textbox').focus();
-                                        $(sFlag.target).textbox('setValue','1');
-                                    }
-                                    else
-                                    {
-                                        Toast.fire({
-                                            type: 'error',
-                                            title: 'Karyawan tidak ada di database.'
-                                        });
-                                        $(sKar.target).textbox('setValue','');
-                                        $(sKarNama.target).textbox('setValue','');
-                                        $(sPin.target).textbox('textbox').focus();
-                                    }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Toast.fire({
-                                type: 'error',
-                                title: 'Karyawan tidak ada di database.'
-                            });
-                            $(sKar.target).textbox('setValue','');
-                            $(sKarNama.target).textbox('setValue','');
-                            $(sPin.target).textbox('textbox').focus();
-                        }
-                    });
-
-                    $(sAlasanKode.target).textbox('textbox').bind('blur',function(e){
-                        var q = $(this).val();
-                        if(q != '')
-                        {
-                            $.ajax({
-                                url : '{{route('selectalasan')}}',
-                                method : 'post',
-                                dataType: 'json',
-                                data: {
-                                    kode: q
-                                },
-                                success: function(data)
-                                {                                
-                                    if(data.length > 0)
-                                    {
-                                        var items = $.map(data, function(item, index)
-                                        {
-                                            $(sAlasan.target).textbox('setValue',item.id);
-                                            $(sAlasanNama.target).textbox('setValue',item.deskripsi);
-                                        });
-                                        $(sWaktu.target).textbox('textbox').focus();
-                                        $(sFlag.target).textbox('setValue','1');
-                                    }
-                                    else
-                                    {
-                                        Toast.fire({
-                                            type: 'error',
-                                            title: 'Kode Alasan tidak ada di database.'
-                                        });
-                                        $(sAlasan.target).textbox('setValue','');
-                                        $(sAlasanNama.target).textbox('setValue','');
-                                        $(sAlasanKode.target).textbox('textbox').focus();
-                                    }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Toast.fire({
-                                type: 'error',
-                                title: 'Kode Alasan tidak ada di database.'
-                            });
-                            $(sAlasan.target).textbox('setValue','');
-                            $(sAlasanNama.target).textbox('setValue','');
-                            $(sAlasanKode.target).textbox('textbox').focus();
-                        }
-                    });
-
-                    $(sKeterangan.target).text('textbox').bind('blur',function(e)
-                    {                        
-                        dg.edatagrid('endEdit', index);
-                        dg.edatagrid('addRow',0);
-                    });
+                            if (e.keyCode == 13)
+                            {
+                                dg.edatagrid('endEdit', index);
+                                dg.edatagrid('addRow',0);
+                            }
+                        })
+                    }
                 }
             });
             
@@ -578,127 +465,22 @@
                 fitColumns: 'true',
                 singleSelect: 'true',
                 onAdd: onAddRange,
-                // onEndEdit: onEndEditRange,
+                onEndEdit: onEndEditRange,
                 onClickCell: onClickCellRange,
                 onBeginEdit: function(index,row){
                     var dg = $(this);
                     var editors = dg.edatagrid('getEditors',index);
-
-                    var sRangeKar = dg.edatagrid('getEditor', {index:index, field:'sRangeKar'});
-                    var sRangePin = dg.edatagrid('getEditor', {index:index, field:'sRangePin'});
-                    var sRangeKarNama = dg.edatagrid('getEditor', {index:index, field:'sRangeKarNama'});
-
-                    var sRangeAlasanKode = dg.edatagrid('getEditor', {index:index, field:'sRangeAlasanKode'});
-                    var sRangeAlasanNama = dg.edatagrid('getEditor', {index:index, field:'sRangeAlasanNama'});
-                    var sRangeAlasan = dg.edatagrid('getEditor', {index:index, field:'sRangeAlasan'});
-
-                    var sRangeWaktu = dg.edatagrid('getEditor', {index:index, field:'sRangeWaktu'});  
-                    var sRangeKeterangan = dg.edatagrid('getEditor', {index:index, field:'sRangeKeterangan'}); 
-
-                    var sRangeFlag = dg.edatagrid('getEditor', {index:index, field:'sRangeFlag'});
-
-                    $(sRangePin.target).textbox('textbox').bind('blur',function(e){
-                        var q = $(this).val();
-                        if(q != '')
+                    for(var i=0; i<editors.length; i++)
+                    {
+                        $(editors[i].target).text('textbox').bind('keydown',function(e)
                         {
-                            $.ajax({
-                                url : '{{route('selectkaryawan')}}',
-                                method : 'post',
-                                dataType: 'json',
-                                data: {
-                                    pin: q
-                                },
-                                success: function(data)
-                                {
-                                    
-                                    if(data.length > 0)
-                                    {
-                                        var items = $.map(data, function(item, index)
-                                        {
-                                            $(sRangeKar.target).textbox('setValue',item.sKar);
-                                            $(sRangeKarNama.target).textbox('setValue',item.sKarNama);
-                                        });
-                                        $(sRangeAlasanKode.target).textbox('textbox').focus();
-                                        $(sRangeFlag.target).textbox('setValue','1');
-                                    }
-                                    else
-                                    {
-                                        Toast.fire({
-                                            type: 'error',
-                                            title: 'Karyawan tidak ada di database.'
-                                        });
-                                        $(sRangeKar.target).textbox('setValue','');
-                                        $(sRangeKarNama.target).textbox('setValue','');
-                                        $(sRangePin.target).textbox('textbox').focus();
-                                    }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Toast.fire({
-                                type: 'error',
-                                title: 'Karyawan tidak ada di database.'
-                            });
-                            $(sRangeKar.target).textbox('setValue','');
-                            $(sRangeKarNama.target).textbox('setValue','');
-                            $(sRangePin.target).textbox('textbox').focus();
-                        }
-                    });
-
-                    $(sRangeAlasanKode.target).textbox('textbox').bind('blur',function(e){
-                        var q = $(this).val();
-                        if(q != '')
-                        {
-                            $.ajax({
-                                url : '{{route('selectalasan')}}',
-                                method : 'post',
-                                dataType: 'json',
-                                data: {
-                                    kode: q
-                                },
-                                success: function(data)
-                                {                                
-                                    if(data.length > 0)
-                                    {
-                                        var items = $.map(data, function(item, index)
-                                        {
-                                            $(sRangeAlasan.target).textbox('setValue',item.id);
-                                            $(sRangeAlasanNama.target).textbox('setValue',item.deskripsi);
-                                        });
-                                        $(sRangeWaktu.target).textbox('textbox').focus();
-                                        $(sRangeFlag.target).textbox('setValue','1');
-                                    }
-                                    else
-                                    {
-                                        Toast.fire({
-                                            type: 'error',
-                                            title: 'Kode Alasan tidak ada di database.'
-                                        });
-                                        $(sRangeAlasan.target).textbox('setValue','');
-                                        $(sRangeAlasanNama.target).textbox('setValue','');
-                                        $(sRangeAlasanKode.target).textbox('textbox').focus();
-                                    }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Toast.fire({
-                                type: 'error',
-                                title: 'Kode Alasan tidak ada di database.'
-                            });
-                            $(sRangeAlasan.target).textbox('setValue','');
-                            $(sRangeAlasanNama.target).textbox('setValue','');
-                            $(sRangeAlasanKode.target).textbox('textbox').focus();
-                        }
-                    });
-
-                    $(sRangeKeterangan.target).text('textbox').bind('blur',function(e)
-                    {                        
-                        dg.edatagrid('endEdit', index);
-                        dg.edatagrid('addRow',0);
-                    })
+                            if (e.keyCode == 13)
+                            {
+                                dg.edatagrid('endEdit', index);
+                                dg.edatagrid('addRow',0);
+                            }
+                        })
+                    }
                 }
             });
 
@@ -708,9 +490,10 @@
         {
             var ed1 = $('#dg').datagrid('getEditor', {
                 index: index,
-                field: 'sPin'
+                field: 'sKar'
             });
-            var t = $(ed1.target).textbox('textbox').focus();
+            var t = $(ed1.target).combogrid('textbox').focus();
+            t.focus();
         }
         
         var onAddRange = function(index,row)
@@ -720,37 +503,38 @@
                 field: 'sTanggalAwal'
             });
             var t = $(ed1.target).datebox('textbox').focus();
+            t.focus();
         }
         
-        // var onEndEdit = function(index, row)
-        // {
-        //     var sKar = $(this).datagrid('getEditor', {
-        //         index: index,
-        //         field: 'sPin'
-        //     });
-        //     row.sKarText = $(sKar.target).textbox('getText');
+        var onEndEdit = function(index, row)
+        {
+            var sKar = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sKar'
+            });
+            row.sKarText = $(sKar.target).combobox('getText');
             
-        //     var sAlasan = $(this).datagrid('getEditor', {
-        //         index: index,
-        //         field: 'sAlasan'
-        //     });
-        //     row.sAlsText = $(sAlasan.target).combobox('getText');
-        // }
+            var sAlasan = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sAlasan'
+            });
+            row.sAlsText = $(sAlasan.target).combobox('getText');
+        }
         
-        // var onEndEditRange = function(index, row)
-        // {
-        //     var sKar = $(this).datagrid('getEditor', {
-        //         index: index,
-        //         field: 'sKar'
-        //     });
-        //     row.sKarText = $(sKar.target).combobox('getText');
+        var onEndEditRange = function(index, row)
+        {
+            var sKar = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sKar'
+            });
+            row.sKarText = $(sKar.target).combobox('getText');
             
-        //     var sAlasan = $(this).datagrid('getEditor', {
-        //         index: index,
-        //         field: 'sAlasan'
-        //     });
-        //     row.sAlsText = $(sAlasan.target).combobox('getText');
-        // }
+            var sAlasan = $(this).datagrid('getEditor', {
+                index: index,
+                field: 'sAlasan'
+            });
+            row.sAlsText = $(sAlasan.target).combobox('getText');
+        }
         
         var endEditing = function()
         {
@@ -788,8 +572,10 @@
         
         var onClickCell = function(index, field)
         {
+//            console.log(index);
             if (editIndex != index)
             {
+//                console.log(endEditing());
                 if (endEditing())
                 {
                     $('#dg').datagrid('selectRow', index)
@@ -813,8 +599,10 @@
         
         var onClickCellRange = function(index, field)
         {
+//            console.log(index);
             if (editRangeIndex != index)
             {
+//                console.log(endEditing());
                 if (endEditing())
                 {
                     $('#dgRange').datagrid('selectRow', index)
@@ -838,6 +626,8 @@
         
         var reloadTable = function()
         {
+//            var dt = $('#sTanggal').datebox('getDate');
+//            console.log(myformatter(dt));
             var dt = $('#sTanggal').val();
             
             $('#dg').edatagrid('reload', {sTanggal: dt});
@@ -845,6 +635,8 @@
         
         var reloadTableRange = function()
         {
+//            var dt = $('#sTanggal').datebox('getDate');
+//            console.log(myformatter(dt));
             var dt = $('#sRangeTanggal').val();
             
             $('#dgRange').edatagrid('reload', {sRangeTanggal: dt});
@@ -954,72 +746,80 @@
                     <thead>
                         <tr>
                             <th data-options="
-                                field:'sPin', idField:'sPin', width:50, 
+                                field:'sKar', width:150,
+                                formatter:function(value,row){
+                                    return row.sKarText;
+                                },
                                 editor:{
-                                    type:'textbox'
+                                    type:'combobox',
+                                    options:{
+                                        loader: function(param, success, error)
+                                        {
+                                            var q = param.q || '';
+                                            $.ajax({
+                                                url : '{{route('selectkaryawan')}}',
+                                                method : 'post',
+                                                dataType: 'json',
+                                                data: {
+                                                    q: q
+                                                },
+                                                success: function(data)
+                                                {
+                                                    var items = $.map(data, function(item, index)
+                                                    {
+                                                        return {
+                                                            sKar : item.sKar,
+                                                            sKarText : item.sKarText
+                                                        };
+                                                    });
+                                                    success(data);
+                                                }
+                                            });
+                                        },
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'sKar',
+                                        textField: 'sKarText'
+                                    },
+
                                 }
                                 ">PIN</th>
                             <th data-options="
-                                field:'sKarNama', idField:'sKarNama', width:70, 
+                                field:'sAlasan', width:150,
+                                formatter:function(value,row){
+                                    return row.sAlsText;
+                                },
                                 editor:{
-                                    type:'textbox', 
+                                    type:'combobox',
                                     options:{
-                                        readonly:true
-                                    }                                    
-                                }
-                                ">Nama</th>
-                            <th data-options="
-                                field:'sAlasanKode', width:30, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Kode Alasan</th>
-                            <th data-options="
-                                field:'sAlasanNama', width:70, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
-                                    }
+                                        url:'{{route('selectalasan')}}',
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'id',
+                                        textField: 'sAlsText'
+                                    },
+
                                 }
                                 ">Alasan</th>
                             <th data-options="
-                                field:'sWaktu', width:50,
-                                editor:{
-                                    type:'textbox'
-                                }
+                                field:'sWaktu', width:50, editor:'text'
                                 ">Waktu</th>
                             <th data-options="
                                 field:'sKeterangan', width:150, editor:'text'
                                 ">Keterangan</th>
-                            <th data-options="
-                                field:'sKar', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                            <th data-options="
-                                field:'sAlasan', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
                             <th data-options="
                                 field: 'sAlasanOld',
                                 formatter:function(value,row){
                                     return row.sAlasanOld;
                                 }" hidden="true">                       
                             </th>
-                            <th data-options="
-                                field:'sFlag', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
                         </tr>
                     </thead>
                 </table>
                 <div id="toolbar">
+<!--                    <input id="sTanggal" class="easyui-datebox" label="Tanggal : " labelPosition="left" data-options="formatter:myformatter, 
+                           parser:myparser, 
+                           onChange:onSelectTanggal, options : { setValue : myformatter(new Date())}" style="width: 30%">-->
                     <input type="date" id="sTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
                     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow',0)">Tambah</a>
                     <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapus">Hapus</a>
@@ -1034,82 +834,91 @@
                     <thead>
                         <tr>
                             <th data-options="
-                                field:'sTanggalAwal', width:50,
+                                field:'sTanggalAwal', width:70,
                                 editor:{
                                     type: 'datebox'
                                 }
                             ">Tanggal Awal</th>
 
                             <th data-options="
-                                field:'sTanggalAkhir', width:50,
+                                field:'sTanggalAkhir', width:70,
                                 editor:{
                                     type: 'datebox'
                                 }
                             ">Tanggal Akhir</th>
+
                             <th data-options="
-                                field:'sRangePin', idField:'sRangePin', width:50, 
+                                field:'sKar', width:150,
+                                formatter:function(value,row){
+                                    return row.sKarText;
+                                },
                                 editor:{
-                                    type:'textbox'
+                                    type:'combobox',
+                                    options:{
+                                        loader: function(param, success, error)
+                                        {
+                                            var q = param.q || '';
+
+                                            $.ajax({
+                                                url : '{{route('selectkaryawan')}}',
+                                                method : 'post',
+                                                dataType: 'json',
+                                                data: {
+                                                    q: q
+                                                },
+                                                success: function(data)
+                                                {
+                                                    var items = $.map(data, function(item, index)
+                                                    {
+                                                        return {
+                                                            sKar : item.sKar,
+                                                            sKarText : item.sKarText
+                                                        };
+                                                    });
+                                                    success(data);
+                                                }
+                                            });
+                                        },
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'sKar',
+                                        textField: 'sKarText'
+                                    },
+
                                 }
                                 ">PIN</th>
+
                             <th data-options="
-                                field:'sRangeKarNama', idField:'sRangeKarNama', width:80, 
+                                field:'sAlasan', width:150,
+                                formatter:function(value,row){
+                                    return row.sAlsText;
+                                },
                                 editor:{
-                                    type:'textbox', 
+                                    type:'combobox',
                                     options:{
-                                        readonly:true
-                                    }                                    
-                                }
-                                ">Nama</th>
-                            <th data-options="
-                                field:'sRangeAlasanKode', width:30, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Kode Alasan</th>
-                            <th data-options="
-                                field:'sRangeAlasanNama', width:70, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
-                                    }
+                                        url:'{{route('selectalasan')}}',
+                                        method: 'post',
+                                        mode: 'remote',
+                                        valueField: 'id',
+                                        textField: 'sAlsText'
+                                    },
+
                                 }
                                 ">Alasan</th>
+
                             <th data-options="
-                                field:'sRangeWaktu', width:50, 
-                                editor:{
-                                    type:'textbox'
-                                }
+                                field:'sWaktu', width:50, editor:'text'
                                 ">Waktu</th>
 
                             <th data-options="
-                                field:'sRangeKeterangan', width:150,   editor: 'text'  
+                                field:'sKeterangan', width:150, editor:'text'
                                 ">Keterangan</th>
-                            <th data-options="
-                                field:'sRangeKar', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                            <th data-options="
-                                field:'sRangeAlasan', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
 
                             <th data-options="
-                                field: 'sRangeAlasanOld',
+                                field: 'sAlasanOld',
                                 formatter:function(value,row){
                                     return row.sAlasanOld;
-                                }" hidden="true">     
-                            <th data-options="
-                                field:'sRangeFlag', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>                  
+                                }" hidden="true">                       
                             </th>
                         </tr>
                     </thead>

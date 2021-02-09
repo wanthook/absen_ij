@@ -811,10 +811,12 @@ class AlasanController extends Controller
         {
             $ret[] = [
                 'sKar' => $val->karyawan_id,
-                'sKarText' => $val->pin.' - '.$val->nama,
+                'sPin' => $val->pin,
+                'sKarNama' => $val->nama,
+                // 'sKarText' => $val->pin.' - '.$val->nama,
                 'sAlasan' => $val->alasan_id,
                 'sAlasanOld' => $val->alasan_id,
-                'sAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
+                // 'sAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
                 'sAlasanKode' => $val->alasan_kode,
                 'sAlasanNama' => $val->alasan_deskripsi,
                 'sWaktu' => $val->waktu,
@@ -887,18 +889,31 @@ class AlasanController extends Controller
         foreach($res as $val)
         {
             $ret[] = [
-                'sKar' => $val->karyawan_id,
-                'sKarText' => $val->pin.' - '.$val->nama,
-                'sAlasan' => $val->alasan_id,
-                'sAlasanOld' => $val->alasan_id,
-                'sAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
-                'sAlasanKode' => $val->alasan_kode,
-                'sAlasanNama' => $val->alasan_deskripsi,
-                'sWaktu' => $val->waktu,
+                'sRangeKar' => $val->karyawan_id,
+                'sRangePin' => $val->pin,
+                'sRangeKarNama' => $val->nama,
+                'sRangeAlasan' => $val->alasan_id,
+                'sRangeAlasanOld' => $val->alasan_id,
+                'sRangeAlasanKode' => $val->alasan_kode,
+                'sRangeAlasanNama' => $val->alasan_deskripsi,
+                'sRangeWaktu' => $val->waktu,
                 'sTanggalAwal' => $val->tanggal_awal,
                 'sTanggalAkhir' => $val->tanggal_akhir,
-                'sKeterangan' => $val->keterangan
+                'sRangeKeterangan' => $val->keterangan
             ];
+            // $ret[] = [
+            //     'sKar' => $val->karyawan_id,
+            //     'sKarText' => $val->pin.' - '.$val->nama,
+            //     'sAlasan' => $val->alasan_id,
+            //     'sAlasanOld' => $val->alasan_id,
+            //     'sAlsText' => $val->alasan_kode.' - '.$val->alasan_deskripsi,
+            //     'sAlasanKode' => $val->alasan_kode,
+            //     'sAlasanNama' => $val->alasan_deskripsi,
+            //     'sWaktu' => $val->waktu,
+            //     'sTanggalAwal' => $val->tanggal_awal,
+            //     'sTanggalAkhir' => $val->tanggal_akhir,
+            //     'sKeterangan' => $val->keterangan
+            // ];
         }
         
         echo json_encode(['rows' => $ret, 'total' => $total->first()->cnt]);
@@ -948,6 +963,10 @@ class AlasanController extends Controller
                 $q->where('kode','like','%'.$req['q'].'%')
                   ->orWhere('deskripsi','like','%'.$req['q'].'%');
             });
+        }
+        else if(isset($req['kode']))
+        {            
+            $data->where('kode', $req['kode']);
         }
         
         foreach($data->get() as $tags)

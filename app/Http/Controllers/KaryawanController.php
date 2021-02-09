@@ -201,6 +201,12 @@ class KaryawanController extends Controller
                 
                 if(empty($req['id']))
                 {
+                    $fileVar = $req['formUpload'];
+                    if($fileVar)
+                    {
+
+                    }
+
                     $req['updated_by']   = Auth::user()->id;        
                     $req['updated_at']   = Carbon::now();
                     $req['created_by']   = Auth::user()->id;
@@ -2736,9 +2742,18 @@ class KaryawanController extends Controller
 //                  ->orWhere('id',$term);
             });
         }
+        else if(isset($req['pin']))
+        {
+            $term = $req['pin'];
+            $tags->where('pin', $term);
+        }
         $formatted_tags = [];
         foreach ($tags->get() as $tag) {
-            $formatted_tags[] = ['sKar' => $tag->id, 'sKarText' => $tag->pin.' - '.$tag->nama];
+            $formatted_tags[] = [
+                'sKar' => $tag->id, 
+                'sKarText' => $tag->pin.' - '.$tag->nama, 
+                'sPin' => $tag->pin, 
+                'sKarNama' => $tag->nama];
         }
         return response()->json($formatted_tags);
 //        echo json_encode(array('items' => $formatted_tags));
