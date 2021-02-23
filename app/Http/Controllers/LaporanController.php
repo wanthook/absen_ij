@@ -2001,8 +2001,8 @@ class LaporanController
             
         }
         
-        $div->whereRaw('LENGTH(kode)>1');
-        
+        $div->whereRaw('LENGTH(kode)>0');
+        // dd($div->get());
         foreach($div->get() as $rowDiv)
         {
             if($rowDiv->karyawan->count() > 0)
@@ -2014,7 +2014,7 @@ class LaporanController
                     $jadwals = $rKar->jadwals()->first();
                     
                     $off = $rKar->logOffTanggal(end($periode))->first();
-                    
+                    // dd($off);
                     if(!$off)
                     {
                         $kar[] = [
