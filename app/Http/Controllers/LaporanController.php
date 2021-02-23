@@ -2054,7 +2054,7 @@ class LaporanController
                 
                 $bag = [];
                 
-                foreach(Divisi::ancestorsAndSelf($rowDiv->id) as $kTree => $dTree)
+                foreach(Divisi::dafaultOrder()->ancestorsAndSelf($rowDiv->id) as $kTree => $dTree)
                 {
                     $bag[] = $dTree->kode.' - '.$dTree->deskripsi;
                 }
