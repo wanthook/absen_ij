@@ -463,54 +463,71 @@ class AlasanController extends Controller
                                                     //    dd($alasan);
                             if(isset($arrKey->waktu))
                             {
-                                $attach['waktu'] = trim($sD[$arrKey->waktu]);
+                                if(!empty(trim($sD[$arrKey->waktu])))
+                                {
+                                    $attach['waktu'] = trim($sD[$arrKey->waktu]);
+                                }
                             }
                             if(isset($arrKey->keterangan))
                             {
-                                $attach['keterangan'] = trim($sD[$arrKey->keterangan]);
+                                if(!empty(trim($sD[$arrKey->keterangan])))
+                                {
+                                    $attach['keterangan'] = trim($sD[$arrKey->keterangan]);
+                                }
                             }
-
+                            
                             if(isset($arrKey->tanggal))
                             {
                                 if(isset($arrKey->tanggal_akhir))
                                 {
-                                    if(!empty($arrKey->tanggal_akhir))
+                                    if(!empty(trim($sD[$arrKey->tanggal_akhir])))
                                     {
-                                        $par = $kar->alasanRange()
-                                                ->wherePivot('tanggal_awal', trim($sD[$arrKey->tanggal]))
-                                                ->wherePivot('tanggal_akhir', trim($sD[$arrKey->tanggal_akhir]));
-                                        if($par)
-                                        {
-                                            $par->detach($alasan->id);
-                                        }
-                                        $attach = array_merge($attach,['tanggal_awal' => trim($sD[$arrKey->tanggal]), 'tanggal_akhir' => trim($sD[$arrKey->tanggal_akhir]),'created_by' => Auth::user()->id]);
-                                        $kar->alasanRange()->attach($alasan->id, $attach);
+                                        $attach['tanggal_akhir'] = trim($sD[$arrKey->tanggal_akhir]);
+                                    }
+                                }
+                                
+                                if(!empty(trim($sD[$arrKey->tanggal])))
+                                {
+                                    if(isset($attach['tanggal_akhir']))
+                                    {
+                                        $attach['tanggal_awal'] = trim($sD[$arrKey->tanggal]);
                                     }
                                     else
                                     {
-                                        $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
-                                        if($par)
-                                        {
-                                            $par->detach($alasan->id);
-                                        }
-                                        $attach = array_merge($attach,['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id]);
-                                        $kar->alasan()->attach($alasan->id, $attach);
+                                        $attach['tanggal'] = trim($sD[$arrKey->tanggal]);
                                     }
                                 }
                                 else
                                 {
-                                    $par = $kar->alasan()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
-                                    if($par)
-                                    {
-                                        $par->detach($alasan->id);
-                                    }
-                                    $attach = array_merge($attach,['tanggal' => trim($sD[$arrKey->tanggal]), 'created_by' => Auth::user()->id]);
-                                    $kar->alasan()->attach($alasan->id, $attach);
+                                    continue;
                                 }
                             }
                             else
                             {
                                 continue;
+                            }
+                            // dd($attach);
+                            if(isset($attach['tanggal_akhir']))
+                            {
+                                $par = $kar->alasanRange()
+                                        ->wherePivot('tanggal_awal', $attach['tanggal_awal'])
+                                        ->wherePivot('tanggal_akhir', $attach['tanggal_akhir']);
+                                if($par)
+                                {
+                                    $par->detach($alasan->id);
+                                }
+                                $attach = array_merge($attach,['created_by' => Auth::user()->id]);
+                                $kar->alasanRange()->attach($alasan->id, $attach);
+                            }
+                            else
+                            {
+                                $par = $kar->alasan()->wherePivot('tanggal', $attach['tanggal']);
+                                if($par)
+                                {
+                                    $par->detach($alasan->id);
+                                }
+                                $attach = array_merge($attach,['created_by' => Auth::user()->id]);
+                                $kar->alasan()->attach($alasan->id, $attach);
                             }
                         }
                         else
