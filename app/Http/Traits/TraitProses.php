@@ -826,14 +826,12 @@ trait TraitProses
 
                 if(config('global.perusahaan_short') == 'AIC')
                 {
-                    $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                    $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
                 }
                 else
                 {
                     $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
                 }
-
-                
                 
                 /*
                  * End Hitung GP
@@ -1098,16 +1096,52 @@ trait TraitProses
 
                 if($nilaiGp)
                 {
-                    if(ceil($nilaiGp/60)>4)
+                    // $nMasuk, $nKeluar
+                    if($nMasuk > 0 || $nKeluar > 0)
                     {
-                        $nilaiGp -= 60;
-                        $jumlahJamKerja = round($jumlahActivityKerja/60);
-                        // $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
+                        if($nMasuk > 0)
+                        {
+                            if(ceil($nilaiGp/60) > 4)
+                            {
+                                $nilaiGp -= 60;                                   
+                            }
+                        }
+                        else
+                        {
+                            if($jumlahJamKerja == 7)
+                            {
+                                if(ceil($nilaiGp/60) > 3)
+                                {
+                                    $nilaiGp -= 60;                                   
+                                }
+                            }
+                            else
+                            {
+                                if(ceil($nilaiGp/60) > 4)
+                                {
+                                    $nilaiGp -= 60;                                   
+                                }
+                            }
+                        }
                     }
                     else
-                    {                                
-                        $jumlahJamKerja = $jumlahJamKerja - ($nilaiGp/60);
+                    {
+                        if(ceil($nilaiGp/60) > 4)
+                        {
+                            $nilaiGp -= 60;                                   
+                        }
                     }
+                    $jumlahJamKerja -= ($nilaiGp/60);
+                    // if(ceil($nilaiGp/60)>4)
+                    // {
+                    //     $nilaiGp -= 60;
+                    //     $jumlahJamKerja = round($jumlahActivityKerja/60);
+                    //     // $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
+                    // }
+                    // else
+                    // {                                
+                    //     $jumlahJamKerja = $jumlahJamKerja - ($nilaiGp/60);
+                    // }
                     $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
                 }
 
@@ -1358,26 +1392,26 @@ trait TraitProses
             }
             else if(isset($req['divisi']))
             {
-                $div = Divisi::descendantsAndSelf($req['divisi'])->pluck('id');
-//                dd($div);
+                $div = Divisi::defaultOrder()->descendantsAndSelf($req['divisi'])->pluck('id');
+            //    dd($div);
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id',$div)->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id',$div)->where('perusahaan_id', $req['perusahaan'])->orderBy('divisi_id', 'asc')->orderBy('nama', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id', $div)->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->whereIn('divisi_id', $div)->orderBy('divisi_id', 'asc')->orderBy('nama', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
             }
             else
             {
                 if(isset($req['perusahaan']))
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->orderBy('divisi_id', 'asc')->where('perusahaan_id', $req['perusahaan'])->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->where('perusahaan_id', $req['perusahaan'])->orderBy('divisi_id', 'asc')->orderBy('nama', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
                 else
                 {
-                    $karyawanId = Karyawan::author()->karyawanTerlihat()->orderBy('divisi_id', 'asc')->orderBy('pin', 'asc')->pluck('id');
+                    $karyawanId = Karyawan::author()->karyawanTerlihat()->orderBy('divisi_id', 'asc')->orderBy('nama', 'asc')->orderBy('pin', 'asc')->pluck('id');
                 }
             }            
 //            dd($karyawanId);
@@ -1620,6 +1654,43 @@ trait TraitProses
         if($pulang > 0)
         {
             $ret += abs($pulang);
+        }
+        if($ret)
+        {
+            $ret = ceil($ret/30)*30;
+        }
+        return $ret;
+    }
+    
+    private function gpAic($masuk, $pulang, $jadMasuk, $jadKeluar)
+    {
+        $ret = null;
+        
+        if($masuk > 0)
+        {
+            $pengurang = 0;
+            $minutes = (int)$jadMasuk->format('i');
+            if($minutes > 0)
+            {
+                if($minutes%15 == 0 && $minutes != 30)
+                {
+                    $pengurang = 15;
+                }
+            }
+            $ret += abs($masuk)-$pengurang;
+        }
+        if($pulang > 0)
+        {
+            $pengurang = 0;
+            $minutes = (int)$jadKeluar->format('i');
+            if($minutes > 0)
+            {
+                if($minutes%15 == 0 && $minutes != 30)
+                {
+                    $pengurang = 15;
+                }
+            }
+            $ret += abs($pulang)-$pengurang;
         }
         if($ret)
         {
