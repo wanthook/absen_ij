@@ -76,6 +76,16 @@
                 dTable.ajax.reload();
             });
             
+            $('#sPeriode').daterangepicker({
+                singleDatePicker: true,
+                autoUpdateInput: false,
+                locale: {
+                    format: 'YYYY-MM'
+                }
+            }).on('apply.daterangepicker', function (ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM'));
+            });
+            
             $('#cmdUpload').on('click', function(e)
             {
                 let frm = document.getElementById('form_data_upload');
@@ -139,13 +149,13 @@
                     
                     selectedId.push(datas.id);
                 });
-
+                var per = $('#sPeriode').val();
                 $.ajax(
                 {
                     url         : '{{route("tarikmesin")}}',
                     dataType    : 'json',
                     type        : 'POST',
-                    data        : {id : selectedId} ,
+                    data        : {id : selectedId, periode:per} ,
                     beforeSend  : function(xhr)
                     {
 //                        $('#loadingDialog').modal('show');
@@ -617,7 +627,7 @@
 @endsection
 
 @section('content')
-<div class="card bg-gradient-primary collapsed-card">
+<!-- <div class="card bg-gradient-primary collapsed-card">
     <div class="card-header">
         <h5 class="card-title"><i class=" fas fa-search"></i>&nbsp;Pencarian</h5>
         <div class="card-tools">
@@ -636,18 +646,33 @@
     <div class="card-footer">
         <button class="btn btn-primary" id="cmdSearch"><i class=" fas fa-search"></i>&nbsp;Cari</button>
     </div>
-</div>
+</div> -->
 <div class="card card-primary card-outline">
-<!--    <div class="card-header">
-      <h5 class="m-0">Featured</h5>
-    </div>-->
+   <div class="card-header">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">                                        
+                    {{ Form::label('sPeriode', 'Periode') }}
+                    {{ Form::text('sPeriode', null, ['id' => 'sPeriode', 'class' => 'form-control form-control-sm']) }}
+                </div>
+            </div>
+            <div class="col-sm-4">      
+                <div class="btn-group">      
+                    <button id="cmdTarik" class="btn btn-sm btn-success" alt="Tarik Absen"><i class="fa fa-download"></i>&nbsp;Tarik Absen</button>
+                    @if(Auth::user()->type->nama == 'ADMIN')              
+                    <button id="cmdHapus" class="btn btn-sm btn-danger" alt="Hapus Absen"><i class="fa fa-eraser"></i>&nbsp;Hapus Absen</button>
+                    <button class="btn btn-sm btn-warning" alt="Upload Absen" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i>Upload Absen</button>
+                    @endif
+                </div>
+            </div>
+            <div class="col-12">
+                
+            </div>
+        </div>
+    </div>
     <!-- /.card-header -->
         <div class="card-body">
-            <button id="cmdTarik" class="btn btn-xs btn-success float-right" alt="Tarik Absen"><i class="fa fa-download"></i>&nbsp;Tarik Absen</button>&nbsp;
-            @if(Auth::user()->type->nama == 'ADMIN')  
-            <button id="cmdHapus" class="btn btn-xs btn-danger float-right" alt="Hapus Absen"><i class="fa fa-eraser"></i>&nbsp;Hapus Absen</button>&nbsp;
-            <button class="btn btn-xs btn-warning float-right" alt="Upload Absen" data-toggle="modal" data-target="#modal-form-upload" type="button"><i class="fa fa-upload"></i>Upload Absen</button>
-            @endif
+            
             <table id="dTable" class="table table-hover">
                 <thead>
                     <tr>

@@ -271,15 +271,15 @@ class MesinController extends Controller
                     if($mesin->api_address)
                     {
                         $countData = 0;
-                        $req = new Client(); 
+                        $requ = new Client(); 
                         $res = null;
                         if($mesin->api_db == 'Y')
                         {
-                            $res = $req->request('GET', $mesin->api_address.'/api/v1/tarik_db?ip='.$mesin->ip);
+                            $res = $requ->request('GET', $mesin->api_address.'/api/v1/tarik_db?ip='.$mesin->ip.'&periode='.$req['periode']);
                         }
                         else
                         {
-                            $res = $req->request('GET', $mesin->api_address.'/api/v1/tarik?ip='.$mesin->ip.'&key='.$mesin->key);
+                            $res = $requ->request('GET', $mesin->api_address.'/api/v1/tarik?ip='.$mesin->ip.'&key='.$mesin->key.'&periode='.$req['periode']);
                         }
                         
                         sleep(1);
@@ -346,7 +346,18 @@ class MesinController extends Controller
 
                                 $parser = xml_parser_create();
                                 xml_parse_into_struct($parser, $res, $vals);
-
+                                if(isset($req['periode']))
+                                {
+                                    if(!empty($req['periode']))
+                                    {
+                                        // $tgl = Carbon::createFromFormat('Y-m-d H:i:s', $vals[2]['value'])->format('Y-m');
+                                        $tgl = substr($vals[2]['value'],0,7);
+                                        if($tgl != $req['periode'])
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                }
                                 $cnt = Activity::where('pin', $vals[1]['value'])
                                                ->where('tanggal', $vals[2]['value'])
                                                ->where('mesin_id', $mesin->id)->count();
