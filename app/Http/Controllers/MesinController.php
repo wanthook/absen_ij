@@ -284,27 +284,30 @@ class MesinController extends Controller
                         
                         sleep(1);
                         $tarik = json_decode($res->getBody()->getContents());
-                        foreach($tarik->logs as $rTarik)
+                        if(!empty($tarik->logs))
                         {
-                            $cnt = Activity::where('pin', $rTarik->pin)
-                                               ->where('tanggal', $rTarik->tanggal)
-                                               ->where('mesin_id', $mesin->id)->count();
-                            
-                            if($cnt == 0)
+                            foreach($tarik->logs as $rTarik)
                             {
-                                $storeAct = array(
-                                    "pin" => $rTarik->pin,
-                                    "tanggal" => $rTarik->tanggal,
-                                    "verified" => $rTarik->verified,
-                                    "status" => $rTarik->status,
-                                    "workcode" => $rTarik->workcode,
-                                    "mesin_id" => $mesin->id,
-                                    "created_by" => Auth::user()->id
-                                );
-                                Activity::create($storeAct);
+                                $cnt = Activity::where('pin', $rTarik->pin)
+                                                ->where('tanggal', $rTarik->tanggal)
+                                                ->where('mesin_id', $mesin->id)->count();
+                                
+                                if($cnt == 0)
+                                {
+                                    $storeAct = array(
+                                        "pin" => $rTarik->pin,
+                                        "tanggal" => $rTarik->tanggal,
+                                        "verified" => $rTarik->verified,
+                                        "status" => $rTarik->status,
+                                        "workcode" => $rTarik->workcode,
+                                        "mesin_id" => $mesin->id,
+                                        "created_by" => Auth::user()->id
+                                    );
+                                    Activity::create($storeAct);
 
+                                }
+                                // $countData++;
                             }
-                            // $countData++;
                         }
                         $mesin->lastlog = Carbon::now();
                         $mesin->total_log = $tarik->totaldata;
