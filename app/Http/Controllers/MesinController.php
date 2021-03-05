@@ -284,8 +284,7 @@ class MesinController extends Controller
                         
                         sleep(1);
                         $tarik = json_decode($res->getBody()->getContents());
-                        
-                        foreach($tarik as $rTarik)
+                        foreach($tarik->logs as $rTarik)
                         {
                             $cnt = Activity::where('pin', $rTarik->pin)
                                                ->where('tanggal', $rTarik->tanggal)
@@ -305,10 +304,10 @@ class MesinController extends Controller
                                 Activity::create($storeAct);
 
                             }
-                            $countData++;
+                            // $countData++;
                         }
                         $mesin->lastlog = Carbon::now();
-                        $mesin->total_log = $countData;
+                        $mesin->total_log = $tarik->totaldata;
                         $mesin->save();
                     }
                     else
@@ -354,6 +353,7 @@ class MesinController extends Controller
                                         $tgl = substr($vals[2]['value'],0,7);
                                         if($tgl != $req['periode'])
                                         {
+                                            $countData++;
                                             continue;
                                         }
                                     }
