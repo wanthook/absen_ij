@@ -1107,6 +1107,8 @@ class LaporanController
             $karyawan[] = ['nik' => ((isset($kA->nik))?$kA->nik:''),
                            'pin' => ((isset($kA->pin))?$kA->pin:''),
                            'nama'=> ((isset($kA->nama))?$kA->nama:''),
+                           'jenkel'=> ((isset($kA->jeniskelamin->nama))?$kA->jeniskelamin->nama:''),
+                           'tanggal_lahir'=> ((isset($kA->tanggal_lahir))?$kA->tanggal_lahir:''),
                            'golongan' => ((isset($kA->golongan->nama))?$kA->golongan->nama:''),
                            'kode_divisi' => ((isset($kA->divisi->kode))?$kA->divisi->kode:''),
                            'nama_divisi' => ((isset($kA->divisi->deskripsi))?$kA->divisi->deskripsi:''),
@@ -1191,12 +1193,12 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
-			$headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
+            $headTbl1 = array('No','PIN', 'Nama', 'Jenis', 'Tanggal', 'Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
+			$headTbl2 = array('','', 'Karyawan','Kelamin','Lahir','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
             if(config('global.perusahaan_short') == 'AIC')
             {
-                $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Gol', 'Tanggal', 'Kode', 'Nama', 'Kode');
-                $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
+                $headTbl1 = array('No','PIN', 'Nama', 'Jenis', 'Tanggal','Kode', 'Nama', 'Gol', 'Tanggal', 'Kode', 'Nama', 'Kode');
+                $headTbl2 = array('','', 'Karyawan','Kelamin','Lahir','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
             }
             foreach($headTbl1 as $rHead)
             {
@@ -1247,6 +1249,8 @@ class LaporanController
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kKar+1);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['pin'])?$vKar['pin']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama'])?$vKar['nama']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['jenkel'])?$vKar['jenkel']:'');
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['tanggal_lahir'])?$vKar['tanggal_lahir']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['kode_jabatan'])?$vKar['kode_jabatan']:'');
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, isset($vKar['nama_jabatan'])?$vKar['nama_jabatan']:'');
                     if(config('global.perusahaan_short') == 'AIC')
@@ -1291,7 +1295,7 @@ class LaporanController
         }
         else if($req['btnSubmit'] == "pdf")
         {
-            $pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', true);
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
             $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
             $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
             $pdf->SetMargins(3, 23, 5);
@@ -1300,15 +1304,15 @@ class LaporanController
             
             $pdf->setHeaderData(config('global.img_laporan'), 10, "Laporan Karyawan Aktif","Periode : ".$tanggal);
             $pdf->AddPage();
-            $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
-            $headW = array(10,15,50,10,30,15,13,40,20);
-            $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
+            $headTbl1 = array('No','PIN', 'Nama','Jenis','Tanggal','Kode', 'Nama', 'Tanggal', 'Kode', 'Nama', 'Kode');
+            $headW = array(10,15,70,12,17,11,30,17,13,70,20);
+            $headTbl2 = array('','', 'Karyawan','Kelamin','Lahir','Jabatan', 'Jabatan', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
             
             if(config('global.perusahaan_short') == 'AIC')
             {
-                $headTbl1 = array('No','PIN', 'Nama','Kode', 'Nama', 'Golongan', 'Tanggal', 'Kode', 'Nama', 'Kode');
-                $headW = array(8,13,50,10,30,10,15,13,40,20);
-                $headTbl2 = array('','', 'Karyawan','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
+                $headTbl1 = array('No','PIN', 'Nama','Jenis','Tanggal','Kode', 'Nama', 'Gol', 'Tanggal', 'Kode', 'Nama', 'Kode');
+                $headW = array(10,15,65,12,17,11,30,10,17,13,70,20);
+                $headTbl2 = array('','', 'Karyawan','Kelamin','Lahir','Jabatan', 'Jabatan', '', 'Masuk', 'Divisi', 'Divisi', 'Jadwal');
             }
             
             foreach($headTbl1 as $kH => $vH)
@@ -1329,6 +1333,8 @@ class LaporanController
                     $pdf->Cell($headW[$y++], 4, $kKar+1, 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['pin'], 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['nama'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['jenkel'], 'LRB', 0, 'C');
+                    $pdf->Cell($headW[$y++], 4, $vKar['tanggal_lahir'], 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['kode_jabatan'], 'LRB', 0, 'C');
                     $pdf->Cell($headW[$y++], 4, $vKar['nama_jabatan'], 'LRB', 0, 'C');
                     

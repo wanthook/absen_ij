@@ -131,6 +131,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>No</th>
                 <th>PIN</th>
                 <th>Nama<br>Karyawan</th>
+                <th>Jenis<br>Kelamin</th>
+                <th>Tanggal<br>Lahir</th>
                 <th>Kode<br>Jabatan</th>
                 <th>Nama<br>Jabatan</th>
                 @if(config('global.perusahaan_short') == 'AIC')
@@ -148,6 +150,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$kVar+1}}</td>
                 <td class="dc">{{isset($vVar['pin'])?$vVar['pin']:''}}</td>
                 <td class="dc">{{isset($vVar['nama'])?$vVar['nama']:''}}</td>
+                <td class="dc">{{isset($vVar['jenkel'])?$vVar['jenkel']:''}}</td>
+                <td class="dc">{{isset($vVar['tanggal_lahir'])?$vVar['tanggal_lahir']:''}}</td>
                 <td class="dc">{{isset($vVar['kode_jabatan'])?$vVar['kode_jabatan']:''}}</td>
                 <td class="dc">{{isset($vVar['nama_jabatan'])?$vVar['nama_jabatan']:''}}</td>
                 @if(config('global.perusahaan_short') == 'AIC')
