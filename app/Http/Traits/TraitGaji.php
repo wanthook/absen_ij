@@ -698,7 +698,7 @@ trait TraitGaji
                 
             }
 
-            $tunjanganPrestasi = $this->tunjanganPrestasi();
+            $tunjanganPrestasi = $this->tunjanganPrestasi($karyawan, $periode);
 
             $tunjS3 = (float)MasterOption::where('nama', 'TUNJS3')->first()->nilai;
             $s3 = $this->s3($karyawan, $periode);
