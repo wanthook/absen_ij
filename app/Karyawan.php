@@ -206,6 +206,11 @@ class Karyawan extends Model
         ->wherePivot('tanggal', '<=', $tanggalAkhir);
     }
     
+    public function salaryPrestasiTanggal($tanggal)
+    {
+        return $this->salary()->where('master_options.nama','TUNPRESTASI')->wherePivot('tanggal', '<=', $tanggal);
+    }
+    
     public function jabatan()
     {
         return $this->belongsTo("App\Jabatan", "jabatan_id");

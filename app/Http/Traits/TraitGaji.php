@@ -379,9 +379,24 @@ trait TraitGaji
         return 0;
     }
 
-    public function tunjanganPrestasi()
+    public function tunjanganPrestasi($karyawan, $periode)
     {
-        return (float) MasterOption::where('nama', 'TUNPRESTASI')->first()->nilai;
+        // $karyawan = Karyawan::find($karyawan_id);
+        if(!$karyawan)
+        {
+            return false;
+        }
+
+        $prestasi = $karyawan->salaryPrestasiTanggal(reset($periode)->toDateString())->first();
+
+        if($prestasi)
+        {
+            return $prestasi->pivot->nilai;
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     public function s3($karyawan, $periode)
