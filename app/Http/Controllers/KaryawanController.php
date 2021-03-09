@@ -1181,6 +1181,11 @@ class KaryawanController extends Controller
                         $kar = Karyawan::find($karId);
                         $par = $kar->hamil()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
                         $alasan = Alasan::where('kode', trim($sD[$arrKey->kode_alasan]))->where('show', 'N')->first();
+                        if(!$alasan)
+                        {
+                            continue;
+                        }
+
                         if($par)
                         {
                             $par->detach();
@@ -1193,7 +1198,17 @@ class KaryawanController extends Controller
 
                         $kar->hamil()->attach($alasan->id, $attach);
 
-                        $kar->fill(['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()])->save();
+                        $updMaster = ['updated_by' => Auth::user()->id ,'updated_at' => Carbon::now()];
+                        if(trim($sD[$arrKey->kode_alasan]) == 'HML')
+                        {
+                            $updMaster['hamil'] = 'Y';
+                        }
+                        else
+                        {
+                            $updMaster['hamil'] = 'N';
+                        }
+
+                        $kar->fill($updMaster)->save();
                         
                     }
                     else
