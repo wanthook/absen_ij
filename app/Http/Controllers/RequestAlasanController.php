@@ -947,7 +947,7 @@ class RequestAlasanController extends Controller
             'url' => route('alasanrequestapproval', $reqAlasan->uid_dokumen)
         ];
         
-        $uType = \App\MasterOption::where('kode', 'USERTYPE')->whereIn('nama',['PAYROLL', 'HRD'])->pluck('id');
+        $uType = \App\MasterOption::where('kode', 'USERTYPE')->whereIn('nama',['HRD'])->pluck('id');
         
         if($users = \App\User::whereIn('type_id',$uType)->get())
         {
