@@ -13,7 +13,7 @@
 @section('add_css')
     <!-- Datatables -->
     <!--<link rel="stylesheet" href="{{asset('plugins/easyui/themes/default/easyui.css')}}">-->
-    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/bootstrap/easyui.css')}}">
+    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/black/easyui.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/icon.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/color.css')}}">
    
@@ -45,7 +45,7 @@
             });
             
             bsCustomFileInput.init(); 
-            
+
             let Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
