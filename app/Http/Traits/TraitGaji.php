@@ -55,6 +55,8 @@ trait TraitGaji
     
     public function jumlahPotonganAbsen($karyawan, $periode)
     {
+        $diff = (reset($periode)->startOfDay())->diffInDays(end($periode)->startOfDay(),false)+1;
+
         if($periode && $karyawan)
         {
             // $karyawan = Karyawan::find($karyawan_id);
@@ -76,20 +78,38 @@ trait TraitGaji
                             if(isset($abs[$vAls->kode]))
                             {
                                 $abs[$vAls->kode] += 1;
-                                // if($vAls->kode == 'GP')
-                                // {
-                                //     $abs[$vAls->kode] += $proses->gp;
-                                // }
-                                // else
-                                // {
-                                //     $abs[$vAls->kode] += 1;
-                                // }
                             }
                         }
                         
                     }
                 }
             }
+
+            if($diff>30)
+            {
+                if($abs['IN']>=10)
+                {
+                    $abs['IN'] = $abs['IN'] - 1;
+                }
+
+                if($abs['OUT']>=22)
+                {
+                    $abs['OUT'] = $abs['OUT'] - 1;
+                }
+
+                if($abs['H2']==31)
+                {
+                    $abs['H2'] = 30;
+                }
+            }
+            // else
+            // {
+            //     $yr = (int)reset($periode)->format('Y');
+            //     if($yr%4 == 0)
+            //     {
+
+            //     }
+            // }
             
             return $abs;
         }
@@ -620,7 +640,7 @@ trait TraitGaji
             $periode = [0 => $gapokVal['tanggal'], 1 => $gapokVal['tanggalEnd']];
             $jumlahOff = $this->jumlahOff($karyawan, $periode);
 
-            if($jumlahOff > 0 || $tipe == 'khusus')
+            if($tipe == 'khusus')
             {
                 $hariKerja = $this->jumlahHariKerja($karyawan, $periode, 'khusus') - $jumlahOff;
             }
@@ -676,7 +696,7 @@ trait TraitGaji
 
             $harian = $gajiPokok/$hariKerja;
             // dd($harian);
-            $potonganAbsenRp = (int)$harian*$potonganAbsen;
+            $potonganAbsenRp = $harian*$potonganAbsen;
             $jumlahOffRp = (float)$harian*$jumlahOff*$this->offPercent;
             
 
@@ -685,17 +705,26 @@ trait TraitGaji
             $gp = 0;
             $gpJkerja = 0;
             $gpRp = 0;
+            $thread = [];
             if($getPass)
             {
                 foreach($getPass as $gpF)
                 {
-                    $gp += $gpF['gp'];
-                    $jaman = (float) $harian / $gpF['jadwal_jam_kerja'] ;
+                    $jadJamKerja = $gpF['jadwal_jam_kerja'];
+                    // $gp += $gpF['gp'];
+                    $gp += $gpF['jumlah_jam_kerja'];
+                    $pembagiGp = $jadJamKerja;
+                    if($gpF['pendek'])
+                    {
+                        $pembagiGp = 5;
+                    }
+                    $jaman = $harian / $pembagiGp ;
                     $gpRp += ($jaman * $gpF['jumlah_jam_kerja']);
+                    // $thread[] = ['gp' => $gpF['gp'], 'jaman' => $jaman, 'gpRp' => $gpRp, 'jadJamKerja' => $jadJamKerja];
                     // $gpJkerja += $gpF['jadwal_jam_kerja'];
                 }
 
-                
+                // dd($thread);
             }
 
             $tunjanganPrestasi = $this->tunjanganPrestasi($karyawan, $periode);
@@ -732,10 +761,10 @@ trait TraitGaji
                     $tunjanganJabatan + $tunjanganPrestasi + 
                     $tunjanganHaid + $tunjanganHadir + $gpRp +
                     $koreksi['kor_plus'] - $koreksi['kor_min']);
-
-            $bpjsTk = (int) ($this->bpjsTk * ($gajiPokok + $tunjanganJabatan));
-            $bpjsPen = (int) ($this->bpjsPen * ($gajiPokok + $tunjanganJabatan));
-            $bpjsKes = (int) ($this->bpjsKes * ($gajiPokok + $tunjanganJabatan));
+                    
+            $bpjsTk = ($this->bpjsTk * ($gajiPokok + $tunjanganJabatan));
+            $bpjsPen = ($this->bpjsPen * ($gajiPokok + $tunjanganJabatan));
+            $bpjsKes = ($this->bpjsKes * ($gajiPokok + $tunjanganJabatan));
 
             $pph21 = $this->pph21($karyawan, $periode);
 
@@ -756,6 +785,8 @@ trait TraitGaji
             $other = $this->others($karyawan, $periode);
 
             $absensiList = $this->absensiList($karyawan, $periode);
+            
+            $absensiList['off'] = $jumlahOff;
 
             $prosesSave['periode_awal'] = reset($periode)->toDateString();
             $prosesSave['periode_akhir'] = end($periode)->toDateString();

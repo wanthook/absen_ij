@@ -145,9 +145,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th rowspan="2">NAMA<br>KARYAWAN</th>
                 <th rowspan="2">GAJI<br>POKOK</th>
                 <th colspan="2">POT. ABSEN</th>
-                <th colspan="2">JUMLAH OFF</th>
-                <th colspan="2">MASUK KERJA</th>
-                <th rowspan="2">POT. OFF<br>75%</th>
+                <!-- <th colspan="2">JUMLAH OFF</th> -->
+                <!-- <th colspan="2">MASUK KERJA</th> -->
+                <!-- <th rowspan="2">POT. OFF<br>75%</th> -->
                 <th rowspan="2">GAJI POKOK<br>DIBAYAR</th>
                 <th colspan="2">UPAH LEMBUR</th>
                 <th colspan="2">SHIFT 3</th>
@@ -163,10 +163,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>JML</th>
                 <th>Rp</th>
                 <th>JML</th>
-                <th>Rp. (25%)</th>
-                <th>JML</th>
-                <th>Rp</th>
-                <th>JML</th>
+                <!-- <th>Rp. (25%)</th>
+                <th>JML</th> -->
+                <!-- <th>Rp</th>
+                <th>JML</th> -->
                 <th>Rp</th>
                 <th>JML</th>
                 <th>Rp.</th>
@@ -199,11 +199,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{(int)$vVar->gaji_pokok}}</td>
                 <td class="dc">{{(int)$vVar->potongan_absen}}</td>
                 <td class="dc">{{(int)$vVar->potongan_absen_rp}}</td>
-                <td class="dc">{{(int)$vVar->jumlah_off}}</td>
-                <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td>
-                <td class="dc">{{(int)$vVar->jumlah_absen}}</td>
-                <td class="dc">{{(int)($vVar->gaji_pokok)}}</td>
-                <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td>
+                <!-- <td class="dc">{{(int)$vVar->jumlah_off}}</td> -->
+                <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
+                <!-- <td class="dc">{{(int)$vVar->jumlah_absen}}</td> -->
+                <!-- <td class="dc">{{(int)($vVar->gaji_pokok)}}</td> -->
+                <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
                 <td class="dc">{{(int)$vVar->gaji_pokok_dibayar}}</td>
                 <td class="dc">{{(int)$vVar->lembur}}</td>
                 <td class="dc">{{(int)$vVar->lembur_rp}}</td>
