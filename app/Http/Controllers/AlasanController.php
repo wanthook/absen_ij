@@ -13,6 +13,8 @@ use Auth;
 use Validator;
 use DB;
 
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 use App\Http\Traits\TraitProses;
 
 class AlasanController extends Controller

@@ -29,6 +29,7 @@
     <script src="{{asset('bower_components/admin-lte/plugins/moment/moment.min.js')}}"></script>
     <!-- date-range-picker -->
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
+    <script src="{{asset('bower_components/admin-lte/plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}"></script>
     <script>
         var dg = null;
         var dgRange = null;
@@ -42,6 +43,8 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            
+            bsCustomFileInput.init(); 
             
             let Toast = Swal.mixin({
                 toast: true,
@@ -558,7 +561,13 @@
                         }
                     });
 
-                    $(sKeterangan.target).text('textbox').bind('blur',function(e)
+                    // $(sKeterangan.target).textbox('textbox').bind('blur',function(e)
+                    // {                        
+                    //     dg.edatagrid('endEdit', index);
+                    //     dg.edatagrid('addRow',0);
+                    // });
+
+                    $(sKeterangan.target).textbox('textbox').bind('keypress',function(e)
                     {                        
                         dg.edatagrid('endEdit', index);
                         dg.edatagrid('addRow',0);
@@ -990,7 +999,10 @@
                                 }
                                 ">Waktu</th>
                             <th data-options="
-                                field:'sKeterangan', width:150, editor:'text'
+                                field:'sKeterangan', width:150, 
+                                editor:{
+                                    type:'textbox'
+                                }
                                 ">Keterangan</th>
                             <th data-options="
                                 field:'sKar', width:50, hidden:true,
@@ -1084,7 +1096,10 @@
                                 ">Waktu</th>
 
                             <th data-options="
-                                field:'sRangeKeterangan', width:150,   editor: 'text'  
+                                field:'sRangeKeterangan', width:150,   
+                                editor:{
+                                    type:'textbox'
+                                }
                                 ">Keterangan</th>
                             <th data-options="
                                 field:'sRangeKar', width:50, hidden:true,
