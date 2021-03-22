@@ -561,12 +561,6 @@
                         }
                     });
 
-                    // $(sKeterangan.target).textbox('textbox').bind('blur',function(e)
-                    // {                        
-                    //     dg.edatagrid('endEdit', index);
-                    //     dg.edatagrid('addRow',0);
-                    // });
-
                     $(sKeterangan.target).textbox('textbox').bind('keypress',function(e)
                     {                        
                         dg.edatagrid('endEdit', index);
@@ -703,11 +697,12 @@
                         }
                     });
 
-                    $(sRangeKeterangan.target).text('textbox').bind('blur',function(e)
-                    {                        
+                    $(sRangeKeterangan.target).textbox('textbox').bind('keypress',function(e)
+                    {        
+                        // console.log('dfdsfds');                
                         dg.edatagrid('endEdit', index);
                         dg.edatagrid('addRow',0);
-                    })
+                    });
                 }
             });
 
@@ -1096,7 +1091,7 @@
                                 ">Waktu</th>
 
                             <th data-options="
-                                field:'sRangeKeterangan', width:150,   
+                                field:'sRangeKeterangan', width:150, 
                                 editor:{
                                     type:'textbox'
                                 }
