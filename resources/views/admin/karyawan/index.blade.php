@@ -333,7 +333,21 @@
                             return str;
                         }
                     },
-                    { data    : "status.deskripsi", name : "status" },
+                    { data    : function(data)
+                    {
+                        var str = "<b>"+data.status.deskripsi+"</b>";
+
+                        if(data.active_status)
+                        {
+                            str += "<br><b>Aktif</b>";
+                        }
+                        else
+                        {
+                            str += "<br><b>"+data.active_comment+"</b>";
+                        }
+
+                        return str;
+                    } },
                     { data    : function(data)
                         {
                             var str = "Masuk : <b>" + data.tanggal_masuk  + "</b>";
