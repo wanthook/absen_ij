@@ -341,9 +341,13 @@
                         {
                             str += '<span class="badge badge-success">Aktif</span>';
                         }
+                        else if(data.active_status == '2')
+                        {
+                            str += '<span class="badge badge-warning">Non Aktif</span>';
+                        }
                         else
                         {
-                            str += '<span class="badge badge-danger">Non Aktif</span>';
+                            str += '<span class="badge badge-danger">Deleted</span>';
                         }
 
                         return str;
