@@ -337,7 +337,7 @@
                     {
                         var str = "<b>"+data.status.deskripsi+"</b>";
 
-                        if(data.active_status)
+                        if(data.active_status == '1')
                         {
                             str += "<br><b>Aktif</b>";
                         }
