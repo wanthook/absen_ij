@@ -339,11 +339,11 @@
 
                         if(data.active_status == '1')
                         {
-                            str += "<br><b>Aktif</b>";
+                            str += '<span class="badge badge-success">Aktif</span>';
                         }
                         else
                         {
-                            str += "<br><b>Non Aktif</b>";
+                            str += '<span class="badge badge-danger">Non Aktif</span>';
                         }
 
                         return str;
