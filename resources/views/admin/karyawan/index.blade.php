@@ -343,7 +343,7 @@
                         }
                         else
                         {
-                            str += "<br><b>"+data.active_comment+"</b>";
+                            str += "<br><b>Non Aktif</b>";
                         }
 
                         return str;
