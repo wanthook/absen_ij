@@ -67,7 +67,7 @@ else
             $('#warna').colorpicker();
             
 
-            @if($show)
+            
             $('#cmdUpload').on('click', function(e)
             {
                 let frm = document.getElementById('form_data_upload');
@@ -111,7 +111,6 @@ else
                                     type: 'error',
                                     title: str
                                 });
-                                $('#tipe_exim').attr('disabled','disabled');
                             }
                             
                         }
@@ -213,7 +212,6 @@ else
                 });
                 dTable.ajax.reload();
             });
-            @endif
             dTable = $('#dTable').DataTable({
                 "searching":false,
                 "ordering": true,
@@ -315,6 +313,7 @@ else
                             return false;
                         }
                     });
+                    @endif
                     
                     $('.editrow').on('click',function(e)
                     {
@@ -322,44 +321,48 @@ else
                         var datas = dTable.row(_this.parents('tr')).data();
                         $('#id').val(datas.id);
                         $('#kode').val(datas.kode);
-                        if(typeof(datas.jadwal_kerja[0]) != "undefined")
+                        // console.log(datas.jadwal_kerja)
+                        
+                        for(i=0 ; i<datas.jadwal_kerja.length ; i++)
                         {
-                            $('#senin').val(datas.jadwal_kerja[0].id);
-                            $('#divSenin').html(strSel(datas.jadwal_kerja[0]));
-                        }
-                        if(typeof(datas.jadwal_kerja[1]) != "undefined")
-                        {
-                            $('#selasa').val(datas.jadwal_kerja[1].id);
-                            $('#divSelasa').html(strSel(datas.jadwal_kerja[1]));
-                        }
-                        if(typeof(datas.jadwal_kerja[2]) != "undefined")
-                        {
-                            $('#rabu').val(datas.jadwal_kerja[2].id);
-                            $('#divRabu').html(strSel(datas.jadwal_kerja[2]));
-                        }
-                        if(typeof(datas.jadwal_kerja[3]) != "undefined")
-                        {
-                            $('#kamis').val(datas.jadwal_kerja[3].id);
-                            $('#divKamis').html(strSel(datas.jadwal_kerja[3]));
-                        }
-                        if(typeof(datas.jadwal_kerja[4]) != "undefined")
-                        {
-                            $('#jumat').val(datas.jadwal_kerja[4].id);
-                            $('#divJumat').html(strSel(datas.jadwal_kerja[4]));
-                        }
-                        if(typeof(datas.jadwal_kerja[5]) != "undefined")
-                        {
-                            $('#sabtu').val(datas.jadwal_kerja[5].id);
-                            $('#divSabtu').html(strSel(datas.jadwal_kerja[5]));
-                        }
-                        if(typeof(datas.jadwal_kerja[6]) != "undefined")
-                        {
-                            $('#minggu').val(datas.jadwal_kerja[6].id);
-                            $('#divMinggu').html(strSel(datas.jadwal_kerja[6]));
+                            if(typeof(datas.jadwal_kerja[i]) != "undefined")
+                            {
+                                var days = datas.jadwal_kerja[i].pivot.day;
+                                switch(days)
+                                {
+                                    case "1": 
+                                        $('#senin').val(datas.jadwal_kerja[i].id);
+                                        $('#divSenin').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "2":
+                                        $('#selasa').val(datas.jadwal_kerja[i].id);
+                                        $('#divSelasa').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "3":
+                                        $('#rabu').val(datas.jadwal_kerja[i].id);
+                                        $('#divRabu').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "4":
+                                        $('#kamis').val(datas.jadwal_kerja[i].id);
+                                        $('#divKamis').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "5":
+                                        $('#jumat').val(datas.jadwal_kerja[i].id);
+                                        $('#divJumat').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "6":
+                                        $('#sabtu').val(datas.jadwal_kerja[i].id);
+                                        $('#divSabtu').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                    case "7":
+                                        $('#minggu').val(datas.jadwal_kerja[i].id);
+                                        $('#divMinggu').html(strSel(datas.jadwal_kerja[i]),days);
+                                        break;
+                                }
+                            }
                         }
 
                     });
-                    @endif
                     
                 }
             });           
@@ -445,7 +448,6 @@ else
 @endsection
 
 @section('modal_form')
-@if($show)
 <div class="modal fade" id="modal-form">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-secondary">
@@ -548,7 +550,6 @@ else
 </div>
     <!-- /.modal-dialog -->
 </div>
-@endif
 @endsection
 
 @section('content')
