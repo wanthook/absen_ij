@@ -608,7 +608,7 @@
                 $('#karyawan_id').val(par.karyawan_id)
                 $('#divisi').val(par.karyawan.divisi.kode+' - '+par.karyawan.divisi.deskripsi)
                 $('#tanggal_masuk').val(par.karyawan.tanggal_masuk)
-                if(par.editlistlast)
+                if(par.editlistlast.length > 0)
                 {
                     $('#gaji_pokok').val(par.editlistlast[0].gaji_pokok)
                     $('#bruto_rp').val(par.editlistlast[0].bruto_rp)
