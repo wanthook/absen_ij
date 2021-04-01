@@ -2735,8 +2735,11 @@ class KaryawanController extends Controller
         }
         
         $formatted_tags = [];
-        foreach ($tags->get() as $tag) {
-            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama, 'divisi' => ['kode' => $tag->divisi->kode, 'nama' => $tag->divisi->deskripsi]];
+        if($tags)
+        {
+            foreach ($tags->get() as $tag) {
+                $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->pin.' - '.$tag->nama, 'divisi' => ['kode' => $tag->divisi->kode, 'nama' => $tag->divisi->deskripsi]];
+            }
         }
         
         echo json_encode(array('items' => $formatted_tags));

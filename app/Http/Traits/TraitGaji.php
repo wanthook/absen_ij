@@ -856,4 +856,14 @@ trait TraitGaji
         return $ret;
 
     }
+
+    /*
+     * @param 
+     * 
+     *
+     */
+    public function calculateGaji($param)
+    {
+
+    }
 }

@@ -196,44 +196,85 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$vVar->karyawan->pin}}</td>
                 <td class="dc">{{$vVar->karyawan->tanggal_masuk}}</td>
                 <td class="dc">{{$vVar->karyawan->nama}}</td>
+                @if($vVar->editlistlast)
+                <td class="dc">{{(int)$vVar->editlistlast[0]->gaji_pokok}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen_rp}}</td>
+                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off_rp}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_absen}}</td> -->
+                    <!-- <td class="dc">{{(int)($vVar->editlistlast[0]->gaji_pokok)}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off_rp}}</td> -->
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->gaji_pokok_dibayar}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->lembur}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->lembur_rp}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->s3}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->s3_rp}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_jabatan}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_prestasi}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_haid}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_hadir}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_lain}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->gp}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->gp_rp}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->koreksi_plus}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->koreksi_minus}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->bruto_rp}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_tk}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_kes}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_pen}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->pph21}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->cost_serikat_rp}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->toko}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->lainlain}}</td>
+
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tot_akhir}}</td>
+                    <td class="dc">{{(int)$vVar->editlistlast[0]->tot_bayar}}</td>
+                @else
                 <td class="dc">{{(int)$vVar->gaji_pokok}}</td>
-                <td class="dc">{{(int)$vVar->potongan_absen}}</td>
-                <td class="dc">{{(int)$vVar->potongan_absen_rp}}</td>
-                <!-- <td class="dc">{{(int)$vVar->jumlah_off}}</td> -->
-                <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
-                <!-- <td class="dc">{{(int)$vVar->jumlah_absen}}</td> -->
-                <!-- <td class="dc">{{(int)($vVar->gaji_pokok)}}</td> -->
-                <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
-                <td class="dc">{{(int)$vVar->gaji_pokok_dibayar}}</td>
-                <td class="dc">{{(int)$vVar->lembur}}</td>
-                <td class="dc">{{(int)$vVar->lembur_rp}}</td>
-                <td class="dc">{{(int)$vVar->s3}}</td>
-                <td class="dc">{{(int)$vVar->s3_rp}}</td>
+                    <td class="dc">{{(int)$vVar->potongan_absen}}</td>
+                    <td class="dc">{{(int)$vVar->potongan_absen_rp}}</td>
+                    <!-- <td class="dc">{{(int)$vVar->jumlah_off}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->jumlah_absen}}</td> -->
+                    <!-- <td class="dc">{{(int)($vVar->gaji_pokok)}}</td> -->
+                    <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
+                    <td class="dc">{{(int)$vVar->gaji_pokok_dibayar}}</td>
+                    <td class="dc">{{(int)$vVar->lembur}}</td>
+                    <td class="dc">{{(int)$vVar->lembur_rp}}</td>
+                    <td class="dc">{{(int)$vVar->s3}}</td>
+                    <td class="dc">{{(int)$vVar->s3_rp}}</td>
 
-                <td class="dc">{{(int)$vVar->tunjangan_jabatan}}</td>
-                <td class="dc">{{(int)$vVar->tunjangan_prestasi}}</td>
-                <td class="dc">{{(int)$vVar->tunjangan_haid}}</td>
-                <td class="dc">{{(int)$vVar->tunjangan_hadir}}</td>
-                <td class="dc">{{(int)$vVar->tunjangan_lain}}</td>
+                    <td class="dc">{{(int)$vVar->tunjangan_jabatan}}</td>
+                    <td class="dc">{{(int)$vVar->tunjangan_prestasi}}</td>
+                    <td class="dc">{{(int)$vVar->tunjangan_haid}}</td>
+                    <td class="dc">{{(int)$vVar->tunjangan_hadir}}</td>
+                    <td class="dc">{{(int)$vVar->tunjangan_lain}}</td>
 
-                <td class="dc">{{(int)$vVar->gp}}</td>
-                <td class="dc">{{(int)$vVar->gp_rp}}</td>
+                    <td class="dc">{{(int)$vVar->gp}}</td>
+                    <td class="dc">{{(int)$vVar->gp_rp}}</td>
 
-                <td class="dc">{{(int)$vVar->koreksi_plus}}</td>
-                <td class="dc">{{(int)$vVar->koreksi_minus}}</td>
+                    <td class="dc">{{(int)$vVar->koreksi_plus}}</td>
+                    <td class="dc">{{(int)$vVar->koreksi_minus}}</td>
 
-                <td class="dc">{{(int)$vVar->bruto_rp}}</td>
+                    <td class="dc">{{(int)$vVar->bruto_rp}}</td>
 
-                <td class="dc">{{(int)$vVar->bpjs_tk}}</td>
-                <td class="dc">{{(int)$vVar->bpjs_kes}}</td>
-                <td class="dc">{{(int)$vVar->bpjs_pen}}</td>
-                <td class="dc">{{(int)$vVar->pph21}}</td>
-                <td class="dc">{{(int)$vVar->cost_serikat_rp}}</td>
-                <td class="dc">{{(int)$vVar->toko}}</td>
-                <td class="dc">{{(int)$vVar->lainlain}}</td>
+                    <td class="dc">{{(int)$vVar->bpjs_tk}}</td>
+                    <td class="dc">{{(int)$vVar->bpjs_kes}}</td>
+                    <td class="dc">{{(int)$vVar->bpjs_pen}}</td>
+                    <td class="dc">{{(int)$vVar->pph21}}</td>
+                    <td class="dc">{{(int)$vVar->cost_serikat_rp}}</td>
+                    <td class="dc">{{(int)$vVar->toko}}</td>
+                    <td class="dc">{{(int)$vVar->lainlain}}</td>
 
-                <td class="dc">{{(int)$vVar->tot_akhir}}</td>
-                <td class="dc">{{(int)$vVar->tot_bayar}}</td>
+                    <td class="dc">{{(int)$vVar->tot_akhir}}</td>
+                    <td class="dc">{{(int)$vVar->tot_bayar}}</td>
+                @endif
             </tr>
             @endforeach
         </tbody>

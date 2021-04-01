@@ -5,15 +5,11 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class Prosesgaji extends Model
+class Prosesgajiedit extends Model
 {
-    protected $table = 'prosesgajis';
+    protected $table = 'prosesgajiedits';
     
     protected $fillable = [
-        'periode_awal',
-        'periode_akhir',
-        'karyawan_id',
-        'periode_hari',
         'gaji_pokok',
         'gaji_pokok_dibayar',
         'harian_rp',
@@ -22,13 +18,6 @@ class Prosesgaji extends Model
         'tunjangan_haid',
         'tunjangan_hadir',
         'tunjangan_lain',
-        'i',
-        'm',
-        'h2',
-        'ta',
-        'in',
-        'out',
-        'jumlah_absen',
         'potongan_absen',
         'potongan_absen_rp',
         'jumlah_off',
@@ -56,24 +45,10 @@ class Prosesgaji extends Model
         'tot_bayar',
         'lainlain',
         'absensi',
+        'prosesgaji_id',
         'created_by',
         'updated_by',
         'created_at',
         'updated_at'
-    ];         
-    
-    public function karyawan()
-    {
-        return $this->belongsTo("App\Karyawan", "karyawan_id")->with('divisi');
-    }
-
-    public function editlist()
-    {
-        return $this->hasMany('App\Prosesgajiedit')->orderBy('created_at', 'desc');
-    }
-
-    public function editlistlast()
-    {
-        return $this->editlist()->limit(1);
-    }
+    ];  
 }

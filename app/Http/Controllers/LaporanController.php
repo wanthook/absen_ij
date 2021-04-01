@@ -3263,7 +3263,7 @@ class LaporanController
         
         foreach($karyawan->karyawanTerlihat()->get() as $kar)
         {
-            $proc = Prosesgaji::with(['karyawan'])->where('periode_awal', '>=', reset($periode)->toDateString())
+            $proc = Prosesgaji::with('karyawan', 'editlistlast')->where('periode_awal', '>=', reset($periode)->toDateString())
                               ->where('periode_akhir', '<=', end($periode)->toDateString())
                               ->where('karyawan_id', $kar['id'])->orderBy('periode_awal', 'asc');
             
@@ -3356,15 +3356,38 @@ class LaporanController
              
             $rowStart = 4;
             $colStat = 1;
-            $headTbl1 = array('NO', 'NAMA', 'PIN', 'TANGGAL', 'NAMA', 'GAJI', 'POT. ABSEN', 'JUMLAH OFF', 'MASUK KERJA', 'POT. OFF', 'GAJI POKOK', 'UPAH LEMBUR', 'SHIFT 3', 'TUNJANGAN', 'GETPAS', 'KOREKSI', 'PENDAPATAN', 'POTONGAN', 'TOTAL', 'TOTAL');
-            $headTbl1 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'Jadwal Pulang', 'Kode Divisi', 'Nama Divisi', 'Tanggal Absen', 'Jam Absen Masuk', 'Jam Absen Pulang', 'Mesin Masuk', 'Mesin Pulang');
+            $headTbl1 = array('NO', 'NAMA', 'PIN', 'TANGGAL', 'NAMA', 'GAJI', 'POT. ABSEN','', 'GAJI POKOK', 'UPAH LEMBUR', '', 'SHIFT 3', '', 'TUNJANGAN','','','','', 'GETPAS', '', 'KOREKSI', '', 'PENDAPATAN', 'POTONGAN', '', '', '', '', '', '', 'TOTAL', 'TOTAL');
+            $headTbl2 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'JML', 'Rp', 'DIBAYAR', 'JML', 'Rp', 'JML', 'Rp', 'JABATAN', 'PRESTASI', 'HAID', 'HADIR', 'LAIN2', 'JAM', 'Rp', 'KOR(+)', 'KOR(-)', 'BRUTO', 'BPJS-TK', 'BPJS-KES', 'BPJS-PEN', 'PPH21', 'COST SRKT', 'TOKO', 'LAIN2', 'AKHIR', 'BAYAR');
+            $empty = 0;
             foreach($headTbl1 as $rHead)
             {
+                if(empty($rHead))
+                {
+                    $empty++;
+                }
+                else
+                {
+                    if($empty)
+                    {                        
+                        $ss->getActiveSheet()->mergeCellsByColumnAndRow($colStat-$empty-1, $rowStart, $colStat-1, $rowStart);
+                        $empty = 0;
+                    }
+                }
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+            }
+            $rowStart++;
+            $colStat = 1;
+            foreach($headTbl2 as $rHead)
+            {
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $rHead);
+                if(empty($rHead))
+                {
+                    $ss->getActiveSheet()->mergeCellsByColumnAndRow($colStat-1, $rowStart-1, $colStat-1, $rowStart);
+                }
             }
             
             $ss->getActiveSheet()
-               ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+               ->getStyleByColumnAndRow(1,$rowStart-1,$colStat-1,$rowStart)
                ->applyFromArray([
                     'font' => [
                             'name' => 'sans-serif',
@@ -3390,34 +3413,118 @@ class LaporanController
             
             $rowStart++;
             $colStat = 1;
+
+
             foreach($ret['data'] as $kRet => $vRet)
             {
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
-                foreach($vRet as $v)
-                {
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $v);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->divisi->deskripsi);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->pin);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->tanggal_masuk);
+                $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->nama);
+                if($vRet->editlistlast)
+				{
+					$ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gaji_pokok);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->potongan_absen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->potongan_absen_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gaji_pokok_dibayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lembur_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->s3);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->s3_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_jabatan);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_prestasi);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_haid);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_hadir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_lain);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gp_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->koreksi_plus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->koreksi_minus);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bruto_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_tk);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_kes);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_pen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->pph21);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->cost_serikat_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->toko);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lainlain);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tot_akhir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tot_bayar);
+                }
+				else
+				{
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gaji_pokok);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->potongan_absen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->potongan_absen_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gaji_pokok_dibayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lembur_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->s3);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->s3_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_jabatan);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_prestasi);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_haid);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_hadir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_lain);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gp_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->koreksi_plus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->koreksi_minus);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bruto_rp);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_tk);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_kes);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_pen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->pph21);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->cost_serikat_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->toko);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lainlain);
+
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tot_akhir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tot_bayar);
                 }
                 $colStat = 1;
                 $rowStart++;
-                
             }
-            $ss->getActiveSheet()
-               ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
-               ->applyFromArray([
-                    'font' => [
-                            'name' => 'sans-serif',
-                            'size' => 10
-                    ],
-                    'alignment' => [
-                            'vertical' => Alignment::VERTICAL_CENTER,
-                            'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    ],
-                    'borders' => [
-                            'allBorders' => [
-                                    'borderStyle' => Border::BORDER_THIN
-                            ]
-                    ]
-                ]);
+            // foreach($ret['data'] as $kRet => $vRet)
+            // {
+            //     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
+            //     foreach($vRet as $v)
+            //     {
+            //         $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $v);
+            //     }
+            //     $colStat = 1;
+            //     $rowStart++;
+                
+            // }
+            // $ss->getActiveSheet()
+            //    ->getStyleByColumnAndRow(1,5,$colStat-1,$rowStart-1)
+            //    ->applyFromArray([
+            //         'font' => [
+            //                 'name' => 'sans-serif',
+            //                 'size' => 10
+            //         ],
+            //         'alignment' => [
+            //                 'vertical' => Alignment::VERTICAL_CENTER,
+            //                 'horizontal' => Alignment::HORIZONTAL_CENTER,
+            //         ],
+            //         'borders' => [
+            //                 'allBorders' => [
+            //                         'borderStyle' => Border::BORDER_THIN
+            //                 ]
+            //         ]
+            //     ]);
             
             header('Content-Type: application/vnd.ms-excel');
             header('Content-Disposition: attachment;filename="Transaksi Log Masuk Karyawan.xls"');

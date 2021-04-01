@@ -12,8 +12,9 @@ use App\Jabatan;
 use App\Divisi;
 use App\Alasan;
 use App\ExceptionLog;
-
 use App\Prosesgaji;
+use App\Prosesgajiedit;
+
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -35,6 +36,7 @@ class ProsesgajiController extends Controller
     use TraitGaji;
     
     private $gajiPokok = 0;
+
     /**
      * Display a listing of the resource.
      *
@@ -43,6 +45,16 @@ class ProsesgajiController extends Controller
     public function index()
     {
         return view('payroll.proses_gaji.index');
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexEdit()
+    {
+        return view('payroll.update_proses.form');
     }
 
     public function setGajiPokok($nilai)
@@ -117,6 +129,169 @@ class ProsesgajiController extends Controller
                 ));
             }
         }
+        catch(Exception $e)
+        {
+            $err = array('file_target' => 'ProsesgajiController.php',
+                         'message_log' => json_encode($e->getMessage()),
+                         'created_by' => Auth::user()->id);
+            
+            ExceptionLog::create($err);
+            
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal diproses'
+                ));
+        }
+    }
+
+    public function prosesEdit(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+                [
+                    'periode'   => 'required',
+                    'pin'   => 'required'
+                ],
+                [
+                    'periode.required'  => 'Periode harus diisi.',
+                    'pin.required'  => 'PIN harus diisi.'
+                ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->all();
+                $tglAwal = Carbon::createFromFormat('Y-m-d', $req['periode'].'-22')->subMonth();
+
+                $tglAkhir = $tglAwal->copy()->addMonth(1)->subDay(1);
+
+                if(isset($req['pin']))
+                {
+                    $proses = Prosesgaji::with('karyawan', 'editlist')
+                    ->where('id', $req['id'])->first();
+                                // ->where('periode_awal', $tglAwal->toDateString())
+                                // ->where('periode_akhir', $tglAkhir->toDateString())
+                                // ->where('karyawan_id', $req['pin'])->first();
+                    // dd($proses);
+                    if($proses)
+                    {
+                        $req['prosesgaji_id'] = $proses->id;
+                        $req['created_by'] = Auth::user()->id;
+                        $req['updated_by'] = Auth::user()->id;
+                        // dd($req);
+                        // $req = array_merge($req, ['prosesgaji_id' => $proses->id,'created_by' => Auth::user()->id,'updated_by' => Auth::user()->id]);
+                        // if($proses->editlist->first())
+                        // {                            
+                        //     Prosesgajiedit::where('prosesgaji_id', $req['id'])->delete();
+                        // }
+
+                        Prosesgajiedit::create($req);
+
+                        echo json_encode(array(
+                            'status' => 1,
+                            'msg'   => 'Data berhasil disimpan'
+                        ));
+                    }
+                    else
+                    {
+                        echo json_encode(array(
+                            'status' => 0,
+                            'msg'   => 'Data proses tidak ditemukan'
+                        ));
+                    }
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Data berhasil disimpan'
+                    ));
+                }
+            }
+        }
+        catch(Exception $e)
+        {
+            $err = array('file_target' => 'ProsesgajiController.php',
+                         'message_log' => json_encode($e->getMessage()),
+                         'created_by' => Auth::user()->id);
+            
+            ExceptionLog::create($err);
+            
+            echo json_encode(array(
+                'status' => 0,
+                'msg'   => 'Data gagal diproses'
+                ));
+        }
+    }
+
+    public function getProses(Request $request)
+    {
+        try
+        {
+            $validation = Validator::make($request->all(), 
+                [
+                    'periode'   => 'required',
+                    'pin'       => 'required'
+                ],
+                [
+                    'periode.required'  => 'Periode harus diisi.',
+                    'pin.required'  => 'PIN harus diisi.'
+                ]);
+
+            if($validation->fails())
+            {
+                echo json_encode(array(
+                    'status' => 0,
+                    'msg'   => $validation->errors()->all()
+                ));
+            }
+            else
+            {
+                $req = $request->only(['pin', 'periode']);
+                
+                $tglAwal = Carbon::createFromFormat('Y-m-d', $req['periode'].'-22')->subMonth();
+
+                $tglAkhir = $tglAwal->copy()->addMonth(1)->subDay(1);
+
+                if(isset($req['pin']))
+                {
+                
+                    $karyawan = Karyawan::find($req['pin']);
+
+                    if($karyawan)
+                    {
+                        $proses = Prosesgaji::with('karyawan', 'editlistlast')->where('periode_awal', $tglAwal->toDateString())->where('periode_akhir', $tglAkhir->toDateString())->first();
+
+                        echo json_encode(array(
+                            'status' => 1,
+                            'msg'   => $proses
+                        ));
+                    }
+                    else
+                    {
+                        echo json_encode(array(
+                            'status' => 0,
+                            'msg'   => 'Data tidak ditemukan'
+                        ));
+                    }
+                }
+                else
+                {
+                    echo json_encode(array(
+                        'status' => 0,
+                        'msg'   => 'Data tidak ditemukan'
+                    ));
+                }
+                // Prosesgaji::
+            }
+        }        
         catch(Exception $e)
         {
             $err = array('file_target' => 'ProsesgajiController.php',
