@@ -631,6 +631,10 @@ trait TraitGaji
         */
         
         $gapok = $this->gajiPokok($karyawan, $periodevar);
+        if(empty($gapok))
+        {
+            return [];
+        }
         // $gajiPokok = (float)(($gapok)?$gapok[0]['gapok']:0);
         foreach($gapok as $gapokKey => $gapokVal)
         {
