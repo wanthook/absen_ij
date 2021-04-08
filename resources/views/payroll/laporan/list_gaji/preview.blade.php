@@ -196,7 +196,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$vVar->karyawan->pin}}</td>
                 <td class="dc">{{$vVar->karyawan->tanggal_masuk}}</td>
                 <td class="dc">{{$vVar->karyawan->nama}}</td>
-                @if($vVar->editlistlast)
+                @if($vVar->editlistlast && count($vVar->editlistlast)>0)
                 <td class="dc">{{(int)$vVar->editlistlast[0]->gaji_pokok}}</td>
                     <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen}}</td>
                     <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen_rp}}</td>

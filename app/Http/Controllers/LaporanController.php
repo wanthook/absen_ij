@@ -3422,7 +3422,7 @@ class LaporanController
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->pin);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->tanggal_masuk);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->nama);
-                if($vRet->editlistlast)
+                if($vRet->editlistlast && count($vRet->editlistlast)>0)
 				{
 					$ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gaji_pokok);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->potongan_absen);
