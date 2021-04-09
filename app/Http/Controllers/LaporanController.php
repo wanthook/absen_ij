@@ -3428,7 +3428,7 @@ class LaporanController
                         
                         $this->totalReportGajiRowXls($ss,$rowStart,$tDiv);
 
-                        $rowStart++;
+                        $rowStart+=2;
                         $tDiv=0;
                     }
                     else
@@ -3450,7 +3450,7 @@ class LaporanController
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->potongan_absen);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->potongan_absen_rp);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->gaji_pokok_dibayar);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lembur);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->lembur_rp);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->s3);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->s3_rp);
@@ -3486,7 +3486,7 @@ class LaporanController
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->potongan_absen);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->potongan_absen_rp);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->gaji_pokok_dibayar);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lembur);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->lembur_rp);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->s3);
                     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->s3_rp);
@@ -3537,6 +3537,11 @@ class LaporanController
                     ->getStyleByColumnAndRow(6,$rowStart,$colStat-1,$rowStart)
                     ->getNumberFormat()
                     ->setFormatCode('#,##0');
+
+                $ss->getActiveSheet()
+                ->getStyleByColumnAndRow(10,$rowStart,10,$rowStart)
+                ->getNumberFormat()
+                ->setFormatCode('#,##0.00');
                 $colStat = 1;
                 $rowStart++;
             }
@@ -3645,5 +3650,9 @@ class LaporanController
                 ])
                 ->getNumberFormat()
                 ->setFormatCode('#,##0');
+        $ss->getActiveSheet()
+                ->getStyleByColumnAndRow(10,$rowStart,10,$rowStart)
+                ->getNumberFormat()
+                ->setFormatCode('#,##0.00');
     }
 }

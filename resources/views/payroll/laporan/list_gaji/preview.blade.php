@@ -247,10 +247,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <tr class="dtl">
                         <td colspan="5"><b>Total</b></td>
                         @foreach($tArr as $k => $v)
+                        @if($k != 'lembur')
                         <td>{{number_format($v, 0, '', '.')}}</td>
+                        @else
+                        <td>{{number_format($v, 2, ',', '.')}}</td>
+                        @endif
                         @endforeach
                     </tr>
-
+                    <tr>
+                        <td colspan="32">&nbsp;</td>
+                    </tr>
                     @php
                     $tArr = [
                     'gajiPokok' => 0,
@@ -303,7 +309,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     $tArr['potAbsen'] += (int)$vVar->editlistlast[0]->potongan_absen;
                     $tArr['potAbsenRp'] += (int)$vVar->editlistlast[0]->potongan_absen_rp;
                     $tArr['gajiPokokDibayar'] += (int)$vVar->editlistlast[0]->gaji_pokok_dibayar;
-                    $tArr['lembur'] += (int)$vVar->editlistlast[0]->lembur;
+                    $tArr['lembur'] += $vVar->editlistlast[0]->lembur;
                     $tArr['lemburRp'] += (int)$vVar->editlistlast[0]->lembur_rp;
                     $tArr['s3'] += (int)$vVar->editlistlast[0]->s3;
                     $tArr['s3Rp'] += (int)$vVar->editlistlast[0]->s3_rp;
@@ -337,7 +343,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <!-- <td class="dc">{{number_format((int)($vVar->editlistlast[0]->gaji_pokok), 0, '', '.')}}</td> -->
                     <!-- <td class="dc">{{number_format((int)$vVar->editlistlast[0]->jumlah_off_rp, 0, '', '.')}}</td> -->
                     <td class="dc">{{number_format((int)$vVar->editlistlast[0]->gaji_pokok_dibayar, 0, '', '.')}}</td>
-                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->lembur, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format($vVar->editlistlast[0]->lembur, 2, ',', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->editlistlast[0]->lembur_rp, 0, '', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->editlistlast[0]->s3, 0, '', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->editlistlast[0]->s3_rp, 0, '', '.')}}</td>
@@ -373,7 +379,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     $tArr['potAbsen'] += (int)$vVar->potongan_absen;
                     $tArr['potAbsenRp'] += (int)$vVar->potongan_absen_rp;
                     $tArr['gajiPokokDibayar'] += (int)$vVar->gaji_pokok_dibayar;
-                    $tArr['lembur'] += (int)$vVar->lembur;
+                    $tArr['lembur'] += $vVar->lembur;
                     $tArr['lemburRp'] += (int)$vVar->lembur_rp;
                     $tArr['s3'] += (int)$vVar->s3;
                     $tArr['s3Rp'] += (int)$vVar->s3_rp;
@@ -406,7 +412,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <!-- <td class="dc">{{number_format((int)($vVar->gaji_pokok), 0, '', '.')}}</td> -->
                     <!-- <td class="dc">{{number_format((int)$vVar->jumlah_off_rp, 0, '', '.')}}</td> -->
                     <td class="dc">{{number_format((int)$vVar->gaji_pokok_dibayar, 0, '', '.')}}</td>
-                    <td class="dc">{{number_format((int)$vVar->lembur, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format($vVar->lembur, 2, ',', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->lembur_rp, 0, '', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->s3, 0, '', '.')}}</td>
                     <td class="dc">{{number_format((int)$vVar->s3_rp, 0, '', '.')}}</td>
@@ -441,7 +447,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <tr class="dtl">
                 <td colspan="5"><b>Total</b></td>
                 @foreach($tArr as $k => $v)
+                @if($k != 'lembur')
                 <td>{{number_format($v, 0, '', '.')}}</td>
+                @else
+                <td>{{number_format($v, 2, ',', '.')}}</td>
+                @endif
                 @endforeach
             </tr>
         </tbody>
