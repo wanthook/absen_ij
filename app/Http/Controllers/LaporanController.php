@@ -3261,7 +3261,7 @@ class LaporanController
             $periode = CarbonPeriod::create($tgl, $tgl->copy()->addMonth(1)->subDay(1))->toArray();
         }
         
-        foreach($karyawan->karyawanTerlihat()->get() as $kar)
+        foreach($karyawan->karyawanTerlihat()->orderBy('divisi_id', 'asc')->get() as $kar)
         {
             $proc = Prosesgaji::with('karyawan', 'editlistlast')->where('periode_awal', '>=', reset($periode)->toDateString())
                               ->where('periode_akhir', '<=', end($periode)->toDateString())
@@ -3327,7 +3327,7 @@ class LaporanController
             
             $ss->getActiveSheet()->setCellValue('A1', 'Laporan List Gaji');
             $ss->getActiveSheet()->setCellValue('A2', "Periode : ".reset($ret['periode'])->format('d/m/Y').' S/D '.end($ret['periode'])->format('d/m/Y'));
-            $mergeHead = 10;
+            $mergeHead = 32;
             $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,1,$mergeHead,1);
             $ss->getActiveSheet()->mergeCellsByColumnAndRow(1,2,$mergeHead,2);
             
@@ -3414,89 +3414,133 @@ class LaporanController
             $rowStart++;
             $colStat = 1;
 
-
+            $div = "";
+            $tDiv = 0;
             foreach($ret['data'] as $kRet => $vRet)
             {
+
+                if($div!=$vRet->karyawan->divisi->kode)
+                {
+                    if(!empty($div))
+                    {
+                        $div = $vRet->karyawan->divisi->kode;
+                        // dd('$div='.$div.',karkode='.$vRet->karyawan->divisi->kode);
+                        
+                        $this->totalReportGajiRowXls($ss,$rowStart,$tDiv);
+
+                        $rowStart++;
+                        $tDiv=0;
+                    }
+                    else
+                    {
+                        $div = $vRet->karyawan->divisi->kode;
+                    }
+                }
+                $tDiv+=1;
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->divisi->deskripsi);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->pin);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->tanggal_masuk);
                 $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->karyawan->nama);
+
+
                 if($vRet->editlistlast && count($vRet->editlistlast)>0)
 				{
-					$ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gaji_pokok);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->potongan_absen);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->potongan_absen_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gaji_pokok_dibayar);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lembur);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lembur_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->s3);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->s3_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->gaji_pokok);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->potongan_absen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->potongan_absen_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->gaji_pokok_dibayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->lembur_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->s3);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->s3_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_jabatan);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_prestasi);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_haid);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_hadir);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tunjangan_lain);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tunjangan_jabatan);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tunjangan_prestasi);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tunjangan_haid);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tunjangan_hadir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tunjangan_lain);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->gp_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->gp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->gp_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->koreksi_plus);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->koreksi_minus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->koreksi_plus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->koreksi_minus);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bruto_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->bruto_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_tk);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_kes);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->bpjs_pen);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->pph21);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->cost_serikat_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->toko);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->lainlain);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->bpjs_tk);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->bpjs_kes);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->bpjs_pen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->pph21);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->cost_serikat_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->toko);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->lainlain);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tot_akhir);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->editlistlast[0]->tot_bayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tot_akhir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->editlistlast[0]->tot_bayar);
                 }
 				else
 				{
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gaji_pokok);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->potongan_absen);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->potongan_absen_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gaji_pokok_dibayar);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lembur);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lembur_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->s3);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->s3_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->gaji_pokok);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->potongan_absen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->potongan_absen_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->gaji_pokok_dibayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->lembur);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->lembur_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->s3);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->s3_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_jabatan);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_prestasi);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_haid);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_hadir);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tunjangan_lain);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tunjangan_jabatan);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tunjangan_prestasi);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tunjangan_haid);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tunjangan_hadir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tunjangan_lain);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->gp_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->gp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->gp_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->koreksi_plus);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->koreksi_minus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->koreksi_plus);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->koreksi_minus);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bruto_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->bruto_rp);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_tk);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_kes);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->bpjs_pen);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->pph21);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->cost_serikat_rp);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->toko);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->lainlain);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->bpjs_tk);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->bpjs_kes);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->bpjs_pen);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->pph21);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->cost_serikat_rp);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->toko);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->lainlain);
 
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tot_akhir);
-                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,$vRet->tot_bayar);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tot_akhir);
+                    $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart,(int)$vRet->tot_bayar);
                 }
+
+                $ss->getActiveSheet()
+                    ->getStyleByColumnAndRow(1,$rowStart,$colStat-1,$rowStart)
+                    ->applyFromArray([
+                            'font' => [
+                                    'name' => 'sans-serif',
+                                    'size' => 10
+                            ],
+                            'alignment' => [
+                                    'vertical' => Alignment::VERTICAL_CENTER
+                            ],
+                            'borders' => [
+                                    'allBorders' => [
+                                            'borderStyle' => Border::BORDER_THIN
+                                    ]
+                            ]
+                        ]);
+                $ss->getActiveSheet()
+                    ->getStyleByColumnAndRow(6,$rowStart,$colStat-1,$rowStart)
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0');
                 $colStat = 1;
                 $rowStart++;
             }
+            $this->totalReportGajiRowXls($ss,$rowStart,$tDiv);
             // foreach($ret['data'] as $kRet => $vRet)
             // {
             //     $ss->getActiveSheet()->setCellValueByColumnAndRow($colStat++, $rowStart, $kRet+1);
@@ -3540,5 +3584,66 @@ class LaporanController
             return abort(404,'Not Found');
         }
         
+    }
+
+    private function totalReportGajiRowXls($ss,$rowStart, $tDiv)
+    {
+        $cl = 1;
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl, $rowStart, "Total");
+        $ss->getActiveSheet()->mergeCellsByColumnAndRow($cl, $rowStart, $cl+=4, $rowStart);
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl+1, $rowStart, "=SUM(F".($rowStart-$tDiv).":F".($rowStart-1).")");
+        $cl+=2;
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(G".($rowStart-$tDiv).":G".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(H".($rowStart-$tDiv).":H".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(I".($rowStart-$tDiv).":I".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(J".($rowStart-$tDiv).":J".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(K".($rowStart-$tDiv).":K".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(L".($rowStart-$tDiv).":L".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(M".($rowStart-$tDiv).":M".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(N".($rowStart-$tDiv).":N".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(O".($rowStart-$tDiv).":O".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(P".($rowStart-$tDiv).":P".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(Q".($rowStart-$tDiv).":Q".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(R".($rowStart-$tDiv).":R".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(S".($rowStart-$tDiv).":S".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(T".($rowStart-$tDiv).":T".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(U".($rowStart-$tDiv).":U".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(V".($rowStart-$tDiv).":V".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(W".($rowStart-$tDiv).":W".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(X".($rowStart-$tDiv).":X".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(Y".($rowStart-$tDiv).":Y".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(Z".($rowStart-$tDiv).":Z".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AA".($rowStart-$tDiv).":AA".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AB".($rowStart-$tDiv).":AB".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AC".($rowStart-$tDiv).":AC".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AD".($rowStart-$tDiv).":AD".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AE".($rowStart-$tDiv).":AE".($rowStart-1).")");
+        $ss->getActiveSheet()->setCellValueByColumnAndRow($cl++, $rowStart, "=SUM(AF".($rowStart-$tDiv).":AF".($rowStart-1).")");
+        $ss->getActiveSheet()
+            ->getStyleByColumnAndRow(1,$rowStart,$cl-1,$rowStart)
+            ->applyFromArray([
+                    'font' => [
+                            'name' => 'sans-serif',
+                            'size' => 12,
+                            'bold' => true
+                    ],
+                    'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    ],
+                    'borders' => [
+                            'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN
+                            ]
+                    ],
+                    'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => [
+                                    'rgb' => 'e0e0e0'
+                            ]
+                    ]
+                ])
+                ->getNumberFormat()
+                ->setFormatCode('#,##0');
     }
 }

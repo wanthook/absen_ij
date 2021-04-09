@@ -119,6 +119,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
             color:#fff;
             font-size: 5pt;
         }
+        .dtl{
+            font-family:sourcesanspro,sans-serif;
+            border-collapse:collapse;
+            width:100%;
+            font-size:6pt;
+            padding-top:5px;
+            padding-bottom:5px;
+            text-align:center;
+            background-color:#e0e0e0;
+        }
         .page-break{
             page-break-after:always
         }
@@ -189,7 +199,98 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </tr>
         </thead>
         <tbody>
+            @php
+                $div = "";
+                $tDiv = 0;
+                $tArr = [
+                    'gajiPokok' => 0,
+                    'potAbsen' => 0 ,
+                    'potAbsenRp' => 0,  
+                    'gajiPokokDibayar' => 0,  
+                    'lembur' => 0,  
+                    'lemburRp' => 0,  
+                    's3' => 0,  
+                    's3Rp' => 0,  
+                    'tunjanganJabatan' => 0,  
+                    'tunjanganPrestasi' => 0,  
+                    'tunjanganHaid' => 0,  
+                    'tunjanganHadir' => 0,  
+                    'tunjanganLain' => 0,  
+                    'gp' => 0,  
+                    'gpRp' => 0,  
+                    'koreksiPlus' => 0,  
+                    'koreksiMinus' => 0,  
+                    'brutoRp' => 0,  
+                    'bpjsTk' => 0,  
+                    'bpjsKes' => 0,  
+                    'bpjsPen' => 0,
+                    'pph21' => 0,  
+                    'costSerikatRp' => 0,  
+                    'toko' => 0,  
+                    'lainlain' => 0,  
+                    'totAkhir' => 0,  
+                    'totBayar' => 0
+                ];
+            @endphp
             @foreach($var['data'] as $kVar => $vVar)
+
+            @php
+            if($div!=$vVar->karyawan->divisi->kode)
+            {
+                if(!empty($div))
+                {
+                    $div = $vVar->karyawan->divisi->kode;
+                    // dd('$div='.$div.',karkode='.$vVar->karyawan->divisi->kode);
+                    
+                    @endphp
+
+                    <tr class="dtl">
+                        <td colspan="5"><b>Total</b></td>
+                        @foreach($tArr as $k => $v)
+                        <td>{{number_format($v, 0, '', '.')}}</td>
+                        @endforeach
+                    </tr>
+
+                    @php
+                    $tArr = [
+                    'gajiPokok' => 0,
+                    'potAbsen' => 0 ,
+                    'potAbsenRp' => 0,  
+                    'gajiPokokDibayar' => 0,  
+                    'lembur' => 0,  
+                    'lemburRp' => 0,  
+                    's3' => 0,  
+                    's3Rp' => 0,  
+                    'tunjanganJabatan' => 0,  
+                    'tunjanganPrestasi' => 0,  
+                    'tunjanganHaid' => 0,  
+                    'tunjanganHadir' => 0,  
+                    'tunjanganLain' => 0,  
+                    'gp' => 0,  
+                    'gpRp' => 0,  
+                    'koreksiPlus' => 0,  
+                    'koreksiMinus' => 0,  
+                    'brutoRp' => 0,  
+                    'bpjsTk' => 0,  
+                    'bpjsKes' => 0,  
+                    'bpjsPen' => 0,
+                    'pph21' => 0,  
+                    'costSerikatRp' => 0,  
+                    'toko' => 0,  
+                    'lainlain' => 0,  
+                    'totAkhir' => 0,  
+                    'totBayar' => 0
+                ];
+                    $tDiv=0;
+                }
+                else
+                {
+                    $div = $vVar->karyawan->divisi->kode;
+                }
+            }
+            $tDiv+=1;
+            @endphp
+
             <tr>
                 <td class="dc">{{$kVar+1}}</td>
                 <td class="dc">{{$vVar->karyawan->divisi->deskripsi}}</td>
@@ -197,86 +298,152 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <td class="dc">{{$vVar->karyawan->tanggal_masuk}}</td>
                 <td class="dc">{{$vVar->karyawan->nama}}</td>
                 @if($vVar->editlistlast && count($vVar->editlistlast)>0)
-                <td class="dc">{{(int)$vVar->editlistlast[0]->gaji_pokok}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->potongan_absen_rp}}</td>
-                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off_rp}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_absen}}</td> -->
-                    <!-- <td class="dc">{{(int)($vVar->editlistlast[0]->gaji_pokok)}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->editlistlast[0]->jumlah_off_rp}}</td> -->
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->gaji_pokok_dibayar}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->lembur}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->lembur_rp}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->s3}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->s3_rp}}</td>
+                @php
+                    $tArr['gajiPokok'] += (int)$vVar->editlistlast[0]->gaji_pokok;
+                    $tArr['potAbsen'] += (int)$vVar->editlistlast[0]->potongan_absen;
+                    $tArr['potAbsenRp'] += (int)$vVar->editlistlast[0]->potongan_absen_rp;
+                    $tArr['gajiPokokDibayar'] += (int)$vVar->editlistlast[0]->gaji_pokok_dibayar;
+                    $tArr['lembur'] += (int)$vVar->editlistlast[0]->lembur;
+                    $tArr['lemburRp'] += (int)$vVar->editlistlast[0]->lembur_rp;
+                    $tArr['s3'] += (int)$vVar->editlistlast[0]->s3;
+                    $tArr['s3Rp'] += (int)$vVar->editlistlast[0]->s3_rp;
+                    $tArr['tunjanganJabatan'] += (int)$vVar->editlistlast[0]->tunjangan_jabatan;
+                    $tArr['tunjanganPrestasi'] += (int)$vVar->editlistlast[0]->tunjangan_prestasi;
+                    $tArr['tunjanganHaid'] += (int)$vVar->editlistlast[0]->tunjangan_haid;
+                    $tArr['tunjanganHadir'] += (int)$vVar->editlistlast[0]->tunjangan_hadir;
+                    $tArr['tunjanganLain'] += (int)$vVar->editlistlast[0]->tunjangan_lain;
+                    $tArr['gp'] += (int)$vVar->editlistlast[0]->gp;
+                    $tArr['gpRp'] += (int)$vVar->editlistlast[0]->gp_rp;
+                    $tArr['koreksiPlus'] += (int)$vVar->editlistlast[0]->koreksi_plus;
+                    $tArr['koreksiMinus'] += (int)$vVar->editlistlast[0]->koreksi_minus;
+                    $tArr['brutoRp'] += (int)$vVar->editlistlast[0]->bruto_rp;
+                    $tArr['bpjsTk'] += (int)$vVar->editlistlast[0]->bpjs_tk;
+                    $tArr['bpjsKes'] += (int)$vVar->editlistlast[0]->bpjs_kes;
+                    $tArr['bpjsPen'] += (int)$vVar->editlistlast[0]->bpjs_pen;
+                    $tArr['pph21'] += (int)$vVar->editlistlast[0]->pph21;
+                    $tArr['costSerikatRp'] += (int)$vVar->editlistlast[0]->cost_serikat_rp;
+                    $tArr['toko'] += (int)$vVar->editlistlast[0]->toko;
+                    $tArr['lainlain'] += (int)$vVar->editlistlast[0]->lainlain;
+                    $tArr['totAkhir'] += (int)$vVar->editlistlast[0]->tot_akhir;
+                    $tArr['totBayar'] += (int)$vVar->editlistlast[0]->tot_bayar;
+                @endphp
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_jabatan}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_prestasi}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_haid}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_hadir}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tunjangan_lain}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->gaji_pokok, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->potongan_absen, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->potongan_absen_rp, 0, '', '.')}}</td>
+                    <!-- <td class="dc">{{number_format((int)$vVar->editlistlast[0]->jumlah_off, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->editlistlast[0]->jumlah_off_rp, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->editlistlast[0]->jumlah_absen, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)($vVar->editlistlast[0]->gaji_pokok), 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->editlistlast[0]->jumlah_off_rp, 0, '', '.')}}</td> -->
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->gaji_pokok_dibayar, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->lembur, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->lembur_rp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->s3, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->s3_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->gp}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->gp_rp}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tunjangan_jabatan, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tunjangan_prestasi, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tunjangan_haid, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tunjangan_hadir, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tunjangan_lain, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->koreksi_plus}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->koreksi_minus}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->gp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->gp_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->bruto_rp}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->koreksi_plus, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->koreksi_minus, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_tk}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_kes}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->bpjs_pen}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->pph21}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->cost_serikat_rp}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->toko}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->lainlain}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->bruto_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tot_akhir}}</td>
-                    <td class="dc">{{(int)$vVar->editlistlast[0]->tot_bayar}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->bpjs_tk, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->bpjs_kes, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->bpjs_pen, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->pph21, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->cost_serikat_rp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->toko, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->lainlain, 0, '', '.')}}</td>
+
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tot_akhir, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->editlistlast[0]->tot_bayar, 0, '', '.')}}</td>
                 @else
-                <td class="dc">{{(int)$vVar->gaji_pokok}}</td>
-                    <td class="dc">{{(int)$vVar->potongan_absen}}</td>
-                    <td class="dc">{{(int)$vVar->potongan_absen_rp}}</td>
-                    <!-- <td class="dc">{{(int)$vVar->jumlah_off}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->jumlah_absen}}</td> -->
-                    <!-- <td class="dc">{{(int)($vVar->gaji_pokok)}}</td> -->
-                    <!-- <td class="dc">{{(int)$vVar->jumlah_off_rp}}</td> -->
-                    <td class="dc">{{(int)$vVar->gaji_pokok_dibayar}}</td>
-                    <td class="dc">{{(int)$vVar->lembur}}</td>
-                    <td class="dc">{{(int)$vVar->lembur_rp}}</td>
-                    <td class="dc">{{(int)$vVar->s3}}</td>
-                    <td class="dc">{{(int)$vVar->s3_rp}}</td>
 
-                    <td class="dc">{{(int)$vVar->tunjangan_jabatan}}</td>
-                    <td class="dc">{{(int)$vVar->tunjangan_prestasi}}</td>
-                    <td class="dc">{{(int)$vVar->tunjangan_haid}}</td>
-                    <td class="dc">{{(int)$vVar->tunjangan_hadir}}</td>
-                    <td class="dc">{{(int)$vVar->tunjangan_lain}}</td>
+                @php
+                    $tArr['gajiPokok'] += (int)$vVar->gaji_pokok;
+                    $tArr['potAbsen'] += (int)$vVar->potongan_absen;
+                    $tArr['potAbsenRp'] += (int)$vVar->potongan_absen_rp;
+                    $tArr['gajiPokokDibayar'] += (int)$vVar->gaji_pokok_dibayar;
+                    $tArr['lembur'] += (int)$vVar->lembur;
+                    $tArr['lemburRp'] += (int)$vVar->lembur_rp;
+                    $tArr['s3'] += (int)$vVar->s3;
+                    $tArr['s3Rp'] += (int)$vVar->s3_rp;
+                    $tArr['tunjanganJabatan'] += (int)$vVar->tunjangan_jabatan;
+                    $tArr['tunjanganPrestasi'] += (int)$vVar->tunjangan_prestasi;
+                    $tArr['tunjanganHaid'] += (int)$vVar->tunjangan_haid;
+                    $tArr['tunjanganHadir'] += (int)$vVar->tunjangan_hadir;
+                    $tArr['tunjanganLain'] += (int)$vVar->tunjangan_lain;
+                    $tArr['gp'] += (int)$vVar->gp;
+                    $tArr['gpRp'] += (int)$vVar->gp_rp;
+                    $tArr['koreksiPlus'] += (int)$vVar->koreksi_plus;
+                    $tArr['koreksiMinus'] += (int)$vVar->koreksi_minus;
+                    $tArr['brutoRp'] += (int)$vVar->bruto_rp;
+                    $tArr['bpjsTk'] += (int)$vVar->bpjs_tk;
+                    $tArr['bpjsKes'] += (int)$vVar->bpjs_kes;
+                    $tArr['bpjsPen'] += (int)$vVar->bpjs_pen;
+                    $tArr['pph21'] += (int)$vVar->pph21;
+                    $tArr['costSerikatRp'] += (int)$vVar->cost_serikat_rp;
+                    $tArr['toko'] += (int)$vVar->toko;
+                    $tArr['lainlain'] += (int)$vVar->lainlain;
+                    $tArr['totAkhir'] += (int)$vVar->tot_akhir;
+                    $tArr['totBayar'] += (int)$vVar->tot_bayar;
+                @endphp 
+                <td class="dc">{{number_format((int)$vVar->gaji_pokok, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->potongan_absen, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->potongan_absen_rp, 0, '', '.')}}</td>
+                    <!-- <td class="dc">{{number_format((int)$vVar->jumlah_off, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->jumlah_off_rp, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->jumlah_absen, 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)($vVar->gaji_pokok), 0, '', '.')}}</td> -->
+                    <!-- <td class="dc">{{number_format((int)$vVar->jumlah_off_rp, 0, '', '.')}}</td> -->
+                    <td class="dc">{{number_format((int)$vVar->gaji_pokok_dibayar, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->lembur, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->lembur_rp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->s3, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->s3_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->gp}}</td>
-                    <td class="dc">{{(int)$vVar->gp_rp}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tunjangan_jabatan, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tunjangan_prestasi, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tunjangan_haid, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tunjangan_hadir, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tunjangan_lain, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->koreksi_plus}}</td>
-                    <td class="dc">{{(int)$vVar->koreksi_minus}}</td>
+                    <td class="dc">{{number_format((int)$vVar->gp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->gp_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->bruto_rp}}</td>
+                    <td class="dc">{{number_format((int)$vVar->koreksi_plus, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->koreksi_minus, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->bpjs_tk}}</td>
-                    <td class="dc">{{(int)$vVar->bpjs_kes}}</td>
-                    <td class="dc">{{(int)$vVar->bpjs_pen}}</td>
-                    <td class="dc">{{(int)$vVar->pph21}}</td>
-                    <td class="dc">{{(int)$vVar->cost_serikat_rp}}</td>
-                    <td class="dc">{{(int)$vVar->toko}}</td>
-                    <td class="dc">{{(int)$vVar->lainlain}}</td>
+                    <td class="dc">{{number_format((int)$vVar->bruto_rp, 0, '', '.')}}</td>
 
-                    <td class="dc">{{(int)$vVar->tot_akhir}}</td>
-                    <td class="dc">{{(int)$vVar->tot_bayar}}</td>
+                    <td class="dc">{{number_format((int)$vVar->bpjs_tk, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->bpjs_kes, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->bpjs_pen, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->pph21, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->cost_serikat_rp, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->toko, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->lainlain, 0, '', '.')}}</td>
+
+                    <td class="dc">{{number_format((int)$vVar->tot_akhir, 0, '', '.')}}</td>
+                    <td class="dc">{{number_format((int)$vVar->tot_bayar, 0, '', '.')}}</td>
                 @endif
             </tr>
             @endforeach
+            <tr class="dtl">
+                <td colspan="5"><b>Total</b></td>
+                @foreach($tArr as $k => $v)
+                <td>{{number_format($v, 0, '', '.')}}</td>
+                @endforeach
+            </tr>
         </tbody>
     </table>
     </page>

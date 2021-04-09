@@ -450,9 +450,9 @@ trait TraitGaji
         {
             if(isset($ks->jam_masuk) && isset($ks->jam_keluar))
             {
-                if($ks->hitung_lembur)
+                if($ks->total_lembur)
                 {
-                    $lembur += $ks->hitung_lembur;
+                    $lembur += $ks->total_lembur;
                 }
             }
         }
