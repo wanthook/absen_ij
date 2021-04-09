@@ -383,7 +383,7 @@
                             
                             $.ajax(
                             {
-                                url         : "{{ route('deljadwalday') }}",
+                                url         : "{{ route('delkaryawan') }}",
                                 type        : 'POST',
                                 dataType    : 'json',
                                 data        : {id:datas.id},
