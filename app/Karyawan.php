@@ -265,7 +265,15 @@ class Karyawan extends Model
     {
         return $this->belongsToMany('App\Alasan')
                     ->using(PivotRequestAlasan::class)
-                    ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at');
+                    ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at')
+                    ->groupBy('alasan_id');
+    }
+
+    public function alasanSave()
+    {
+        return $this->belongsToMany('App\Alasan')
+                    ->withPivot('tanggal','waktu', 'keterangan','created_by','created_at')
+                    ->groupBy('alasan_id');
     }
     
     public function alasanTanggal($tanggal)

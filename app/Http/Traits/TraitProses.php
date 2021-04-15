@@ -90,14 +90,10 @@ trait TraitProses
 
         $jadwalArr = array();
 
-        $proses = Prosesabsen::where('karyawan_id', $karId)
-                ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
+        Prosesabsen::where('karyawan_id', $karId)
+                ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
+                ->delete();
         
-        if($proses->count()>0)
-        {
-            $proses->delete();
-        }
-//        dd($proses);
         if(!$jadwal)
         {
             ExceptionLog::create(['file_target' => 'ProsesabsenController.php', 'message_log' => json_encode(['karyawan_id' => $karyawan->id, 
@@ -107,19 +103,34 @@ trait TraitProses
 
         $jadwalArr = $this->jadwals($tanggal, $karyawan);
         $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-        // dd($jadwalArr);
+        
+        // dd($jadwalManual);
         if($jadwalArr)
         {
             $arrProses = [];
+
+            foreach($jadwalArr as $key => $val)
+            {
+                if($jadwalManual[$key])
+                {
+
+                    $jadwalArr[$key] = $jadwalManual[$key];
+                }
+            }
+
+            unset($jadwalManual);
+
             foreach($jadwalArr as $key => $val)
             {    
                 /*
                  * Ambil Jadwal Manual
                  */
-                if($jadwalManual[$key])
-                {
-                    $val = $jadwalManual[$key];
-                }
+                // if($jadwalManual[$key])
+                // {
+
+                //     $val = $jadwalManual[$key];
+                //     // dd($val);
+                // }
                 /*
                  * End Ambil Jadwal Manual
                  */
@@ -154,14 +165,14 @@ trait TraitProses
                 $shift3 = null;
                 $lemburLN = null;
                 $hitungLemburLN = null;
-                $totalLembur = null;
+                // $totalLembur = null;
                 $nilaiGp = null;
-                $nilaiGpIn = null;
-                $nilaiGpOut = null;
+                // $nilaiGpIn = null;
+                // $nilaiGpOut = null;
                 $jumlahJamKerja = null;
                 $jumlahActivityKerja = null;
 
-                $absenManual = null;
+                // $absenManual = null;
 
                 $addRangeStart = 0;
                 $addRangeEnd = 0;
@@ -279,31 +290,7 @@ trait TraitProses
                 /*
                  * End
                  */
-
-                /*
-                 * Start If
-                 * 
-                 * Jika Ya, kode Jadwal adalah D / Dayshift
-                 * Ambil jadwal sebelumnya berdasarkan nilai hari
-                 * Jika Tidak, kode Jadwal adalah S / Shift
-                 * Ambil Jadwal sebelumnya berdasarkan tanggal kemarin
-                 */
-                // if(isset($jadwalArr[$curDate->copy()->subDays(1)->toDateString()]))
-                // {
-                //     $jadwalBefore = $jadwalArr[$curDate->copy()->subDays(1)->toDateString()];
-                // }
-                // else
-                // {
-                //     $jadwalBeforeArr = $this->jadwals([$curDate->copy()->subDays(1)], $karyawan);
-                //     if($jadwalArr)
-                //     {
-                //         $jadwalBefore = reset($jadwalBeforeArr);
-                //     }
-                // }
-
-                /*
-                 * End If
-                 */
+               
 
                 /*
                  * Ambil alasan karyawan pada tanggal current
@@ -314,7 +301,7 @@ trait TraitProses
                 {
                     $alasan = $karyawan->alasanRangeTanggal($key);
                 }
-                
+                // dd($alasan);
                 /*
                  * End
                  */
@@ -508,20 +495,6 @@ trait TraitProses
                                         $flagNotInOut = "out";
                                     
                                         $jKeluarId = ($actOut)?$actOut->id:null;
-                                        // $actOut = Activity::where('pin', $karyawan->key)
-                                        //         ->whereDate('tanggal', $out->copy()->toDateString())
-                                        //         ->orderBy('tanggal', 'DESC')
-                                        //         ->first();
-
-                                        // $flagNotInOut = "out";
-                                        // if($actOut)
-                                        // {
-
-                                        // }
-                                        // if($actOut->id != $jMasukId)
-                                        // {                                
-                                        //     $jKeluarId = ($actOut)?$actOut->id:null;
-                                        // }
                                     }
                                 }
                             }
@@ -813,17 +786,6 @@ trait TraitProses
                 /*
                  * Hitung GP
                  */
-                // $njMasuk = 0;                
-                // $njKeluar = 0;
-                // if($nMasuk > 0)
-                // {
-                //     $njMasuk = $nMasuk;
-                // }
-                // if($nKeluar > 0)
-                // {
-                //     $njKeluar = $nKeluar;
-                // }
-
                 if(config('global.perusahaan_short') == 'AIC')
                 {
                     $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
@@ -831,8 +793,7 @@ trait TraitProses
                 else
                 {
                     $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
-                }
-                
+                }                
                 /*
                  * End Hitung GP
                  */
@@ -1007,7 +968,7 @@ trait TraitProses
                                     $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
                                     
                                     $wktKerja = 7;
-                                    // dd($lemburLN <= $wktKerja);
+                                    
                                     if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
                                     {
                                         $wktKerja = 5;
@@ -1024,6 +985,10 @@ trait TraitProses
                                         $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
 
                                     }
+                                }
+                                else if($vAlasan->kode == 'SKK')
+                                {
+                                    $nilaiGp = null;
                                 }
                             }
                         }
@@ -1132,23 +1097,9 @@ trait TraitProses
                         }
                     }
                     $jumlahJamKerja -= ($nilaiGp/60);
-                    // if(ceil($nilaiGp/60)>4)
-                    // {
-                    //     $nilaiGp -= 60;
-                    //     $jumlahJamKerja = round($jumlahActivityKerja/60);
-                    //     // $jumlahJamKerja = $jumlahJamKerja - floor($nilaiGp/60);
-                    // }
-                    // else
-                    // {                                
-                    //     $jumlahJamKerja = $jumlahJamKerja - ($nilaiGp/60);
-                    // }
+                    
                     $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
                 }
-
-//                if($isLibur || $isMangkir)
-//                {
-//                    $shift3 = null;
-//                }
 
                 if($alasanId)
                 {
@@ -1197,6 +1148,7 @@ trait TraitProses
             }
             if(count($arrProses) > 0)
             {
+                // dd($arrProses);
                 Prosesabsen::insert($arrProses);
             }
         }

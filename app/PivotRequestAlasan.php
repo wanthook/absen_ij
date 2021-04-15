@@ -8,6 +8,7 @@ use App\RequestAlasan;
 
 class PivotRequestAlasan extends Pivot
 {
+    const updated_at = null;
     /**
      * Convert the amount from pence to pounds.
      *

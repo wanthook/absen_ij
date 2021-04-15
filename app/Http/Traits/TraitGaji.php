@@ -220,7 +220,7 @@ trait TraitGaji
             // $karyawan = Karyawan::find($karyawan_id);
             
             $abs = [
-                    'M','I','SD','GP','H2','H1','D2','D3','TA','IN','OUT','OFF'
+                    'M','I','SD','GP','H2','H1','D2','D3','TA','IN','OUT','OFF', 'SKK'
                 ];
             
             if($karyawan->prosesabsen->count() > 0)
@@ -681,7 +681,9 @@ trait TraitGaji
             */
             $potAbsArr = $this->jumlahPotonganAbsen($karyawan, $periode);
             // unset($potAbsArr['GP']);
-            $potonganAbsen = array_sum($potAbsArr);
+            $potonganAbsen = array_sum($potAbsArr) + ($jumlahOff * 0.75);
+
+
                     
             //kalau false, gak dapet
             $tunjanganHadir = 0;
@@ -731,6 +733,8 @@ trait TraitGaji
                 // dd($thread);
             }
 
+            
+
             $tunjanganPrestasi = $this->tunjanganPrestasi($karyawan, $periode);
 
             $tunjS3 = (float)MasterOption::where('nama', 'TUNJS3')->first()->nilai;
@@ -761,7 +765,7 @@ trait TraitGaji
             $gajiPokokDibayar = (int)($gajiPokok - $potonganAbsenRp);
 
             $brutto = (int) ($gajiPokokDibayar + 
-                    $lemburRp + $s3Rp + 
+                    $lemburRp + $s3Rp + $jumlahOffRp +
                     $tunjanganJabatan + $tunjanganPrestasi + 
                     $tunjanganHaid + $tunjanganHadir + $gpRp +
                     $koreksi['kor_plus'] - $koreksi['kor_min']);

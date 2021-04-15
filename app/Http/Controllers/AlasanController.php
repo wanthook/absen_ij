@@ -156,7 +156,7 @@ class AlasanController extends Controller
                 foreach($tglPer as $vTgl)
                 {
                     $par = $jd->alasan()->wherePivot('tanggal', $vTgl);
-//                
+                    
                     if($par)
                     {
                         if($req['sAlasanOld'])
@@ -179,12 +179,9 @@ class AlasanController extends Controller
                             $attach['waktu'] = $req['sWaktu'];
                         }
 
-                        $jd->alasan()->attach($req['sAlasan'], $attach);
+                        $jd->alasanSave()->attach($req['sAlasan'], $attach);
                         
-//                        if($this->cekProses($jd->id, $vTgl))
-//                        {
-                            $this->prosesAbsTanggal($jd->id, $vTgl);
-//                        }
+                        $this->prosesAbsTanggal($jd->id, $vTgl);
                     }
                 }
 
@@ -259,8 +256,8 @@ class AlasanController extends Controller
                                    'waktu' => $v['sWaktu'],
                                    'created_by' => Auth::user()->id, 
                                    'created_at' => Carbon::now()];
-
-                        $kar->alasan()->attach($v['sAlasan'], $attach);
+                                   
+                        $kar->alasanSave()->attach($v['sAlasan'], $attach);
 
                         if($this->cekProses($kar->id, $req['sTanggal']))
                         {
@@ -402,7 +399,8 @@ class AlasanController extends Controller
                 
                 $sheetData = [];
                 
-                if($fileVar->getClientMimeType() == 'text/csv' || $fileVar->getClientMimeType() == 'text/plain')
+                if($fileVar->getClientMimeType() == 'text/csv' || 
+                   $fileVar->getClientMimeType() == 'text/plain')
                 {
                     $fileStorage = fopen($fileVar->getRealPath(),'r');
                     while(! feof($fileStorage))
@@ -529,7 +527,7 @@ class AlasanController extends Controller
                                     $par->detach($alasan->id);
                                 }
                                 $attach = array_merge($attach,['created_by' => Auth::user()->id]);
-                                $kar->alasan()->attach($alasan->id, $attach);
+                                $kar->alasanSave()->attach($alasan->id, $attach);
                             }
                         }
                         else
