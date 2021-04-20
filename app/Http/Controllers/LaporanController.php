@@ -1725,7 +1725,7 @@ class LaporanController
     public function laporanKaryawanMangkirTa(Request $request)
     {
         $req = $request->all();
-        
+        // dd($req);
         $karRet = null;
         
         $absen       = Prosesabsen::where(function($q)
@@ -1755,8 +1755,8 @@ class LaporanController
                 $q->karyawanTerlihat()->where('perusahaan_id', $req['perusahaan']);
             });
         }  
-        
-        if(Auth::user()->type->nama != 'REKANAN')
+        // dd(Auth::user()->type->nama);
+        if(Auth::user()->type->nama == 'REKANAN')
         {
             $absen->whereHas('karyawan', function($q) use($req)
             {
@@ -1786,12 +1786,21 @@ class LaporanController
                 $ket = 'MANGKIR';
             }
             
+            $divisi = ['kode' => '', 'deskripsi' => ''];
+
+            if(isset($absenRow->karyawan->divisi->kode))
+            {
+                $divisi['kode'] = $absenRow->karyawan->divisi->kode;
+                $divisi['deskripsi'] = $absenRow->karyawan->divisi->deskripsi;
+            }
+
+
             $karRet[] = [
                 'pin' => $absenRow->karyawan->pin,
                 'nama_karyawan' => $absenRow->karyawan->nama,
                 'tanggal_masuk' => $absenRow->karyawan->tanggal_masuk,
-                'kode_divisi' => $absenRow->karyawan->divisi->kode,
-                'nama_divisi' => $absenRow->karyawan->divisi->deskripsi,
+                'kode_divisi' => $divisi['kode'],
+                'nama_divisi' => $divisi['deskripsi'],
                 'tanggal' => $absenRow->tanggal,
                 'jadwal_kerja' => substr($absenRow->jadwal_jam_masuk,0,5).' - '.substr($absenRow->jadwal_jam_keluar,0,5),
                 'jam_kerja' => (!empty($absenRow->jam_masuk)?substr($absenRow->jam_masuk,0,5):'00:00').' - '.(!empty($absenRow->jam_keluar)?substr($absenRow->jam_keluar,0,5):'00:00'),
