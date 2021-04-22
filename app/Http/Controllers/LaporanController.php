@@ -352,7 +352,7 @@ class LaporanController
                 $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', true);
                 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
                 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-                $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+                $pdf->SetMargins(PDF_MARGIN_LEFT, 20, PDF_MARGIN_RIGHT);
                 $pdf->setFontSubsetting(false);
                 $pdf->SetFont('dejavusans', '', 8);
                 if(count($send))
@@ -436,6 +436,10 @@ class LaporanController
                         $pdf->Cell($Width2[14], 4.5, $var['hitungLn'], '1', 0, 'C');
                         $pdf->Cell($Width2[15], 4.5, $var['totLem'], '1', 0, 'C');
                     }
+                    $pdf->Ln();
+                    $ch = 'Copyright Indah Jaya Textile Industry, PT. Print Date, '.Carbon::now()->format('d-m-Y H:i:s');
+                    
+                    $pdf->Cell(array_sum($Width), 4, $ch, 0, 0, 'R');
                 }
                 $pdf->Output('Laporan Absen Detail.pdf', 'I');
             }
