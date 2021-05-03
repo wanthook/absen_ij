@@ -1797,7 +1797,10 @@ class LaporanController
                 $divisi['kode'] = $absenRow->karyawan->divisi->kode;
                 $divisi['deskripsi'] = $absenRow->karyawan->divisi->deskripsi;
             }
-
+            if(!isset($absenRow->karyawan))
+            {
+                continue;
+            }
 
             $karRet[] = [
                 'pin' => $absenRow->karyawan->pin,
