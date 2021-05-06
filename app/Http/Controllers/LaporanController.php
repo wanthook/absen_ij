@@ -1815,7 +1815,6 @@ class LaporanController
             ];
         }
         
-        ///////
         if($req['btnSubmit'] == "preview")
         {
             return view('admin.laporan.karyawan_mangkir_ta.preview', ['var' => $karRet, 
@@ -2298,7 +2297,7 @@ class LaporanController
             $abs = [
                     'C' => 0, 'D1' => 0, 'D2' => 0, 'D3' => 0, 'SD' => 0, 'SK' => 0,
                     'I' => 0, 'M' => 0, 'H1' => 0, 'H2' => 0, 'TA' => 0, 'GP' => 0,
-                    'IN' => 0, 'OUT' => 0, 'OFF' => 0
+                    'IN' => 0, 'OUT' => 0, 'OFF' => 0, 'S1' => 0, 'S2' => 0, 'S3' => 0
                 ];
             $tmk = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal_masuk);
             if($rowKar->prosesabsen->count() > 0)
@@ -2319,6 +2318,31 @@ class LaporanController
                             }
                         }
                         
+                    }
+
+                    if($proses->shift3)
+                    {
+                        $abs['S3'] += 1;
+                    }
+                    else
+                    {
+                        if($proses->jam_masuk)
+                        {
+                            $s1 = Carbon::createFromFormat('Y-m-d H:i:s', $proses->tanggal.' 07:00:00');
+                            $s2 = Carbon::createFromFormat('Y-m-d H:i:s', $proses->tanggal.' 14:00:00');
+                            // dd($s1);
+                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $proses->tanggal.' '.$proses->jam_masuk);
+                            // $jPulang = Carbon::createFromFormat('Y-m-d H:i:s', $proses->tanggal.' '.$proses->jam_pulang);
+
+                            if($jMasuk->between($s1->copy()->subHours(6), $s1->copy()->addHours(6)))
+                            {
+                                $abs['S1'] += 1;
+                            }
+                            else if($jMasuk->between($s2->copy()->subHours(6), $s2->copy()->addHours(6)))
+                            {
+                                $abs['S2'] += 1;
+                            }
+                        }
                     }
                 }
             }
@@ -2358,8 +2382,8 @@ class LaporanController
                     $pdf->AddPage();
                                         
                     $headTbl1 = array('No', 'Kode', 'Nama', 'PIN',  'TMK', 'Nama','Absensi');
-                    $headTbl2 = array('','Divisi', 'Divisi', '', '','Karyawan', 'C', 'D1', 'D2', 'D3', 'SD', 'SK', 'I', 'M', 'H1', 'H2', 'TA', 'GP', 'IN', 'OUT', 'OFF');
-                    $headW = array(10,30,35,20,20,65,9*15);
+                    $headTbl2 = array('','Divisi', 'Divisi', '', '','Karyawan', 'C', 'D1', 'D2', 'D3', 'SD', 'SK', 'I', 'M', 'H1', 'H2', 'TA', 'GP', 'IN', 'OUT', 'OFF', 'S1', 'S2', 'S3');
+                    $headW = array(10,15,35,15,17,65,9*18);
 
                     foreach($headTbl1 as $kH => $vH)
                     {

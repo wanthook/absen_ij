@@ -136,11 +136,11 @@
                 <th rowspan="2">PIN</th>
                 <th rowspan="2">TMK</th>
                 <th rowspan="2">Nama<br>Karyawan</th>
-                <th colspan="15">Absensi</th>
+                <th colspan="18">Absensi</th>
             </tr>
             <tr>
                 @php
-                $lbl = ['C','D1','D2','D3','SD','SK','I','M','H1','H2','TA','GP','IN','OUT','OFF'];
+                $lbl = ['C','D1','D2','D3','SD','SK','I','M','H1','H2','TA','GP','IN','OUT','OFF', 'S1', 'S2', 'S3'];
                 foreach($lbl as $vLbl)
                 {
                     echo '<th>'.$vLbl.'</th>';
