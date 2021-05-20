@@ -612,7 +612,7 @@
                                         @php
                                         $alasan = null;
                                         
-                                        $mo = \App\Alasan::where('show','N')->get();
+                                        $mo = \App\Alasan::where('show','N')->orWhere('kode', 'RM')->get();
                                         
                                         foreach($mo as $moV)
                                         {
