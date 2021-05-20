@@ -36,6 +36,16 @@ class Jadwal extends Model
                     ->withPivot('day','tanggal','created_by','created_at')
                     ->orderBy('tanggal', 'asc');
     }
+
+    public function jadwal_kerja_limit()
+    {
+        $dt = Carbon::now();
+
+        return $this->belongsToMany('App\JamKerja')
+                    ->withPivot('day','tanggal','created_by','created_at')
+                    ->wherePivot('tanggal', '>=', $dt->subMonths(2)->format('Y-m').'-01')
+                    ->orderBy('tanggal', 'asc');
+    }
     
     public function jadwalKerjaDay($hari)
     {

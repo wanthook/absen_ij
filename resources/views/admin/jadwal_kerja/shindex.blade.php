@@ -318,9 +318,11 @@ else
                     {
                         eDate = eDate.subtract(1, 'days');
                     }
-                    obj[index] = {id:data.id,
-                             date_start:sDate.format('YYYY-MM-DD'),
-                             date_end:eDate.format('YYYY-MM-DD')};
+                    obj[index] = {
+                        id:data.id,
+                        date_start:sDate.format('YYYY-MM-DD'),
+                        date_end:eDate.format('YYYY-MM-DD')
+                    };
                 });
 
                 formData.data = obj;
@@ -969,7 +971,7 @@ else
         </div>    
         <div class="modal-footer justify-content-between">
             <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
-            <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button>
+            <!-- <button type="submit" id="cmdModalSave" class="btn btn-outline-light">Simpan</button> -->
         </div>
     </div>
     <!-- /.modal-content -->

@@ -403,6 +403,8 @@ class JadwalController extends Controller
             else
             {
                 $req = $request->all();
+
+                // dd($req);
                 // dd($req['data']);
                 if(empty($req['id']))
                 {
@@ -454,7 +456,9 @@ class JadwalController extends Controller
                     Jadwal::find($req['id'])->fill($req)->save();
                     
                     $jd = Jadwal::find($req['id']);
-                    $jd->jadwal_kerja()->detach();
+                    $reqFirst = $req['data'][0];
+
+                    $jd->jadwal_kerja()->wherePivot('tanggal','>=',$reqFirst['date_start'])->detach();
                     
                     foreach($req['data'] as $valX)
                     {
@@ -1022,7 +1026,7 @@ class JadwalController extends Controller
                 $cColor = null;
                 $cId = null;
 
-                foreach($res->jadwal_kerja as $jk)
+                foreach($res->jadwal_kerja_limit as $jk)
                 {
 
                     if(empty($cId))
