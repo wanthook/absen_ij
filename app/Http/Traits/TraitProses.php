@@ -99,7 +99,7 @@ trait TraitProses
 
             $jadwalArr = array();
 
-            Prosesabsen::where('karyawan_id', $karId->id)
+            Prosesabsen::where('karyawan_id', $karyawan->id)
                     ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
                     ->delete();
             
@@ -1206,7 +1206,7 @@ trait TraitProses
                     }
                     
                     $arrProses[] = [
-                        'karyawan_id' => $karId->id,
+                        'karyawan_id' => $karyawan->id,
                         'alasan_id' => $alasanId,
                         'tanggal' => $key,
                         'jam_masuk' => (!empty($jMasuk))?$jMasuk->format('H:i:s'):null,
