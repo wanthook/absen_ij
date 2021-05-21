@@ -39,6 +39,7 @@ use Auth;
 use Exception;
 use Validator;
 use DB;
+use Log;
 
 
 trait TraitProses 
