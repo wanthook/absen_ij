@@ -108,7 +108,7 @@ class ProsesabsenController extends Controller
                 {
                     foreach($kar as $rKar)
                     {
-                        Log::info("Start proccess karyawan_id:".$rKar->id.", pin:".$rKar->pin);
+                        Log::info("Start proccess karyawan_id:".$rKar->id.", pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
                         
                         $this->prosesAbs($rKar, $tanggal);
                         $cnt++;
