@@ -36,8 +36,9 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\QueryException;
 use Auth;
-
+use Exception;
 use Validator;
+use DB;
 
 
 trait TraitProses 
@@ -70,540 +71,647 @@ trait TraitProses
     
     public function prosesAbs($karId, $tanggal)
     {
-        $karyawan = Karyawan::find($karId);
-        $tmk = null;
-        $active = null;
-        $off = null;
-
-        if($karyawan->tanggal_masuk)
+        try
         {
-            $tmk = Carbon::createFromFormat('Y-m-d', $karyawan->tanggal_masuk);
-        }
+            // $karyawan = Karyawan::find($karId);
+            $karyawan = $karId;
+            $tmk = null;
+            $active = null;
+            $off = null;
 
-        if($karyawan->active_status_date)
-        {
-            $active = Carbon::createFromFormat('Y-m-d', $karyawan->active_status_date);
-        }
-                
-
-        $jadwal = $this->jadwals($tanggal, $karyawan);
-
-        $jadwalArr = array();
-
-        Prosesabsen::where('karyawan_id', $karId)
-                ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
-                ->delete();
-        
-        if(!$jadwal)
-        {
-            ExceptionLog::create(['file_target' => 'ProsesabsenController.php', 'message_log' => json_encode(['karyawan_id' => $karyawan->id, 
-                'message' => 'JADWAL KOSONG']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-            return false;
-        }
-
-        $jadwalArr = $this->jadwals($tanggal, $karyawan);
-        $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-        
-        // dd($jadwalManual);
-        if($jadwalArr)
-        {
-            $arrProses = [];
-
-            foreach($jadwalArr as $key => $val)
+            if($karyawan->tanggal_masuk)
             {
-                if($jadwalManual[$key])
-                {
-
-                    $jadwalArr[$key] = $jadwalManual[$key];
-                }
+                $tmk = Carbon::createFromFormat('Y-m-d', $karyawan->tanggal_masuk);
             }
 
-            unset($jadwalManual);
+            if($karyawan->active_status_date)
+            {
+                $active = Carbon::createFromFormat('Y-m-d', $karyawan->active_status_date);
+            }
+                    
 
-            foreach($jadwalArr as $key => $val)
-            {    
-                /*
-                 * Ambil Jadwal Manual
-                 */
-                // if($jadwalManual[$key])
-                // {
+            $jadwal = $this->jadwals($tanggal, $karyawan);
 
-                //     $val = $jadwalManual[$key];
-                //     // dd($val);
-                // }
-                /*
-                 * End Ambil Jadwal Manual
-                 */
+            $jadwalArr = array();
 
-                $alasanId = null;
+            Prosesabsen::where('karyawan_id', $karId->id)
+                    ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
+                    ->delete();
+            
+            if(!$jadwal)
+            {
+                // ExceptionLog::create(['file_target' => 'ProsesabsenController.php', 'message_log' => json_encode(['karyawan_id' => $karyawan->id, 
+                //     'message' => 'JADWAL KOSONG']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
+                return false;
+            }
 
-                $jadwalBefore = null;
+            $jadwalArr = $this->jadwals($tanggal, $karyawan);
+            $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
+            
+            if($jadwalArr)
+            {
+                $arrProses = [];
 
-                $jadMasuk = null;
-                $jadKeluar = null;
-
-                $jMasuk = null;
-                $jSubMasuk = null;
-                $jMasukId = null;
-
-                $jKeluar = null;
-                $jSubKeluar = null;
-                $jKeluarId = null;
-
-                $nMasuk = null;
-                $nKeluar = null;
-
-                $isPendek = null;
-                $isMangkir = null;
-                $isLibur = null;
-                $isTa = null;
-                $isInOut = null;
-                $isOff = null;
-
-                $lemburAktual = null;
-                $hitungLembur = null;
-                $shift3 = null;
-                $lemburLN = null;
-                $hitungLemburLN = null;
-                // $totalLembur = null;
-                $nilaiGp = null;
-                // $nilaiGpIn = null;
-                // $nilaiGpOut = null;
-                $jumlahJamKerja = null;
-                $jumlahActivityKerja = null;
-
-                // $absenManual = null;
-
-                $addRangeStart = 0;
-                $addRangeEnd = 0;
-
-                $actIn = null;
-                $actOut = null;
-
-                $keterangan = null;
-
-                $isSpo      = false;
-                $isLn       = false;
-                $isLnOff    = false;
-
-                $flagNotInOut = null;
-                $pendek = null;
-                $kodeJadwal = null;
-
-                if(isset($val->kode))
+                foreach($jadwalArr as $key => $val)
                 {
-                    $kodeJadwal = $val->kode;
-                }
-
-                if($tmk)
-                {
-                    if($tmk->diffInDays($key, false) < 0)
+                    if($jadwalManual[$key])
                     {
-                        $alasanId[] = Alasan::where('kode','IN')->first()->id;
-                        $isInOut = 'IN';
-                        $keterangan[] = 'IN';
-                        goto proses_simpan;
+
+                        $jadwalArr[$key] = $jadwalManual[$key];
                     }
                 }
 
-                if($active)
-                {
-                    if($active->diffInDays($key, false)>=0)
-                    {
-                        $alasanId[] = Alasan::where('kode','OUT')->first()->id;                        
-                        $isInOut = 'OUT';
-                        $keterangan[] = 'OUT';
-//                        goto proses_simpan;
-                    }
-                }
-                              
-                
-                $off = $karyawan->logOffTanggal($key)->first();
-                if($off)
-                {
-                    if($off->kode != 'AKT')
-                    {
-                        $alasanId[] = $off->id;
-                        $isOff = 'Y';
-                        $keterangan[] = $off->kode;
-//                        goto proses_simpan;
-                    }
-                }
+                // unset($jadwalManual);
 
+                foreach($jadwalArr as $key => $val)
+                {  
 
-                if(isset($val->pendek))
-                {
-                    if($val->pendek == "1")
+                    $alasanId = null;
+
+                    $jadwalBefore = null;
+
+                    $jadMasuk = null;
+                    $jadKeluar = null;
+
+                    $jMasuk = null;
+                    $jSubMasuk = null;
+                    $jMasukId = null;
+
+                    $jKeluar = null;
+                    $jSubKeluar = null;
+                    $jKeluarId = null;
+
+                    $nMasuk = null;
+                    $nKeluar = null;
+
+                    $isMangkir = null;
+                    $isLibur = null;
+                    $isTa = null;
+                    $isInOut = null;
+                    $isOff = null;
+
+                    $lemburAktual = null;
+                    $hitungLembur = null;
+                    $shift3 = null;
+                    $lemburLN = null;
+                    $hitungLemburLN = null;
+                    $nilaiGp = null;
+                    $jumlahJamKerja = null;
+                    $jumlahActivityKerja = null;
+
+                    $addRangeStart = 0;
+                    $addRangeEnd = 0;
+
+                    $actIn = null;
+                    $actOut = null;
+
+                    $keterangan = null;
+
+                    $isSpo      = false;
+                    $isLn       = false;
+                    $isLnOff    = false;
+
+                    $flagNotInOut = null;
+                    $pendek = null;
+                    $kodeJadwal = null;
+
+                    if(isset($val->kode))
                     {
-                        $pendek = 1;
+                        $kodeJadwal = $val->kode;
                     }
-                }
 
-                
-                /*
-                 * Start If
-                 * 
-                 * Apakah kode jadwal bukan L
-                 * Jika Ya, Masukkan nilai jadwal masuk dan pulang
-                 * Jika Tidak, Nilai libur akan 1
-                 */
-                if($kodeJadwal)
-                {
-                    if($kodeJadwal != 'L')
+                    if($tmk)
                     {
-                        /*
-                        * Absen Manual
-                        */                       
-                        if($val->jam_masuk && $val->jam_keluar)
+                        if($tmk->diffInDays($key, false) < 0)
                         {
-                            $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
-                            $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
-                            
+                            $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                            $isInOut = 'IN';
+                            $keterangan[] = 'IN';
+                            goto proses_simpan;
+                        }
+                    }
+
+                    if($active)
+                    {
+                        if($active->diffInDays($key, false)>=0)
+                        {
+                            $alasanId[] = Alasan::where('kode','OUT')->first()->id;                        
+                            $isInOut = 'OUT';
+                            $keterangan[] = 'OUT';
+                        }
+                    }
+                                
+                    
+                    $off = $karyawan->logOffTanggal($key)->first();
+                    if($off)
+                    {
+                        if($off->kode != 'AKT')
+                        {
+                            $alasanId[] = $off->id;
+                            $isOff = 'Y';
+                            $keterangan[] = $off->kode;
+                        }
+                    }
+
+
+                    if(isset($val->pendek))
+                    {
+                        if($val->pendek == "1")
+                        {
+                            $pendek = 1;
+                        }
+                    }
+
+                    
+                    /*
+                    * Start If
+                    * 
+                    * Apakah kode jadwal bukan L
+                    * Jika Ya, Masukkan nilai jadwal masuk dan pulang
+                    * Jika Tidak, Nilai libur akan 1
+                    */
+                    if($kodeJadwal)
+                    {
+                        if($kodeJadwal != 'L')
+                        {
                             /*
-                            * cek jadwal shift3
-                            */
-                            if($in->greaterThan($out))
+                            * Absen Manual
+                            */                       
+                            if($val->jam_masuk && $val->jam_keluar)
                             {
-                                $out->addDay();
-                                $shift3 = 1;
+                                $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
+                                $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                                
+                                /*
+                                * cek jadwal shift3
+                                */
+                                if($in->greaterThan($out))
+                                {
+                                    $out->addDay();
+                                    $shift3 = 1;
+                                }
                             }
+                            else
+                            {
+                                goto proses_simpan;
+                            }
+
                         }
                         else
                         {
-                            goto proses_simpan;
+                            $isLibur = 1;
                         }
+                    }
+                    /*
+                    * End If
+                    */
+
+                    /*
+                    * Buat Variable Carbon untuk tanggal current
+                    */
+                    $curDate = Carbon::createFromFormat("Y-m-d", $key);
+                    /*
+                    * End
+                    */
+                
+
+                    /*
+                    * Ambil alasan karyawan pada tanggal current
+                    */
+                    $alasan = $karyawan->alasanTanggal($key);
+                    
+                    if(!$alasan->count())
+                    {
+                        $alasan = $karyawan->alasanRangeTanggal($key);
+                    }
+                    // dd($alasan);
+                    /*
+                    * End
+                    */
+
+                    /*
+                    * Ambil libur nasional
+                    */
+                    $lN = Libur::where('tanggal', $key)->first();
+                    if($lN)
+                    {
+                        $isLn = true;
+                    }
+                    /*
+                    * End
+                    */
+
+
+                    /*
+                    * Start If
+                    * 
+                    * Jika Ya, ada libur nasional
+                    */
+                    if($lN)
+                    {
+                        /*
+                        * Start If
+                        * 
+                        * Jika Ya, ada Libur dan ada alasan
+                        */
+                        if($alasan->count())
+                        {
+                            foreach($alasan->get() as $vAlasan)
+                            {
+                                /*
+                                * Start If
+                                * 
+                                * Jika Ya, ada Libur dan ada alasan
+                                * dengan kode alasan LN
+                                */
+                                if($vAlasan->kode == 'LN')
+                                {
+                                    /*
+                                    * Tag LN ada
+                                    */
+                                    $isLn = true;
+                                    /*
+                                    * Start If
+                                    * 
+                                    * Jika Ya, ada Libur nasional dan ada alasan
+                                    * dengan kode alasan LN
+                                    * ada jadwal dengan kode L
+                                    */
+                                    if($vAlasan->kode == 'L')
+                                    {
+                                        $isLnOff = true;
+                                    }
+                                }
+                                /*
+                                * Jika Tidak, ada libur nasional dan ada alasan
+                                * tidak ada alasan LN
+                                */
+                                else
+                                {
+                                    $isLibur = 1;
+                                }
+                                /*
+                                * End if
+                                */
+                            }
+                        }
+                        /*
+                        * Jika Tidak, ada libur nasional dan tidak ada alasan
+                        */
+                        else
+                        {
+                            $isLibur = 1;
+                            $keterangan[] = "Libur Nasional";
+                        }
+                        /*
+                        * End if
+                        */
 
                     }
                     else
                     {
-                        $isLibur = 1;
+                        /*
+                        * Jadi ada kondisi di apac yang dimana itu adalah libur nasional namun
+                        * tidak diset libur nasional di tanggal libur nasional
+                        * tapi ada beberapa karyawan yang di set alasan Libur Nasional.
+                        * 23-11-2020
+                        */
+                        if(isset($alasan))
+                        {
+                            if($alasan->count())
+                            {
+                                $iLn = false;
+                                foreach($alasan->get() as $al)
+                                {
+                                    if($al->kode == 'LN')
+                                    {
+                                        $iLn = true; break;
+                                    }
+                                }
+
+                                if($iLn)
+                                {
+                                    $isLn = true;
+                                    $isLibur = 1;
+                                    $keterangan[] = "Libur Nasional";
+                                }
+                            }
+                        }
                     }
-                }
-                /*
-                 * End If
-                 */
 
-                /*
-                 * Buat Variable Carbon untuk tanggal current
-                 */
-                $curDate = Carbon::createFromFormat("Y-m-d", $key);
-                /*
-                 * End
-                 */
-               
-
-                /*
-                 * Ambil alasan karyawan pada tanggal current
-                 */
-                $alasan = $karyawan->alasanTanggal($key);
-                
-                if(!$alasan->count())
-                {
-                    $alasan = $karyawan->alasanRangeTanggal($key);
-                }
-                // dd($alasan);
-                /*
-                 * End
-                 */
-
-                /*
-                 * Ambil libur nasional
-                 */
-                $lN = Libur::where('tanggal', $key)->first();
-                if($lN)
-                {
-                    $isLn = true;
-                }
-                /*
-                 * End
-                 */
-
-
-                /*
-                 * Start If
-                 * 
-                 * Jika Ya, ada libur nasional
-                 */
-                if($lN)
-                {
-                    /*
-                     * Start If
-                     * 
-                     * Jika Ya, ada Libur dan ada alasan
-                     */
                     if($alasan->count())
                     {
                         foreach($alasan->get() as $vAlasan)
                         {
-                            /*
-                             * Start If
-                             * 
-                             * Jika Ya, ada Libur dan ada alasan
-                             * dengan kode alasan LN
-                             */
-                            if($vAlasan->kode == 'LN')
+                            $alasanId[] = $vAlasan->id;
+                            switch($vAlasan->kode)
                             {
-                                /*
-                                 * Tag LN ada
-                                 */
-                                $isLn = true;
-                                /*
-                                 * Start If
-                                 * 
-                                 * Jika Ya, ada Libur nasional dan ada alasan
-                                 * dengan kode alasan LN
-                                 * ada jadwal dengan kode L
-                                 */
-                                if($vAlasan->kode == 'L')
+                                case "SPL": $addRangeEnd = 60 * $vAlasan->pivot->waktu; break;
+                                case "SLA": $addRangeStart = 60 * $vAlasan->pivot->waktu; break;
+                                case "SPO": $isSpo = true; break;
+                            }
+                            
+                            if($vAlasan->libur == 'Y' && $vAlasan->kode != 'LN')
+                            {
+                                $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
+                            }
+                        }
+                    }
+
+                    if(!$isLnOff && !$isSpo)
+                    {
+                        if($kodeJadwal)
+                        {
+                            if($kodeJadwal != 'L')
+                            {                        
+
+                                $jadMasuk = $in;
+                                $jadKeluar = $out;
+
+                                $jumlahJamKerja = $out->diffInHours($in);
+
+                                // $actIn = Activity::where('pin', $karyawan->key)
+                                //         ->whereBetween('tanggal', [
+                                //             $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
+                                //             $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
+                                //         ])
+                                //         ->orderBy('tanggal', 'ASC')
+                                //         ->first();
+                                $actIn = DB::table('activities')
+                                            ->where('pin', $karyawan->key)
+                                            ->whereBetween('tanggal', [
+                                                $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
+                                                $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
+                                            ])
+                                            ->orderBy('tanggal', 'ASC')
+                                            ->first();
+
+                                $jMasukId = ($actIn)?$actIn->id:null;
+
+                                // $actOut = Activity::where('pin', $karyawan->key)
+                                //         ->whereBetween('tanggal', [
+                                //             $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                //             $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
+                                //         ])
+                                //         ->orderBy('tanggal', 'DESC')
+                                //         ->first();
+                                $actOut = DB::table('activities')
+                                            ->where('pin', $karyawan->key)
+                                            ->whereBetween('tanggal', [
+                                                $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
+                                            ])
+                                            ->orderBy('tanggal', 'DESC')
+                                            ->first();
+                                $jKeluarId = ($actOut)?$actOut->id:null;
+
+                                if($jMasukId)
                                 {
-                                    $isLnOff = true;
+                                    if(!$jKeluarId)
+                                    {
+                                        // $actOut = Activity::where('pin', $karyawan->key)
+                                        //     ->whereBetween('tanggal',[
+                                        //         $out->copy()->toDateTimeString(), 
+                                        //         $out->copy()->addHours(14)->toDateTimeString()
+                                        //     ])
+                                        //     ->orderBy('tanggal', 'DESC')
+                                        //     ->first();
+                                        $actOut = DB::table('activities')
+                                                    ->where('pin', $karyawan->key)
+                                                    ->whereBetween('tanggal',[
+                                                        $out->copy()->toDateTimeString(), 
+                                                        $out->copy()->addHours(14)->toDateTimeString()
+                                                    ])
+                                                    ->orderBy('tanggal', 'DESC')
+                                                    ->first();
+                                        if($actOut)
+                                        {
+                                            $flagNotInOut = "out";
+                                        
+                                            $jKeluarId = ($actOut)?$actOut->id:null;
+                                        }
+                                        else
+                                        {
+                                            // $actOut = Activity::where('pin', $karyawan->key)
+                                            // ->whereBetween('tanggal',[
+                                            //     $out->copy()->subHours(6.5)->toDateTimeString(),
+                                            //     $out->copy()->toDateTimeString()
+                                                
+                                            // ])
+                                            // ->orderBy('tanggal', 'DESC')
+                                            // ->first();
+                                            $actOut = DB::table('activities')
+                                                        ->where('pin', $karyawan->key)
+                                                        ->whereBetween('tanggal',[
+                                                            $out->copy()->subHours(6.5)->toDateTimeString(),
+                                                            $out->copy()->toDateTimeString()
+                                                            
+                                                        ])
+                                                        ->orderBy('tanggal', 'DESC')
+                                                        ->first();
+                                            $flagNotInOut = "out";
+                                        
+                                            $jKeluarId = ($actOut)?$actOut->id:null;
+                                        }
+                                    }
+                                }
+                                else if($jKeluarId)
+                                {
+                                    if(!$jMasukId)
+                                    {
+                                        if(!$shift3)
+                                        {
+                                            // $actIn = Activity::where('pin', $karyawan->key)
+                                            //         ->whereDate('tanggal', $in->copy()->toDateString())
+                                            //         ->orderBy('tanggal', 'ASC')
+                                            //         ->first();
+                                            $actIn = DB::table('activities')
+                                                    ->where('pin', $karyawan->key)
+                                                    ->whereDate('tanggal', $in->copy()->toDateString())
+                                                    ->orderBy('tanggal', 'ASC')
+                                                    ->first();
+
+                                            $flagNotInOut = "in";
+
+                                            $jMasukId = ($actIn)?$actIn->id:null;
+                                        }
+                                        else
+                                        {
+                                            // $actIn = Activity::where('pin', $karyawan->key)
+                                            //         ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
+                                            //         ->orderBy('tanggal', 'ASC')
+                                            //         ->first();
+                                            $actIn = DB::table('activities')
+                                                    ->where('pin', $karyawan->key)
+                                                    ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
+                                                    ->orderBy('tanggal', 'ASC')
+                                                    ->first();
+
+                                            $flagNotInOut = "in";
+
+                                            $jMasukId = ($actIn)?$actIn->id:null;                                                
+                                        }
+                                    }
                                 }
                             }
-                            /*
-                             * Jika Tidak, ada libur nasional dan ada alasan
-                             * tidak ada alasan LN
-                             */
                             else
                             {
-                                $isLibur = 1;
+                                $actIn = null;
+                                $actOut = null;
                             }
-                            /*
-                             * End if
-                             */
                         }
+
                     }
-                    /*
-                     * Jika Tidak, ada libur nasional dan tidak ada alasan
-                     */
                     else
                     {
-                        $isLibur = 1;
-                        $keterangan[] = "Libur Nasional";
-                    }
-                    /*
-                     * End if
-                     */
+                        $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 07:00:00");
+                        $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 14:00:00");
+                        $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 23:00:00");
 
-                }
-                else
-                {
-                    /*
-                     * Jadi ada kondisi di apac yang dimana itu adalah libur nasional namun
-                     * tidak diset libur nasional di tanggal libur nasional
-                     * tapi ada beberapa karyawan yang di set alasan Libur Nasional.
-                     * 23-11-2020
-                     */
-                    if(isset($alasan))
-                    {
-                        if($alasan->count())
-                        {
-                            $iLn = false;
-                            foreach($alasan->get() as $al)
-                            {
-                                if($al->kode == 'LN')
-                                {
-                                    $iLn = true; break;
-                                }
-                            }
+                        $outS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 15:00:00");
+                        $outS2 = $inS3;
+                        $outS3 = $inS1->copy()->addDay();
 
-                            if($iLn)
-                            {
-                                $isLn = true;
-                                $isLibur = 1;
-                                $keterangan[] = "Libur Nasional";
-                            }
-                        }
-                    }
-                }
-
-                if($alasan->count())
-                {
-                    foreach($alasan->get() as $vAlasan)
-                    {
-                        $alasanId[] = $vAlasan->id;
-                        switch($vAlasan->kode)
-                        {
-                            case "SPL": $addRangeEnd = 60 * $vAlasan->pivot->waktu; break;
-                            case "SLA": $addRangeStart = 60 * $vAlasan->pivot->waktu; break;
-                            case "SPO": $isSpo = true; break;
-                        }
+                        $actIn = null;
+                        $actOut = null;
                         
-                        if($vAlasan->libur == 'Y' && $vAlasan->kode != 'LN')
+                        $tglBefore  = $curDate->copy()->subDay();
+                        $jadwalBefore = $this->jadwalSingle($tglBefore, $karyawan);
+
+                        if($jadwalBefore)
                         {
-                            $keterangan[] = $vAlasan->deskripsi; $isLibur = 1;
-                        }
-                    }
-                }
+                            $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
+                            $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
 
-                if(!$isLnOff && !$isSpo)
-                {
-                    if($kodeJadwal)
-                    {
-                        if($kodeJadwal != 'L')
-                        {                        
-
-                            $jadMasuk = $in;
-                            $jadKeluar = $out;
-
-                            $jumlahJamKerja = $out->diffInHours($in);
-
-                            $actIn = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [
-                                        $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
-                                        $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
-                                    ])
-                                    ->orderBy('tanggal', 'ASC')
-                                    ->first();
-                            $jMasukId = ($actIn)?$actIn->id:null;
-
-                            $actOut = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [
-                                        $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                        $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
-                                    ])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-                            $jKeluarId = ($actOut)?$actOut->id:null;
-
-                            if($jMasukId)
+                            if($inBefore->greaterThan($outBefore))
                             {
-                                if(!$jKeluarId)
+                                // $tmpAct = Activity::where('pin', $karyawan->key)
+                                //         ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                //         ->orderBy('tanggal', 'ASC')
+                                //         ->first();
+                                $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'ASC')
+                                        ->first();
+                                /*
+                                * apakah shift2
+                                */
+                                if($tmpAct)
                                 {
-                                    $actOut = Activity::where('pin', $karyawan->key)
-                                        ->whereBetween('tanggal',[
-                                            $out->copy()->toDateTimeString(), 
-                                            $out->copy()->addHours(14)->toDateTimeString()
-                                        ])
+                                    $actIn = $tmpAct;
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
-                                    if($actOut)
-                                    {
-                                        $flagNotInOut = "out";
+
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
+                                }
+                                else
+                                {
+                                    // $actIn = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'ASC')
+                                    //     ->first();
                                     
-                                        $jKeluarId = ($actOut)?$actOut->id:null;
-                                    }
-                                    else
-                                    {
-                                        $actOut = Activity::where('pin', $karyawan->key)
-                                        ->whereBetween('tanggal',[
-                                            $out->copy()->subHours(6.5)->toDateTimeString(),
-                                            $out->copy()->toDateTimeString()
-                                            
-                                        ])
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'ASC')
+                                        ->first();
+                                    
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
-                                        $flagNotInOut = "out";
-                                    
-                                        $jKeluarId = ($actOut)?$actOut->id:null;
-                                    }
+
+                                    $shift3 = 1;
+
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;                            
                                 }
                             }
-                            else if($jKeluarId)
+                            else
                             {
-                                if(!$jMasukId)
+                                // $tmpAct = Activity::where('pin', $karyawan->key)
+                                //         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                //         ->orderBy('tanggal', 'ASC')
+                                //         ->first();
+                                $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'ASC')
+                                        ->first();
+                                //Jika Sf1
+                                if($tmpAct)
                                 {
-                                    if(!$shift3)
-                                    {
-                                        $actIn = Activity::where('pin', $karyawan->key)
-                                                ->whereDate('tanggal', $in->copy()->toDateString())
+                                    $actIn = $tmpAct;
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'DESC')
+                                        ->first();
+
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
+                                }
+                                else
+                                {
+                                    // $actIn = Activity::where('pin', $karyawan->key)
+                                    //             ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //             ->orderBy('tanggal', 'ASC')
+                                    //             ->first();
+                                    
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //             ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //             ->orderBy('tanggal', 'DESC')
+                                    //             ->first();
+                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                                ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'ASC')
                                                 ->first();
-
-                                        $flagNotInOut = "in";
-
-                                        $jMasukId = ($actIn)?$actIn->id:null;
-                                    }
-                                    else
-                                    {
-                                        $actIn = Activity::where('pin', $karyawan->key)
-                                                ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
-                                                ->orderBy('tanggal', 'ASC')
+                                    
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                                ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                                ->orderBy('tanggal', 'DESC')
                                                 ->first();
 
-                                        $flagNotInOut = "in";
-
-                                        $jMasukId = ($actIn)?$actIn->id:null;                                                
-                                    }
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
                             }
                         }
                         else
                         {
-                            $actIn = null;
-                            $actOut = null;
-                        }
-                    }
-
-                }
-                else
-                {
-                    $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 07:00:00");
-                    $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 14:00:00");
-                    $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 23:00:00");
-
-                    $outS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 15:00:00");
-                    $outS2 = $inS3;
-                    $outS3 = $inS1->copy()->addDay();
-
-                    $actIn = null;
-                    $actOut = null;
-                    
-                    $tglBefore  = $curDate->copy()->subDay();
-                    $jadwalBefore = $this->jadwalSingle($tglBefore, $karyawan);
-
-                    if($jadwalBefore)
-                    {
-                        $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
-                        $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
-                        // dd(['in' => $inBefore, 'out'=> $outBefore, 'check' => $inBefore->greaterThan($outBefore)]);
-                        if($inBefore->greaterThan($outBefore))
-                        {
-                            $tmpAct = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                            // $tmpAct = Activity::where('pin', $karyawan->key)
+                            //         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                            //         ->orderBy('tanggal', 'ASC')
+                            //         ->first();
+                            $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
                             /*
-                            * apakah shift2
+                            * shift 1
                             */
                             if($tmpAct)
                             {
                                 $actIn = $tmpAct;
-                                $actOut = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
 
-                                $jMasukId = ($actIn)?$actIn->id:null;
-                                $jKeluarId = ($actOut)?$actOut->id:null;
-                            }
-                            else
-                            {
-                                $actIn = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'ASC')
-                                    ->first();
-                                
-                                $actOut = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-                                $shift3 = 1;
-
-                                $jMasukId = ($actIn)?$actIn->id:null;
-                                $jKeluarId = ($actOut)?$actOut->id:null;                            
-                            }
-                        }
-                        else
-                        {
-                            $tmpAct = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'ASC')
-                                    ->first();
-                            //Jika Sf1
-                            if($tmpAct)
-                            {
-                                $actIn = $tmpAct;
-                                $actOut = Activity::where('pin', $karyawan->key)
+                                // $actOut = Activity::where('pin', $karyawan->key)
+                                //     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                //     ->orderBy('tanggal', 'DESC')
+                                //     ->first();
+                                $actOut = DB::table('activities')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
                                     ->first();
@@ -613,221 +721,221 @@ trait TraitProses
                             }
                             else
                             {
-                                $actIn = Activity::where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                            ->orderBy('tanggal', 'ASC')
-                                            ->first();
-                                
-                                $actOut = Activity::where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                            ->orderBy('tanggal', 'DESC')
-                                            ->first();
-
-                                $jMasukId = ($actIn)?$actIn->id:null;
-                                $jKeluarId = ($actOut)?$actOut->id:null;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        $tmpAct = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'ASC')
-                                ->first();
-                        /*
-                         * shift 1
-                         */
-                        if($tmpAct)
-                        {
-                            $actIn = $tmpAct;
-
-                            $actOut = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'DESC')
-                                ->first();
-
-                            $jMasukId = ($actIn)?$actIn->id:null;
-                            $jKeluarId = ($actOut)?$actOut->id:null;
-                        }
-                        else
-                        {
-                            $actIn = Activity::where('pin', $karyawan->key)
-                                ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                ->orderBy('tanggal', 'DESC')
-                                ->first();
-
-                            if($actIn)
-                            {
-
-                                $actOut = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                // $actIn = Activity::where('pin', $karyawan->key)
+                                //     ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                //     ->orderBy('tanggal', 'DESC')
+                                //     ->first();
+                                $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
                                     ->first();
 
-                                $jMasukId = ($actIn)?$actIn->id:null;
-                                $jKeluarId = ($actOut)?$actOut->id:null;
+                                if($actIn)
+                                {
+
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'DESC')
+                                        ->first();
+
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
+                                }
+                                else
+                                {
+                                    // $actIn = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+
+                                    // $actOut = Activity::where('pin', $karyawan->key)
+                                    //     ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    //     ->orderBy('tanggal', 'DESC')
+                                    //     ->first();
+                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'DESC')
+                                        ->first();
+
+                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                        ->orderBy('tanggal', 'DESC')
+                                        ->first();
+
+                                    $jMasukId = ($actIn)?$actIn->id:null;
+                                    $jKeluarId = ($actOut)?$actOut->id:null;
+                                }
+                            }
+                        }
+                        // dd($actIn);
+                        if($actIn && $actOut)
+                        {
+                            $aIn = Carbon::createFromFormat("Y-m-d H:i:s", $actIn->tanggal);
+                            $aOut = Carbon::createFromFormat("Y-m-d H:i:s", $actOut->tanggal);
+                            $jumlahJamKerja = $aOut->diffInHours($aIn);
+                        }
+                    }
+                    //end jika libur tetap masuk
+                    
+                    if($actIn)
+                    {
+                        $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actIn->tanggal);
+                        $jSubMasuk = $jMasuk->copy()->subSeconds((int)$jMasuk->format('s'));
+                    }
+
+                    if($actOut)
+                    {
+                        $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actOut->tanggal);
+                        $jSubKeluar = $jKeluar->copy()->subSeconds((int)$jKeluar->format('s'));
+                    }
+                    
+                    if($jMasukId && $jKeluarId)
+                    {
+                        if(!$isLn && !$isLnOff && !$isSpo)
+                        {
+                            if($jSubMasuk)
+                            {
+                                $nMasuk = $jadMasuk->diffInMinutes($jSubMasuk, false);
+                            }
+                            if($jSubKeluar)
+                            {
+                                $nKeluar = $jSubKeluar->diffInMinutes($jadKeluar, false);
+                            }
+                        }
+
+                        $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
+                    }
+
+                    /*
+                    * start absen manual
+                    */
+                    $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
+                    
+                    if($actMan)
+                    {
+                        $isTa = null;
+                        $isMangkir = null;
+                        $flagNotInOut = null;
+                        
+                        $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
+                        $jMasukId = $actMan->id;
+                        $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
+                        $jKeluarId = $actMan->id;
+                        
+                        $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
+
+                        
+                        if($jMasuk->greaterThan($jKeluar))
+                        {
+                            $jKeluar->addDay();
+                            if(!$jadMasuk && !$jadKeluar)
+                            {                            
+                                $shift3 = 1;
+                            }
+                        }
+
+                        if($jMasuk && $jadMasuk)
+                        {
+                            $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
+                        }
+                        if($jKeluar && $jadKeluar)
+                        {
+                            $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
+                        }
+                    }
+                    /*
+                    * End absen manual
+                    */
+
+                    if($flagNotInOut)
+                    {
+                        if($jumlahActivityKerja < 5)
+                        {
+                            if($flagNotInOut == 'out')
+                            {
+                                $jKeluarId = null;
+                                $jKeluar = null;
+                                $nKeluar = null;
                             }
                             else
                             {
-                                $actIn = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-
-                                $actOut = Activity::where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-
-                                $jMasukId = ($actIn)?$actIn->id:null;
-                                $jKeluarId = ($actOut)?$actOut->id:null;
+                                $jMasukId = null;
+                                $jMasuk = null;
+                                $nMasuk = null;
                             }
                         }
                     }
-                    // dd($actIn);
-                    if($actIn && $actOut)
-                    {
-                        $aIn = Carbon::createFromFormat("Y-m-d H:i:s", $actIn->tanggal);
-                        $aOut = Carbon::createFromFormat("Y-m-d H:i:s", $actOut->tanggal);
-                        $jumlahJamKerja = $aOut->diffInHours($aIn);
-                    }
-                }
-                //end jika libur tetap masuk
-                
-                if($actIn)
-                {
-                    $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actIn->tanggal);
-                    $jSubMasuk = $jMasuk->copy()->subSeconds((int)$jMasuk->format('s'));
-                }
 
-                if($actOut)
-                {
-                    $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actOut->tanggal);
-                    $jSubKeluar = $jKeluar->copy()->subSeconds((int)$jKeluar->format('s'));
-                }
-                
-                if($jMasukId && $jKeluarId)
-                {
-                    if(!$isLn && !$isLnOff && !$isSpo)
+                    /*
+                    * Hitung GP
+                    */
+                    if(config('global.perusahaan_short') == 'AIC')
                     {
-                        if($jSubMasuk)
+                        $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
+                    }
+                    else
+                    {
+                        $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                    }                
+                    /*
+                    * End Hitung GP
+                    */
+
+                    /*
+                    * End Hitung Lembur
+                    */
+                    proses_simpan:
+                    /*
+                    * Hitung Lembur otomatis
+                    */
+    //                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
+                    if(!$isMangkir && !$isTa && $jMasuk && $jKeluar)
+                    {
+
+                        if($kodeJadwal)
                         {
-                            $nMasuk = $jadMasuk->diffInMinutes($jSubMasuk, false);
-                        }
-                        if($jSubKeluar)
-                        {
-                            $nKeluar = $jSubKeluar->diffInMinutes($jadKeluar, false);
-                        }
-                    }
-
-                    $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
-                }
-
-                /*
-                 * start absen manual
-                 */
-                $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
-                
-                if($actMan)
-                {
-                    $isTa = null;
-                    $isMangkir = null;
-                    $flagNotInOut = null;
-                    
-                    $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
-                    $jMasukId = $actMan->id;
-                    $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
-                    $jKeluarId = $actMan->id;
-                    
-                    $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
-
-                    
-                    if($jMasuk->greaterThan($jKeluar))
-                    {
-                        $jKeluar->addDay();
-                        if(!$jadMasuk && !$jadKeluar)
-                        {                            
-                            $shift3 = 1;
-                        }
-                    }
-
-                    if($jMasuk && $jadMasuk)
-                    {
-                        $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
-                    }
-                    if($jKeluar && $jadKeluar)
-                    {
-                        $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
-                    }
-                }
-                /*
-                 * End absen manual
-                 */
-
-                if($flagNotInOut)
-                {
-                    if($jumlahActivityKerja < 5)
-                    {
-                        if($flagNotInOut == 'out')
-                        {
-                            $jKeluarId = null;
-                            $jKeluar = null;
-                            $nKeluar = null;
-                        }
-                        else
-                        {
-                            $jMasukId = null;
-                            $jMasuk = null;
-                            $nMasuk = null;
-                        }
-                    }
-                }
-
-                /*
-                 * Hitung GP
-                 */
-                if(config('global.perusahaan_short') == 'AIC')
-                {
-                    $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
-                }
-                else
-                {
-                    $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
-                }                
-                /*
-                 * End Hitung GP
-                 */
-
-                /*
-                 * End Hitung Lembur
-                 */
-                proses_simpan:
-                /*
-                 * Hitung Lembur otomatis
-                 */
-//                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
-                if(!$isMangkir && !$isTa && $jMasuk && $jKeluar)
-                {
-
-                    if($kodeJadwal)
-                    {
-//                        dd($val->kode);
-                        if(substr($kodeJadwal,0,1) == "J" && !$isLn)
-                        {
-                            if(isset($jumlahActivityKerja))
+    //                        dd($val->kode);
+                            if(substr($kodeJadwal,0,1) == "J" && !$isLn)
                             {
                                 if(isset($jumlahActivityKerja))
                                 {
-                                    $jAct = ($jumlahActivityKerja/60) - 5;
-                                    if($jAct > 0 && $jAct < 2)
+                                    if(isset($jumlahActivityKerja))
                                     {
-                                        $lemburAktual += 1;
-                                        $hitungLembur = 1.5;
+                                        $jAct = ($jumlahActivityKerja/60) - 5;
+                                        if($jAct > 0 && $jAct < 2)
+                                        {
+                                            $lemburAktual += 1;
+                                            $hitungLembur = 1.5;
+                                        }
+                                        else if($jAct >= 2)
+                                        {
+                                            $lemburAktual += 2;
+                                            $hitungLembur = 3.5;
+                                        }
+                                        else
+                                        {
+                                            $lemburAktual += 0;
+                                            $hitungLembur = 0;
+                                        }
                                     }
-                                    else if($jAct >= 2)
+                                }
+                                //3.5 hitung lembur kalau gak telat sama gak gp
+                                
+                            }
+                            else if(substr($kodeJadwal,0,1) == "S" && !$isLn)
+                            {
+                                if(isset($jumlahActivityKerja))
+                                {
+                                    $jAct = ($jumlahActivityKerja/60) - 4;
+                                    
+                                    if($jAct > 0)
                                     {
-                                        $lemburAktual += 2;
-                                        $hitungLembur = 3.5;
+                                        $lemburAktual += 0.5;
+                                        $hitungLembur = 0.75;
                                     }
                                     else
                                     {
@@ -835,322 +943,306 @@ trait TraitProses
                                         $hitungLembur = 0;
                                     }
                                 }
+    //                            $lemburAktual += 0.5;
+    //                            $hitungLembur = 0.75;
                             }
-                            //3.5 hitung lembur kalau gak telat sama gak gp
+                            else if(substr($kodeJadwal,0,1) == "P" && !$isLn)
+                            {
+                                if(isset($jumlahActivityKerja))
+                                {
+                                    $jAct = ($jumlahActivityKerja/60) - 5;
+                                    if($jAct > 0 && $jAct < 2)
+                                    {
+                                        $lemburAktual += 2.5;
+                                        $hitungLembur = 2.5;
+                                    }
+                                    else if($jAct >= 2)
+                                    {
+                                        $lemburAktual += 2.5;
+                                        $hitungLembur = 4.5;
+                                    }
+                                    else
+                                    {
+                                        $lemburAktual += 0.5;
+                                        $hitungLembur = 0.75;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if(isset($alasan))
+                        {
+                            if($alasan->count())
+                            {
                             
-                        }
-                        else if(substr($kodeJadwal,0,1) == "S" && !$isLn)
-                        {
-                            if(isset($jumlahActivityKerja))
-                            {
-                                $jAct = ($jumlahActivityKerja/60) - 4;
-                                
-                                if($jAct > 0)
+                                foreach($alasan->get() as $vAlasan)
                                 {
-                                    $lemburAktual += 0.5;
-                                    $hitungLembur = 0.75;
-                                }
-                                else
-                                {
-                                    $lemburAktual += 0;
-                                    $hitungLembur = 0;
-                                }
-                            }
-//                            $lemburAktual += 0.5;
-//                            $hitungLembur = 0.75;
-                        }
-                        else if(substr($kodeJadwal,0,1) == "P" && !$isLn)
-                        {
-                            if(isset($jumlahActivityKerja))
-                            {
-                                $jAct = ($jumlahActivityKerja/60) - 5;
-                                if($jAct > 0 && $jAct < 2)
-                                {
-                                    $lemburAktual += 2.5;
-                                    $hitungLembur = 2.5;
-                                }
-                                else if($jAct >= 2)
-                                {
-                                    $lemburAktual += 2.5;
-                                    $hitungLembur = 4.5;
-                                }
-                                else
-                                {
-                                    $lemburAktual += 0.5;
-                                    $hitungLembur = 0.75;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if(isset($alasan))
-                    {
-                        if($alasan->count())
-                        {
-                           
-                            foreach($alasan->get() as $vAlasan)
-                            {
-                                $lAkt = null;
-
-                                if($vAlasan->kode == 'SPL')
-                                {
-                                    $waktuMenit = $addRangeEnd;
-                                    
-                                    if(abs($nKeluar) >= $waktuMenit)
-                                    {
-                                        $lAkt = (float) $vAlasan->pivot->waktu;
-                                        $lemburAktual += $lAkt;
-                                    }
-                                    else
-                                    {
-                                        $lAkt = (float) $this->roundDec($nKeluar);
-                                        $lemburAktual += $lAkt;
-                                    }
-                                    $keterangan[] = "SPL ".((float) $vAlasan->pivot->waktu);
-                                    $hitungLembur = $this->hitungLembur($lemburAktual);
-                                }
-                                else if($vAlasan->kode == 'SLA')
-                                {
-                                    $waktuMenit = $addRangeStart;
                                     $lAkt = null;
 
-                                    if(abs($nMasuk) >= $waktuMenit)
+                                    if($vAlasan->kode == 'SPL')
                                     {
-                                        $lAkt = (float) $vAlasan->pivot->waktu;
-                                        $lemburAktual += $lAkt;
-                                    }
-                                    else
-                                    {
-                                        $lAkt = (float) $this->roundDec($nMasuk);
-                                        $lemburAktual += $lAkt;
-                                    }
-                                    $keterangan[] = "SLA ".((float) $vAlasan->pivot->waktu);
-                                    $hitungLembur = $this->hitungLembur($lemburAktual);
-                                }
-                                else if($vAlasan->kode == 'SPO')
-                                {     
-                                    $jDiff = $jKeluar->diffInHours($jMasuk);
-                                    $wkt = (float)$vAlasan->pivot->waktu;
-                                    $lAkt = null;
-                                    if($jDiff>=$wkt)
-                                    {
-                                        $lAkt = $wkt;
-                                        $lemburAktual += $lAkt;
-                                    }
-                                    else
-                                    {
-                                        $lAkt = (float) $this->roundDec($jDiff);
-                                        $lemburAktual += $lAkt;
-                                        if($jDiff>5)
+                                        $waktuMenit = $addRangeEnd;
+                                        
+                                        if(abs($nKeluar) >= $waktuMenit)
                                         {
-                                            $lAkt -= 1;
-                                            $lemburAktual -= 1;
+                                            $lAkt = (float) $vAlasan->pivot->waktu;
+                                            $lemburAktual += $lAkt;
+                                        }
+                                        else
+                                        {
+                                            $lAkt = (float) $this->roundDec($nKeluar);
+                                            $lemburAktual += $lAkt;
+                                        }
+                                        $keterangan[] = "SPL ".((float) $vAlasan->pivot->waktu);
+                                        $hitungLembur = $this->hitungLembur($lemburAktual);
+                                    }
+                                    else if($vAlasan->kode == 'SLA')
+                                    {
+                                        $waktuMenit = $addRangeStart;
+                                        $lAkt = null;
+
+                                        if(abs($nMasuk) >= $waktuMenit)
+                                        {
+                                            $lAkt = (float) $vAlasan->pivot->waktu;
+                                            $lemburAktual += $lAkt;
+                                        }
+                                        else
+                                        {
+                                            $lAkt = (float) $this->roundDec($nMasuk);
+                                            $lemburAktual += $lAkt;
+                                        }
+                                        $keterangan[] = "SLA ".((float) $vAlasan->pivot->waktu);
+                                        $hitungLembur = $this->hitungLembur($lemburAktual);
+                                    }
+                                    else if($vAlasan->kode == 'SPO')
+                                    {     
+                                        $jDiff = $jKeluar->diffInHours($jMasuk);
+                                        $wkt = (float)$vAlasan->pivot->waktu;
+                                        $lAkt = null;
+                                        if($jDiff>=$wkt)
+                                        {
+                                            $lAkt = $wkt;
+                                            $lemburAktual += $lAkt;
+                                        }
+                                        else
+                                        {
+                                            $lAkt = (float) $this->roundDec($jDiff);
+                                            $lemburAktual += $lAkt;
+                                            if($jDiff>5)
+                                            {
+                                                $lAkt -= 1;
+                                                $lemburAktual -= 1;
+                                            }
+                                        }
+                                        $keterangan[] = "SPO ".((float) $vAlasan->pivot->waktu);
+                                        $hitungLembur = $lemburAktual * 2;
+                                    }
+                                    else if($vAlasan->kode == 'LN')
+                                    {       
+                                        $jDiff = $jKeluar->diffInHours($jMasuk);
+                                        $wkt = (float)$vAlasan->pivot->waktu;
+
+                                        if($jDiff>=$wkt)
+                                        {
+                                            $lemburLN += $wkt;
+
+                                        }
+                                        else
+                                        {
+                                            $lemburLN += (float) $this->roundDec($jDiff);
+                                        }
+
+                                        $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
+                                        
+                                        $wktKerja = 7;
+                                        
+                                        if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
+                                        {
+                                            $wktKerja = 5;
+                                        }
+
+                                        if($lemburLN <= $wktKerja)
+                                        {
+                                            $hitungLemburLN = $lemburLN * 2;
+                                        }
+                                        else
+                                        {
+                                            $hitungLemburLN += $wktKerja * 2;
+                                            $hitungLemburLN += 1 * 3;
+                                            $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
+
                                         }
                                     }
-                                    $keterangan[] = "SPO ".((float) $vAlasan->pivot->waktu);
-                                    $hitungLembur = $lemburAktual * 2;
-                                }
-                                else if($vAlasan->kode == 'LN')
-                                {       
-                                    $jDiff = $jKeluar->diffInHours($jMasuk);
-                                    $wkt = (float)$vAlasan->pivot->waktu;
-
-                                    if($jDiff>=$wkt)
+                                    else if($vAlasan->kode == 'SKK')
                                     {
-                                        $lemburLN += $wkt;
-
+                                        $nilaiGp = null;
                                     }
-                                    else
-                                    {
-                                        $lemburLN += (float) $this->roundDec($jDiff);
-                                    }
-
-                                    $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
-                                    
-                                    $wktKerja = 7;
-                                    
-                                    if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
-                                    {
-                                        $wktKerja = 5;
-                                    }
-
-                                    if($lemburLN <= $wktKerja)
-                                    {
-                                        $hitungLemburLN = $lemburLN * 2;
-                                    }
-                                    else
-                                    {
-                                        $hitungLemburLN += $wktKerja * 2;
-                                        $hitungLemburLN += 1 * 3;
-                                        $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
-
-                                    }
-                                }
-                                else if($vAlasan->kode == 'SKK')
-                                {
-                                    $nilaiGp = null;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if(isset($alasan))
-                    {
-                        if($alasan->count())
-                        {
-                           
-                            foreach($alasan->get() as $vAlasan)
-                            {
-                                if(in_array($vAlasan->kode, ['SPL', 'SPO', 'SLA', 'LN']))
-                                {
-                                    $keterangan[] = $vAlasan->kode.' '.((float) $vAlasan->pivot->waktu);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if(is_array($keterangan))
-                {
-                    $keterangan = implode(', ', $keterangan);
-                }
-
-                if($jumlahActivityKerja>(5*60))
-                {
-                    if(!$pendek)
-                    {
-                        $jumlahActivityKerja -= 60;
-                    }
-                }
-
-                if($jumlahJamKerja)
-                {
-                    if(!$pendek)
-                    {
-                        if(($jumlahActivityKerja/60)>4)
-                        {
-                            $jumlahJamKerja -= 1;
-                        }
-                    }
-                }
-
-                
-                if(!$jMasuk && !$jKeluar)
-                {
-                    
-                    if(!$isLibur && !$isInOut && !$isOff)
-                    {
-                        $today = Carbon::now();
-                        if($today->greaterThanOrEqualTo($curDate))
-                        {
-                            $isMangkir = 1;
-                            $alasanId[] = Alasan::where('kode', 'M')->first()->id;
-                        }
-                    }
-                }
-                else if(!$jMasuk || !$jKeluar)
-                {
-                    if(!$isLibur)
-                    {
-                        $isTa = 1;
-                        $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
-                    }
-                }
-
-                if($nilaiGp)
-                {
-                    // $nMasuk, $nKeluar
-                    if($nMasuk > 0 || $nKeluar > 0)
-                    {
-                        if($nMasuk > 0)
-                        {
-                            if(ceil($nilaiGp/60) > 4)
-                            {
-                                $nilaiGp -= 60;                                   
-                            }
-                        }
-                        else
-                        {
-                            if($jumlahJamKerja == 7)
-                            {
-                                if(ceil($nilaiGp/60) > 3)
-                                {
-                                    $nilaiGp -= 60;                                   
-                                }
-                            }
-                            else
-                            {
-                                if(ceil($nilaiGp/60) > 4)
-                                {
-                                    $nilaiGp -= 60;                                   
                                 }
                             }
                         }
                     }
                     else
                     {
-                        if(ceil($nilaiGp/60) > 4)
+                        if(isset($alasan))
                         {
-                            $nilaiGp -= 60;                                   
+                            if($alasan->count())
+                            {
+                            
+                                foreach($alasan->get() as $vAlasan)
+                                {
+                                    if(in_array($vAlasan->kode, ['SPL', 'SPO', 'SLA', 'LN']))
+                                    {
+                                        $keterangan[] = $vAlasan->kode.' '.((float) $vAlasan->pivot->waktu);
+                                    }
+                                }
+                            }
                         }
                     }
-                    $jumlahJamKerja -= ($nilaiGp/60);
+
+                    if(is_array($keterangan))
+                    {
+                        $keterangan = implode(', ', $keterangan);
+                    }
+
+                    if($jumlahActivityKerja>(5*60))
+                    {
+                        if(!$pendek)
+                        {
+                            $jumlahActivityKerja -= 60;
+                        }
+                    }
+
+                    if($jumlahJamKerja)
+                    {
+                        if(!$pendek)
+                        {
+                            if(($jumlahActivityKerja/60)>4)
+                            {
+                                $jumlahJamKerja -= 1;
+                            }
+                        }
+                    }
+
                     
-                    $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
-                }
+                    if(!$jMasuk && !$jKeluar)
+                    {
+                        
+                        if(!$isLibur && !$isInOut && !$isOff)
+                        {
+                            $today = Carbon::now();
+                            if($today->greaterThanOrEqualTo($curDate))
+                            {
+                                $isMangkir = 1;
+                                $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                            }
+                        }
+                    }
+                    else if(!$jMasuk || !$jKeluar)
+                    {
+                        if(!$isLibur)
+                        {
+                            $isTa = 1;
+                            $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
+                        }
+                    }
 
-                if($alasanId)
-                {
-                    $alasanId = json_encode($alasanId);
-                }
-                
-                $tLembur = null;
-                
-                if($hitungLembur+$hitungLemburLN)
-                {
-                    $tLembur = $hitungLembur+$hitungLemburLN;
-                }
-                
-                $arrProses[] = [
-                    'karyawan_id' => $karId,
-                    'alasan_id' => $alasanId,
-                    'tanggal' => $key,
-                    'jam_masuk' => (!empty($jMasuk))?$jMasuk->format('H:i:s'):null,
-                    'jam_keluar' => (!empty($jKeluar))?$jKeluar->format('H:i:s'):null,
-                    'jam_masuk_id' => $jMasukId,
-                    'jam_keluar_id' => $jKeluarId,
-                    'kode_jam_kerja' => $kodeJadwal,
-                    'jadwal_jam_masuk' => (isset($val->jam_masuk)?$val->jam_masuk:null),
-                    'jadwal_jam_keluar' => (isset($val->jam_keluar)?$val->jam_keluar:null),
-                    'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
-                    'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
-                    'libur' => $isLibur,
-                    'libur_nasional' => (($isLn)?1:null),
-                    'pendek' => $pendek,
-                    'mangkir' => $isMangkir,
-                    'ta' => $isTa,
-                    'lembur_aktual' => $lemburAktual,
-                    'hitung_lembur' => $hitungLembur,
-                    'lembur_ln' => $lemburLN,
-                    'hitung_lembur_ln' => $hitungLemburLN,
-                    'total_lembur' => $tLembur,
-                    'shift3' => (!empty($shift3))?$shift3:null,
-                    'gp' => $nilaiGp,
-                    'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
-                    'keterangan' => $keterangan,
-                    'is_off' => $isOff,
-                    'created_by' => Auth::user()->id
-                ];
+                    if($nilaiGp)
+                    {
+                        // $nMasuk, $nKeluar
+                        if($nMasuk > 0 || $nKeluar > 0)
+                        {
+                            if($nMasuk > 0)
+                            {
+                                if(ceil($nilaiGp/60) > 4)
+                                {
+                                    $nilaiGp -= 60;                                   
+                                }
+                            }
+                            else
+                            {
+                                if($jumlahJamKerja == 7)
+                                {
+                                    if(ceil($nilaiGp/60) > 3)
+                                    {
+                                        $nilaiGp -= 60;                                   
+                                    }
+                                }
+                                else
+                                {
+                                    if(ceil($nilaiGp/60) > 4)
+                                    {
+                                        $nilaiGp -= 60;                                   
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if(ceil($nilaiGp/60) > 4)
+                            {
+                                $nilaiGp -= 60;                                   
+                            }
+                        }
+                        $jumlahJamKerja -= ($nilaiGp/60);
+                        
+                        $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
+                    }
 
-//                Prosesabsen::create($arrProses);
+                    if($alasanId)
+                    {
+                        $alasanId = json_encode($alasanId);
+                    }
+                    
+                    $tLembur = null;
+                    
+                    if($hitungLembur+$hitungLemburLN)
+                    {
+                        $tLembur = $hitungLembur+$hitungLemburLN;
+                    }
+                    
+                    $arrProses[] = [
+                        'karyawan_id' => $karId->id,
+                        'alasan_id' => $alasanId,
+                        'tanggal' => $key,
+                        'jam_masuk' => (!empty($jMasuk))?$jMasuk->format('H:i:s'):null,
+                        'jam_keluar' => (!empty($jKeluar))?$jKeluar->format('H:i:s'):null,
+                        'jam_masuk_id' => $jMasukId,
+                        'jam_keluar_id' => $jKeluarId,
+                        'kode_jam_kerja' => $kodeJadwal,
+                        'jadwal_jam_masuk' => (isset($val->jam_masuk)?$val->jam_masuk:null),
+                        'jadwal_jam_keluar' => (isset($val->jam_keluar)?$val->jam_keluar:null),
+                        'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
+                        'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
+                        'libur' => $isLibur,
+                        'libur_nasional' => (($isLn)?1:null),
+                        'pendek' => $pendek,
+                        'mangkir' => $isMangkir,
+                        'ta' => $isTa,
+                        'lembur_aktual' => $lemburAktual,
+                        'hitung_lembur' => $hitungLembur,
+                        'lembur_ln' => $lemburLN,
+                        'hitung_lembur_ln' => $hitungLemburLN,
+                        'total_lembur' => $tLembur,
+                        'shift3' => (!empty($shift3))?$shift3:null,
+                        'gp' => $nilaiGp,
+                        'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
+                        'keterangan' => $keterangan,
+                        'is_off' => $isOff,
+                        'created_by' => Auth::user()->id
+                    ];
+
+    //                Prosesabsen::create($arrProses);
+                }
+                if(count($arrProses) > 0)
+                {
+                    // dd($arrProses);
+                    Prosesabsen::insert($arrProses);
+                }
             }
-            if(count($arrProses) > 0)
-            {
-                // dd($arrProses);
-                Prosesabsen::insert($arrProses);
-            }
+        }
+        catch(Exception $e)
+        {
+            Log::warning($e->getMessage());
         }
     }
     

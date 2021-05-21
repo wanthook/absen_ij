@@ -29,6 +29,7 @@ use Yajra\DataTables\DataTables;
 use Illuminate\Database\QueryException;
 use Auth;
 use Validator;
+use Log;
 
 use App\Http\Traits\TraitProses;
 
@@ -85,7 +86,6 @@ class ProsesabsenController extends Controller
             else
             {
                 $req = $request->all();
-                $karyawanId = array();
                 $tanggal = null;
 
                 $karyawan = Karyawan::KaryawanAktif();
@@ -101,18 +101,25 @@ class ProsesabsenController extends Controller
 
                 $tArr = explode(" - ", $req['tanggal']);
                 $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
-                // dd($karyawan->count());
-                $karyawan->chunk(100, function($kar) use($tanggal)
+                
+                $tStart = microtime(true); 
+                $cnt = 0;
+                $karyawan->chunk(100, function($kar) use($tanggal, $cnt)
                 {
                     foreach($kar as $rKar)
                     {
-                        $this->prosesAbs($rKar->id, $tanggal);
+                        Log::info("Start proccess karyawan_id:".$rKar->id.", pin:".$rKar->pin);
+                        
+                        $this->prosesAbs($rKar, $tanggal);
+                        $cnt++;
                     }
                 });
 
+                $tTime = (microtime(true) - $tStart) / 60; 
+                Log::info("End proccess time: ".$tTime);
                 echo json_encode(array(
                     'status' => 1,
-                    'msg'   => 'Data berhasil diproses'
+                    'msg'   => 'Data berhasil diproses selama '.number_format($tTime, 2, ',', '.').' menit'
                     ));
             }
         }
