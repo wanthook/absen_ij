@@ -59,22 +59,26 @@ trait TraitProses
     {
         $tgl = CarbonPeriod::create($tanggal, $tanggal)->toArray();
         
-        $this->prosesAbs($karId, $tgl);
+        $karyawan = Karyawan::find($karId);
+
+        $this->prosesAbs($karyawan, $tgl);
     }
     
     public function prosesAbsTanggalRange($karId, $tanggalAwal, $tanggalAkhir)
     {
         $tgl = CarbonPeriod::create($tanggalAwal, $tanggalAkhir)->toArray();
+
+        $karyawan = Karyawan::find($karId);
         
-        $this->prosesAbs($karId, $tgl);
+        $this->prosesAbs($karyawan, $tgl);
     }
     
-    public function prosesAbs($karId, $tanggal)
+    public function prosesAbs($karyawan, $tanggal)
     {
         try
         {
             // $karyawan = Karyawan::find($karId);
-            $karyawan = $karId;
+            // $karyawan = $karId;
             $tmk = null;
             $active = null;
             $off = null;
