@@ -188,15 +188,15 @@ class ProsesabsenController extends Controller
     {
         $path = '/home/development/Documents/Web/htdocs/project_absen_ij/storage/logs/laravel.log';
 
-        if(config('global.perusahaan_short' == 'Indah Jaya'))
+        if(config('global.perusahaan_short') == 'Indah Jaya')
         {
             $path = '/var/www/html/project_absen/storage/logs/laravel.log';
         }
-        else if(config('global.perusahaan_short' == 'SII'))
+        else if(config('global.perusahaan_short') == 'SII')
         {
             $path = '/var/www/html/project_absen_sii/storage/logs/laravel.log';
         }
-        else if(config('global.perusahaan_short' == 'AIC'))
+        else if(config('global.perusahaan_short') == 'AIC')
         {
             $path = '/var/www/html/project_absen_apac/storage/logs/laravel.log';
         }
