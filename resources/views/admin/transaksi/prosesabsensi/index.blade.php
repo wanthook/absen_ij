@@ -32,6 +32,7 @@
     <script src="{{asset('bower_components/admin-lte/plugins/daterangepicker/daterangepicker.js')}}"></script>
     <script>
         var dTable = null;
+        var pusher;
         $(function(e)
         {            
             let Toast = Swal.mixin({
@@ -67,6 +68,7 @@
                     data        : $('#form_data').serialize(),
                     beforeSend  : function(xhr)
                     {
+                        push();
                         toastOverlay.fire({
                             type: 'warning',
                             title: 'Sedang memproses absen',
@@ -77,6 +79,7 @@
                     },
                     success(result,status,xhr)
                     {
+                        stopPush();
                         toastOverlay.close();
                         if(result.status == 1)
                         {
@@ -210,8 +213,34 @@
                     format: 'YYYY-MM-DD'
                 }
             });
+            
 //            console.log(moment());
         });
+
+        let push = function()
+        {
+            pusher = setInterval(function()
+            {
+                $.ajax(
+                {
+                    url         : "{{route('app.prosesabsenlog')}}",
+                    dataType    : 'json',
+                    type        : 'GET',
+                    success(result,status,xhr)
+                    {
+                        if(result.status == 1)
+                        {                      
+                            $('#txtLog').val(result.msg);
+                        }
+                    }
+                });
+            }, 1000);
+        }
+
+        let stopPush = function()
+        {
+            clearInterval(pusher);
+        }
         
         let sD = function()
         {
@@ -298,4 +327,20 @@
     </div>
 </div>
 {{ Form::close() }}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline card-tabs">
+            <div class="card-header">
+                <h3 class="card-title">Log Proses</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <textarea id="txtLog" rows="5" style="width: 100%;" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

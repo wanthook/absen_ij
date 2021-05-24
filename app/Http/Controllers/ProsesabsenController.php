@@ -183,6 +183,15 @@ class ProsesabsenController extends Controller
     {
         //
     }
+
+    public function getLogProccess()
+    {
+        $path = '/home/development/Documents/Web/htdocs/project_absen_ij/storage/logs/laravel.log';
+
+        exec('tail -n 50 '.$path.' | grep "laravel.INFO"', $output);
+        krsort($output);
+        return response()->json(['status' => 1, 'msg' => implode('<br>',$output)]);
+    }
     
 //    private function prosesAbs($karId, $tanggal)
 //    {

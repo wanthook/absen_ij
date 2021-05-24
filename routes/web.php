@@ -384,6 +384,8 @@ Route::group(['middleware' => 'auth'],function()
         
         echo json_encode($arr);
     }]);
+
+    Route::get('prosesabsen-log', ['as' => 'app.prosesabsenlog', 'uses' => 'ProsesabsenController@getLogProccess']);
 });
  
 
