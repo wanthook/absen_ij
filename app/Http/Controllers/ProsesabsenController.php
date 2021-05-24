@@ -187,21 +187,24 @@ class ProsesabsenController extends Controller
     public function getLogProccess()
     {
         $path = '/home/development/Documents/Web/htdocs/project_absen_ij/storage/logs/laravel.log';
-
+        $grep = 'laravel.INFO';
         if(config('global.perusahaan_short') == 'Indah Jaya')
         {
             $path = '/var/www/html/project_absen/storage/logs/laravel.log';
+            $grep = 'local.INFO';
         }
         else if(config('global.perusahaan_short') == 'SII')
         {
             $path = '/var/www/html/project_absen_sii/storage/logs/laravel.log';
+            $grep = 'local.INFO';
         }
         else if(config('global.perusahaan_short') == 'AIC')
         {
             $path = '/var/www/html/project_absen_apac/storage/logs/laravel.log';
+            $grep = 'local.INFO';
         }
 
-        exec('tail -n 50 '.$path.' | grep "laravel.INFO"', $output);
+        exec('tail -n 50 '.$path.' | grep "'.$grep.'"', $output);
         krsort($output);
         return response()->json(['status' => 1, 'msg' => implode('<br>',$output)]);
     }
