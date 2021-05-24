@@ -206,7 +206,7 @@ class ProsesabsenController extends Controller
 
         exec('tail -n 50 '.$path.' | grep "'.$grep.'"', $output);
         krsort($output);
-        return response()->json(['status' => 1, 'msg' => implode('\r\n',$output)]);
+        return response()->json(['status' => 1, 'msg' => implode("\n",$output)]);
     }
     
 //    private function prosesAbs($karId, $tanggal)
