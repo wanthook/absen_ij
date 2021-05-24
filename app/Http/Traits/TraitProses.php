@@ -99,9 +99,9 @@ trait TraitProses
 
             $jadwalArr = array();
 
-            Prosesabsen::where('karyawan_id', $karyawan->id)
-                    ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
-                    ->delete();
+            // Prosesabsen::where('karyawan_id', $karyawan->id)
+            //         ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
+            //         ->delete();
             
             if(!$jadwal)
             {
@@ -173,6 +173,7 @@ trait TraitProses
                     $keterangan = null;
 
                     $isSpo      = false;
+                    $isLiburNasional = false; //set tanggal libur nasional
                     $isLn       = false;
                     $isLnOff    = false;
 
@@ -300,6 +301,7 @@ trait TraitProses
                     $lN = Libur::where('tanggal', $key)->first();
                     if($lN)
                     {
+                        $isLiburNasional = true;
                         $isLn = true;
                     }
                     /*
@@ -398,7 +400,7 @@ trait TraitProses
                                 {
                                     $isLn = true;
                                     $isLibur = 1;
-                                    $keterangan[] = "Libur Nasional";
+                                    // $keterangan[] = "Libur Nasional";
                                 }
                             }
                         }
@@ -897,7 +899,7 @@ trait TraitProses
                     /*
                     * Hitung Lembur otomatis
                     */
-    //                if(!$isMangkir && !$isTa && !$nilaiGp && $jMasuk && $jKeluar)
+                    
                     if(!$isMangkir && !$isTa && $jMasuk && $jKeluar)
                     {
 
@@ -948,8 +950,6 @@ trait TraitProses
                                         $hitungLembur = 0;
                                     }
                                 }
-    //                            $lemburAktual += 0.5;
-    //                            $hitungLembur = 0.75;
                             }
                             else if(substr($kodeJadwal,0,1) == "P" && !$isLn)
                             {
@@ -1047,35 +1047,54 @@ trait TraitProses
                                         $jDiff = $jKeluar->diffInHours($jMasuk);
                                         $wkt = (float)$vAlasan->pivot->waktu;
 
-                                        if($jDiff>=$wkt)
+                                        if($wkt > 0)
                                         {
-                                            $lemburLN += $wkt;
 
+                                            if($jDiff>=$wkt)
+                                            {
+                                                $lemburLN += $wkt;
+
+                                            }
+                                            else
+                                            {
+                                                $lemburLN += (float) $this->roundDec($jDiff);
+                                            }
+
+                                            if($isLiburNasional)
+                                            {
+                                                $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
+                                            }
+                                            else
+                                            {
+                                                $keterangan[] = "LN ".$lemburLN;
+                                            }
+                                            
+                                            $wktKerja = 7;
+                                            
+                                            if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
+                                            {
+                                                $wktKerja = 5;
+                                            }
+
+                                            if($lemburLN <= $wktKerja)
+                                            {
+                                                $hitungLemburLN = $lemburLN * 2;
+                                            }
+                                            else
+                                            {
+                                                $hitungLemburLN += $wktKerja * 2;
+                                                $hitungLemburLN += 1 * 3;
+                                                $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
+
+                                            }
                                         }
                                         else
                                         {
-                                            $lemburLN += (float) $this->roundDec($jDiff);
-                                        }
-
-                                        $keterangan[] = "Lembur Libur Nasional ".$lemburLN;
-                                        
-                                        $wktKerja = 7;
-                                        
-                                        if(substr($kodeJadwal,0,1) == "P" || substr($kodeJadwal,0,1) == "J") 
-                                        {
-                                            $wktKerja = 5;
-                                        }
-
-                                        if($lemburLN <= $wktKerja)
-                                        {
-                                            $hitungLemburLN = $lemburLN * 2;
-                                        }
-                                        else
-                                        {
-                                            $hitungLemburLN += $wktKerja * 2;
-                                            $hitungLemburLN += 1 * 3;
-                                            $hitungLemburLN += ($lemburLN - ($wktKerja + 1)) * 4;
-
+                                            $kS = array_search('Libur Nasional', $keterangan);
+                                            if(isset($keterangan[$kS]))
+                                            {
+                                                $keterangan[$kS] = 'LN '.$vAlasan->pivot->waktu;
+                                            }
                                         }
                                     }
                                     else if($vAlasan->kode == 'SKK')
@@ -1219,7 +1238,8 @@ trait TraitProses
                         'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
                         'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
                         'libur' => $isLibur,
-                        'libur_nasional' => (($isLn)?1:null),
+                        // 'libur_nasional' => (($isLn)?1:null),
+                        'libur_nasional' => (($isLiburNasional)?1:null),
                         'pendek' => $pendek,
                         'mangkir' => $isMangkir,
                         'ta' => $isTa,
@@ -1235,13 +1255,18 @@ trait TraitProses
                         'is_off' => $isOff,
                         'created_by' => Auth::user()->id
                     ];
-
-    //                Prosesabsen::create($arrProses);
                 }
                 if(count($arrProses) > 0)
                 {
                     // dd($arrProses);
-                    Prosesabsen::insert($arrProses);
+                    // DB::transaction(function () {
+
+                        DB::table('prosesabsens')->where('karyawan_id', $karyawan->id)
+                            ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
+                            ->delete();
+                        DB::table('prosesabsens')->insert($arrProses);
+                    // });
+                    // Prosesabsen::insert($arrProses);
                 }
             }
         }
