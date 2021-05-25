@@ -550,7 +550,23 @@ class LaporanController
                                 }
                                 else if($als->libur == 'Y')
                                 {
-                                    $lbl = $als->kode;
+                                    if($als->kode == 'LN')
+                                    {
+                                        if($vabs->total_lembur)
+                                        {
+                                            $lbl = $vabs->total_lembur;
+                                            $tLembur += $vabs->total_lembur;
+                                        }
+                                        else
+                                        {
+                                            $lbl = $als->kode;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $lbl = $als->kode;
+                                    }
+                                    
                                     break;
                                 }
                                 else
@@ -612,6 +628,11 @@ class LaporanController
                             $lbl = 'GP';
                             $jGp+=$vabs->gp;
                             $jJk += $vabs->jumlah_jam_kerja;
+                        }
+
+                        if($vabs->total_lembur)
+                        {
+                            $tLembur += $vabs->total_lembur;
                         }
                     }
                     else if(isset($vabs->total_lembur))
