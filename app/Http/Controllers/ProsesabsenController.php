@@ -103,12 +103,13 @@ class ProsesabsenController extends Controller
                 $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
                 
                 $tStart = microtime(true); 
-                $cnt = 0;
-                $karyawan->chunk(100, function($kar) use($tanggal, $cnt)
+                $tot = $karyawan->count();
+                $cnt = 1;
+                $karyawan->chunk(100, function($kar) use($tanggal, $cnt, $tot)
                 {
                     foreach($kar as $rKar)
                     {
-                        Log::info("Start proccess karyawan_id:".$rKar->id.", pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
+                        Log::info("Start proccess '.$cnt.' of '.$tot.', karyawan_id:".$rKar->id.", pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
                         
                         $this->prosesAbs($rKar, $tanggal);
                         $cnt++;
@@ -191,17 +192,17 @@ class ProsesabsenController extends Controller
         if(config('global.perusahaan_short') == 'Indah Jaya')
         {
             $path = '/var/www/html/project_absen/storage/logs/laravel.log';
-            $grep = 'local.INFO';
+            $grep = 'local.';
         }
         else if(config('global.perusahaan_short') == 'SII')
         {
             $path = '/var/www/html/project_absen_sii/storage/logs/laravel.log';
-            $grep = 'local.INFO';
+            $grep = 'local.';
         }
         else if(config('global.perusahaan_short') == 'AIC')
         {
             $path = '/var/www/html/project_absen_apac/storage/logs/laravel.log';
-            $grep = 'local.INFO';
+            $grep = 'local.';
         }
 
         exec('tail -n 50 '.$path.' | grep "'.$grep.'"', $output);

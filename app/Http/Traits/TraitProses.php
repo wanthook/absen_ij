@@ -112,7 +112,7 @@ trait TraitProses
 
             $jadwalArr = $this->jadwals($tanggal, $karyawan);
             $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-            
+            // dd($jadwalManual);
             if($jadwalArr)
             {
                 $arrProses = [];
@@ -121,11 +121,10 @@ trait TraitProses
                 {
                     if($jadwalManual[$key])
                     {
-
                         $jadwalArr[$key] = $jadwalManual[$key];
                     }
                 }
-
+                // dd($jadwalArr);
                 // unset($jadwalManual);
 
                 foreach($jadwalArr as $key => $val)
@@ -1090,10 +1089,13 @@ trait TraitProses
                                         }
                                         else
                                         {
-                                            $kS = array_search('Libur Nasional', $keterangan);
-                                            if(isset($keterangan[$kS]))
+                                            if(is_array($keterangan))
                                             {
-                                                $keterangan[$kS] = 'LN '.$vAlasan->pivot->waktu;
+                                                $kS = array_search('Libur Nasional', $keterangan);
+                                                if(isset($keterangan[$kS]))
+                                                {
+                                                    $keterangan[$kS] = 'LN '.$vAlasan->pivot->waktu;
+                                                }
                                             }
                                         }
                                     }
@@ -1156,8 +1158,11 @@ trait TraitProses
                             $today = Carbon::now();
                             if($today->greaterThanOrEqualTo($curDate))
                             {
-                                $isMangkir = 1;
-                                $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                                if(!$isLn)
+                                {
+                                    $isMangkir = 1;
+                                    $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                                }
                             }
                         }
                     }
@@ -1223,7 +1228,7 @@ trait TraitProses
                     {
                         $tLembur = $hitungLembur+$hitungLemburLN;
                     }
-                    
+
                     $arrProses[] = [
                         'karyawan_id' => $karyawan->id,
                         'alasan_id' => $alasanId,
@@ -1256,15 +1261,16 @@ trait TraitProses
                         'created_by' => Auth::user()->id
                     ];
                 }
+                
                 if(count($arrProses) > 0)
                 {
                     // dd($arrProses);
                     // DB::transaction(function () {
 
-                        DB::table('prosesabsens')->where('karyawan_id', $karyawan->id)
-                            ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
-                            ->delete();
-                        DB::table('prosesabsens')->insert($arrProses);
+                    DB::table('prosesabsens')->where('karyawan_id', $karyawan->id)
+                        ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
+                        ->delete();
+                    DB::table('prosesabsens')->insert($arrProses);
                     // });
                     // Prosesabsen::insert($arrProses);
                 }
@@ -1272,6 +1278,7 @@ trait TraitProses
         }
         catch(Exception $e)
         {
+            // dd($e->getMessage());
             Log::warning($e->getMessage());
         }
     }
