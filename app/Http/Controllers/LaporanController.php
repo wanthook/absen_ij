@@ -597,17 +597,6 @@ class LaporanController
                     else if(isset($vabs->ta))
                     {
                         $lbl = 'TA';
-                        // if(isset($vabs->alasan))
-                        // {
-                        //     if($vabs->alasan[0]->kode != 'LN')
-                        //     {
-                        //         //$lbl = $vabs->alasan[0]->kode;
-                        //     }
-                        // }
-                        // else
-                        // {
-                        //     $lbl = 'TA';
-                        // }
                     }
                     else if(isset($vabs->gp))
                     {
@@ -644,6 +633,20 @@ class LaporanController
                     {
                         $lbl = '0';
                     }
+                    else if(isset($vabs->libur_nasional))
+                    {
+                        if($vabs->libur_nasional)
+                        {
+                            if(isset($vabs->total_lembur))
+                            {
+                                $lbl = $vabs->total_lembur;
+                                $tLembur += $vabs->total_lembur;
+                            }
+                            else{
+                                $lbl = 'LN';
+                            }
+                        }
+                    }
                     
                     if(isset($vabs->shift3))
                     {
@@ -660,6 +663,17 @@ class LaporanController
                                 else if(isset($vabs->jam_masuk) && isset($vabs->jam_keluar))
                                 {
                                     $s3Total+=1;
+                                }
+                                else if(isset($vabs->alasan))
+                                {
+                                    foreach($vabs->alasan as $als)
+                                    {
+                                        if($als->kode == 'C' && config('global.perusahaan_short') == 'AIC')
+                                        {
+                                            $s3Total+=1;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                             
