@@ -2385,9 +2385,14 @@ class LaporanController
             }
             
             $karyawan[] = [
-                'karyawan' => $rowKar,
+                'karyawan' =>  ['pin' => $rowKar->pin, 
+                                'nama' => $rowKar->nama,
+                                'tmk' => $rowKar->tanggal_masuk,
+                                'kd' => $rowKar->divisi->kode,
+                                'nd' => $rowKar->divisi->deskripsi],
                 'absensi' => $abs
             ];
+            
         }
         $ret[] = [
             'tgl_awal' => Carbon::createFromFormat('Y-m-d',reset($tgl))->format('d-m-Y'),
@@ -2443,11 +2448,11 @@ class LaporanController
                     {
                         $sizeCell = 4;
                         $pdf->Cell($headW[0], $sizeCell, $k+1, 1, 0, 'C');
-                        $pdf->Cell($headW[1], $sizeCell, $v['karyawan']->divisi->kode, 1, 0, 'C');
-                        $pdf->Cell($headW[2], $sizeCell, $v['karyawan']->divisi->deskripsi, 1, 0, 'C');
-                        $pdf->Cell($headW[3], $sizeCell, $v['karyawan']->pin, 1, 0, 'C');
-                        $pdf->Cell($headW[4], $sizeCell, $v['karyawan']->tanggal_masuk, 1, 0, 'C');
-                        $pdf->Cell($headW[5], $sizeCell, $v['karyawan']->nama, 1, 0, 'C');
+                        $pdf->Cell($headW[1], $sizeCell, $v['karyawan']['kd'], 1, 0, 'C');
+                        $pdf->Cell($headW[2], $sizeCell, $v['karyawan']['nd'], 1, 0, 'C');
+                        $pdf->Cell($headW[3], $sizeCell, $v['karyawan']['pin'], 1, 0, 'C');
+                        $pdf->Cell($headW[4], $sizeCell, $v['karyawan']['tmk'], 1, 0, 'C');
+                        $pdf->Cell($headW[5], $sizeCell, $v['karyawan']['nama'], 1, 0, 'C');
                         foreach($v['absensi'] as $per)
                         {
                             $pdf->Cell(9, $sizeCell, $per, 'LRTB', 0, 'C');

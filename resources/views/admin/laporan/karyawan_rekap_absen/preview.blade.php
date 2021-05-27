@@ -153,11 +153,11 @@
             @foreach($rVar['data'] as $kData => $vData)
             <tr style="line-height: 9px;">
                 <td>{{$kData+1}}</td>
-                <td>{{$vData['karyawan']->divisi->kode}}</td>
-                <td>{{$vData['karyawan']->divisi->deskripsi}}</td>
-                <td>{{$vData['karyawan']->pin}}</td>
-                <td>{{$vData['karyawan']->tanggal_masuk}}</td>
-                <td>{{$vData['karyawan']->nama}}</td>
+                <td>{{$vData['karyawan']['kd']}}</td>
+                <td>{{$vData['karyawan']['nd']}}</td>
+                <td>{{$vData['karyawan']['pin']}}</td>
+                <td>{{$vData['karyawan']['tmk']}}</td>
+                <td>{{$vData['karyawan']['nama']}}</td>
                 @foreach($vData['absensi'] as $vAbsen)
                     <td>{{$vAbsen}}</td>
                 @endforeach
