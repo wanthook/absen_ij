@@ -98,6 +98,10 @@ class ProsesabsenController extends Controller
                 {
                     $karyawan->where('divisi_id', $req['divisi']);
                 }
+                else if(isset($req['perusahaan']))
+                {
+                    $karyawan->where('perusahaan_id', $req['perusahaan']);
+                }
 
                 $tArr = explode(" - ", $req['tanggal']);
                 $tanggal = CarbonPeriod::create($tArr[0], $tArr[1])->toArray();
