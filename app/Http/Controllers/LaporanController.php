@@ -2306,7 +2306,7 @@ class LaporanController
         
         $ret = [];
         
-        $kar = Karyawan::with('divisi', 'prosesabsen')->karyawanAktif()->author();
+        $kar = Karyawan::with('divisi')->karyawanAktif()->author();
         
         if(isset($req['divisi']))
         {
@@ -2334,17 +2334,20 @@ class LaporanController
                     'I' => 0, 'M' => 0, 'H1' => 0, 'H2' => 0, 'TA' => 0, 'GP' => 0,
                     'IN' => 0, 'OUT' => 0, 'OFF' => 0, 'S1' => 0, 'S2' => 0, 'S3' => 0
                 ];
-            $tmk = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal_masuk);
-            if($rowKar->prosesabsen->count() > 0)
+            // $tmk = Carbon::createFromFormat('Y-m-d',$rowKar->tanggal_masuk);
+
+            $proc = DB::table('prosesabsens')
+                        ->where('karyawan_id', $rowKar->id)
+                        ->whereBetween('tanggal', $tgl)
+                        ->orderBy('tanggal', 'asc');
+            if($proc->count())
             {
-                //$rowKar->prosesabsen()->whereBetween('tanggal', $tgl);
-                
-                foreach($rowKar->prosesabsen()->whereBetween('tanggal', $tgl)->get() as $proses)
+                foreach($proc->get() as $proses)
                 {
                     if($proses->alasan_id != null)
                     {
-//                        dd($proses->alasan_id);
-                        $als = Alasan::whereIn('id', $proses->alasan_id)->get();
+                        $alsId = json_decode($proses->alasan_id, true);
+                        $als = DB::table('alasans')->whereIn('id', $alsId)->get();
                         foreach($als as $vAls)
                         {
                             if(isset($abs[$vAls->kode]))
@@ -2352,7 +2355,6 @@ class LaporanController
                                 $abs[$vAls->kode] += 1;
                             }
                         }
-                        
                     }
 
                     if($proses->shift3)
