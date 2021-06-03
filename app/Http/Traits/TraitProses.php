@@ -764,8 +764,15 @@ trait TraitProses
                         else
                         {
                             $isMangkir = 1;
+                            
+                            $jMasukId = null;
+                            $jMasuk = null;
                             $nMasuk = null;
+
+                            $jKeluarId = null;
+                            $jKeluar = null;
                             $nKeluar = null;
+
                             $shift3 = null;
                             $isTa = null;
                         }
