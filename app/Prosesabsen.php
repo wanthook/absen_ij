@@ -43,6 +43,7 @@ class Prosesabsen extends Model
         'jam_masuk_random',
         'jam_keluar_random',
         'is_off',
+        'absen_manual',
         'created_at',
         'updated_at',
         'created_by'

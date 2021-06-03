@@ -115,6 +115,7 @@
                             type: 'error',
                             title: jqXHR.responseText
                         });
+                        stopPush();
                     }
                     
                 });

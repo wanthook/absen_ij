@@ -19,6 +19,7 @@ class ActivityManual extends Model
         'jam_masuk',
         'jam_keluar',
         'keterangan',
+        'mangkir',
         'deleted_at',
         'created_by',
         'updated_by',

@@ -29,7 +29,6 @@ use App\Libur;
 use App\Prosesabsen;
 use App\ExceptionLog;
 use App\Activity;
-use App\ActivityManual;
 
 
 use Carbon\Carbon;
@@ -153,6 +152,7 @@ trait TraitProses
                     $isTa = null;
                     $isInOut = null;
                     $isOff = null;
+                    $isAbsenManual = 'N';
 
                     $lemburAktual = null;
                     $hitungLembur = null;
@@ -435,14 +435,7 @@ trait TraitProses
                                 $jadKeluar = $out;
 
                                 $jumlahJamKerja = $out->diffInHours($in);
-
-                                // $actIn = Activity::where('pin', $karyawan->key)
-                                //         ->whereBetween('tanggal', [
-                                //             $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
-                                //             $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
-                                //         ])
-                                //         ->orderBy('tanggal', 'ASC')
-                                //         ->first();
+                                
                                 $actIn = DB::table('activities')
                                             ->where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [
@@ -454,13 +447,6 @@ trait TraitProses
 
                                 $jMasukId = ($actIn)?$actIn->id:null;
 
-                                // $actOut = Activity::where('pin', $karyawan->key)
-                                //         ->whereBetween('tanggal', [
-                                //             $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                //             $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
-                                //         ])
-                                //         ->orderBy('tanggal', 'DESC')
-                                //         ->first();
                                 $actOut = DB::table('activities')
                                             ->where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [
@@ -475,13 +461,6 @@ trait TraitProses
                                 {
                                     if(!$jKeluarId)
                                     {
-                                        // $actOut = Activity::where('pin', $karyawan->key)
-                                        //     ->whereBetween('tanggal',[
-                                        //         $out->copy()->toDateTimeString(), 
-                                        //         $out->copy()->addHours(14)->toDateTimeString()
-                                        //     ])
-                                        //     ->orderBy('tanggal', 'DESC')
-                                        //     ->first();
                                         $actOut = DB::table('activities')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereBetween('tanggal',[
@@ -498,14 +477,6 @@ trait TraitProses
                                         }
                                         else
                                         {
-                                            // $actOut = Activity::where('pin', $karyawan->key)
-                                            // ->whereBetween('tanggal',[
-                                            //     $out->copy()->subHours(6.5)->toDateTimeString(),
-                                            //     $out->copy()->toDateTimeString()
-                                                
-                                            // ])
-                                            // ->orderBy('tanggal', 'DESC')
-                                            // ->first();
                                             $actOut = DB::table('activities')
                                                         ->where('pin', $karyawan->key)
                                                         ->whereBetween('tanggal',[
@@ -527,10 +498,6 @@ trait TraitProses
                                     {
                                         if(!$shift3)
                                         {
-                                            // $actIn = Activity::where('pin', $karyawan->key)
-                                            //         ->whereDate('tanggal', $in->copy()->toDateString())
-                                            //         ->orderBy('tanggal', 'ASC')
-                                            //         ->first();
                                             $actIn = DB::table('activities')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereDate('tanggal', $in->copy()->toDateString())
@@ -543,10 +510,6 @@ trait TraitProses
                                         }
                                         else
                                         {
-                                            // $actIn = Activity::where('pin', $karyawan->key)
-                                            //         ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
-                                            //         ->orderBy('tanggal', 'ASC')
-                                            //         ->first();
                                             $actIn = DB::table('activities')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
@@ -591,10 +554,6 @@ trait TraitProses
 
                             if($inBefore->greaterThan($outBefore))
                             {
-                                // $tmpAct = Activity::where('pin', $karyawan->key)
-                                //         ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                //         ->orderBy('tanggal', 'ASC')
-                                //         ->first();
                                 $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
@@ -605,10 +564,6 @@ trait TraitProses
                                 if($tmpAct)
                                 {
                                     $actIn = $tmpAct;
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
@@ -619,15 +574,6 @@ trait TraitProses
                                 }
                                 else
                                 {
-                                    // $actIn = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'ASC')
-                                    //     ->first();
-                                    
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
@@ -646,10 +592,6 @@ trait TraitProses
                             }
                             else
                             {
-                                // $tmpAct = Activity::where('pin', $karyawan->key)
-                                //         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                //         ->orderBy('tanggal', 'ASC')
-                                //         ->first();
                                 $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
@@ -658,10 +600,6 @@ trait TraitProses
                                 if($tmpAct)
                                 {
                                     $actIn = $tmpAct;
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
@@ -672,15 +610,6 @@ trait TraitProses
                                 }
                                 else
                                 {
-                                    // $actIn = Activity::where('pin', $karyawan->key)
-                                    //             ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //             ->orderBy('tanggal', 'ASC')
-                                    //             ->first();
-                                    
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //             ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //             ->orderBy('tanggal', 'DESC')
-                                    //             ->first();
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
                                                 ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'ASC')
@@ -698,10 +627,6 @@ trait TraitProses
                         }
                         else
                         {
-                            // $tmpAct = Activity::where('pin', $karyawan->key)
-                            //         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                            //         ->orderBy('tanggal', 'ASC')
-                            //         ->first();
                             $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
@@ -713,10 +638,6 @@ trait TraitProses
                             {
                                 $actIn = $tmpAct;
 
-                                // $actOut = Activity::where('pin', $karyawan->key)
-                                //     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                //     ->orderBy('tanggal', 'DESC')
-                                //     ->first();
                                 $actOut = DB::table('activities')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
@@ -727,10 +648,6 @@ trait TraitProses
                             }
                             else
                             {
-                                // $actIn = Activity::where('pin', $karyawan->key)
-                                //     ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                //     ->orderBy('tanggal', 'DESC')
-                                //     ->first();
                                 $actIn = DB::table('activities')->where('pin', $karyawan->key)
                                     ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
@@ -738,11 +655,6 @@ trait TraitProses
 
                                 if($actIn)
                                 {
-
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
@@ -753,15 +665,6 @@ trait TraitProses
                                 }
                                 else
                                 {
-                                    // $actIn = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
-
-                                    // $actOut = Activity::where('pin', $karyawan->key)
-                                    //     ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    //     ->orderBy('tanggal', 'DESC')
-                                    //     ->first();
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
                                         ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
@@ -819,39 +722,54 @@ trait TraitProses
                     /*
                     * start absen manual
                     */
-                    $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
-                    
+                    // $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
+                    $actMan = DB::table('activity_manuals')
+                    ->where('karyawan_id', $karyawan->id)
+                    ->where('tanggal', $key)
+                    ->first();
                     if($actMan)
                     {
-                        $isTa = null;
-                        $isMangkir = null;
-                        $flagNotInOut = null;
-                        
-                        $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
-                        $jMasukId = $actMan->id;
-                        $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
-                        $jKeluarId = $actMan->id;
-                        
-                        $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
-
-                        
-                        if($jMasuk->greaterThan($jKeluar))
+                        if($actMan->mangkir == 'N')
                         {
-                            $jKeluar->addDay();
-                            if(!$jadMasuk && !$jadKeluar)
-                            {                            
-                                $shift3 = 1;
+                            $isTa = null;
+                            $isMangkir = null;
+                            $flagNotInOut = null;
+                            
+                            $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
+                            $jMasukId = $actMan->id;
+                            $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
+                            $jKeluarId = $actMan->id;
+                            
+                            $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
+
+                            
+                            if($jMasuk->greaterThan($jKeluar))
+                            {
+                                $jKeluar->addDay();
+                                if(!$jadMasuk && !$jadKeluar)
+                                {                            
+                                    $shift3 = 1;
+                                }
+                            }
+
+                            if($jMasuk && $jadMasuk)
+                            {
+                                $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
+                            }
+                            if($jKeluar && $jadKeluar)
+                            {
+                                $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
                             }
                         }
-
-                        if($jMasuk && $jadMasuk)
+                        else
                         {
-                            $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
+                            $isMangkir = 1;
+                            $nMasuk = null;
+                            $nKeluar = null;
+                            $shift3 = null;
+                            $isTa = null;
                         }
-                        if($jKeluar && $jadKeluar)
-                        {
-                            $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
-                        }
+                        $isAbsenManual = 'Y';
                     }
                     /*
                     * End absen manual
@@ -872,6 +790,8 @@ trait TraitProses
                                 $jMasukId = null;
                                 $jMasuk = null;
                                 $nMasuk = null;
+                                $jKeluar = null;
+                                $nKeluar = null;
                             }
                         }
                     }
@@ -879,14 +799,16 @@ trait TraitProses
                     /*
                     * Hitung GP
                     */
-                    if(config('global.perusahaan_short') == 'AIC')
-                    {
-                        $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
-                    }
-                    else
-                    {
-                        $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
-                    }                
+                    // if(config('global.perusahaan_short') == 'AIC')
+                    // {
+                    //     $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
+                    // }
+                    // else
+                    // {
+                    //     $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
+                    // }         
+                    $nilaiGp = $this->gpGlobal($nMasuk, $nKeluar);   
+                    if($nilaiGp < 1) $nilaiGp = null;    
                     /*
                     * End Hitung GP
                     */
@@ -1258,6 +1180,7 @@ trait TraitProses
                         'jumlah_jam_kerja' => (!empty($jumlahJamKerja))?$jumlahJamKerja:null,
                         'keterangan' => $keterangan,
                         'is_off' => $isOff,
+                        'absen_manual' => $isAbsenManual,
                         'created_by' => Auth::user()->id
                     ];
                 }
@@ -1779,6 +1702,25 @@ trait TraitProses
         }
         
         return $ret;
+    }
+
+    private function gpGlobal($nmasuk, $nkeluar)
+    {
+        $gpIn   = 0;
+        $gpOut  = 0;
+
+
+        if($nmasuk > 0)
+        {
+            $gpIn = ceil($nmasuk / 30) * 30;
+        }
+
+        if($nkeluar > 0)
+        {
+            $gpOut = ceil($nkeluar / 30) * 30;
+        }
+
+        return ($gpIn + $gpOut);
     }
     
     private function gp($time)

@@ -39,14 +39,14 @@ class ActivityManualController extends Controller
             [
                 'sTanggal'   => 'required',
                 'sKar'   => 'required',
-                'sWaktuIn'   => 'required',
-                'sWaktuOut'   => 'required',
+                'sWaktuIn'   => 'required_unless:sMangkir,Y',
+                'sWaktuOut'   => 'required_unless:sMangkir,Y',
             ],
             [
                 'sTanggal.required'  => 'Tanggal harus diisi.',
                 'sKar.required'  => 'Karyawan harus dipilih.',
-                'sWaktuIn.required'  => 'Jam Masuk harus diisi.',
-                'sWaktuOut.required'  => 'Jam Keluar harus diisi.',
+                'sWaktuIn.required_unless'  => 'Jam Masuk harus diisi.',
+                'sWaktuOut.required_unless'  => 'Jam Keluar harus diisi.',
             ]);
 
             if($validation->fails())
@@ -70,6 +70,7 @@ class ActivityManualController extends Controller
                 $req['jam_masuk'] = $req['sWaktuIn'];
                 $req['jam_keluar'] = $req['sWaktuOut'];
                 $req['keterangan'] = $req['sKeterangan'];
+                $req['mangkir'] = (isset($req['sMangkir']))?'Y':'N';
                 
                 if(!$act->count())
                 {

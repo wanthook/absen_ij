@@ -282,6 +282,11 @@
                             targets : 'tketerangan',
                             data: "keterangan"
                     },
+                    {
+                            targets : 'tmangkir',
+                            data: "mangkir"
+                    },
+
                 ]
             });
             
@@ -345,7 +350,15 @@
                 $('#sWaktuIn').val(datas.jam_masuk);
                 $('#sWaktuOut').val(datas.jam_keluar);
                 $('#sKeterangan').val(datas.keterangan);
-                console.log(datas.jam_masuk);
+
+                if(datas.mangkir == 'Y')
+                {
+                    $('#sMangkir').prop('checked', true);
+                }
+                else
+                {
+                    $('#sMangkir').prop('checked', false);
+                }
             });
             
             $('#sKar').select2({
@@ -485,6 +498,13 @@
                                         {{ Form::text('sKeterangan',  null, ['id' => 'sKeterangan', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
                                     </div>
                                 </div>
+                                
+                                <div class="col-1">
+                                    <div class="form-group">
+                                        {{ Form::label('sMangkir', 'Mangkir?') }}
+                                        {{ Form::checkbox('sMangkir',  'Y', false, ['id' => 'sMangkir', 'class' => 'form-control form-control-sm', 'style'=> 'width: 100%;']) }}
+                                    </div>
+                                </div>
                                 <div class="col-1">
                                     <div class="form-group">
                                         <button class="btn btn-success btn-xs" id="cmdTambah"><i class="fa fa-plus-circle"></i><br>Tambah</button>
@@ -508,6 +528,7 @@
                                     <th class="tjammasuk">Jam Masuk</th>
                                     <th class="tjamkeluar">Jam Pulang</th>
                                     <th class="tketerangan">Keterangan</th>
+                                    <th class="tmangkir">Mangkir</th>
 <!--                                    <th class="talasan">Absen Manual</th>
                                     <th class="twaktu">Waktu</th>-->
                                 </tr>
