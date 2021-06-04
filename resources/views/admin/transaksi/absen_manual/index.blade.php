@@ -81,12 +81,8 @@
             
             $('#sTanggal').on('apply.daterangepicker', function(ev, picker) {
                 $(this).val(picker.startDate.format('YYYY-MM-DD'));
-            });
-            
-            $('#sTanggal').on('change', function(e)
-            {
                 dTableKar.ajax.reload();
-            });            
+            });
 //            $('#sWaktuIn, #sWaktuOut').datetimepicker({
 //                format: 'HH:mm',
 //                use24hours: true
