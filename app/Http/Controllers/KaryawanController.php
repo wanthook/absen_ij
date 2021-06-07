@@ -2720,9 +2720,7 @@ class KaryawanController extends Controller
             $tags = Karyawan::with('divisi', 'jabatan')->author()->where(function($q) use($term)
             {
                 $q->where('pin','like','%'.$term.'%')
-                //   ->orWhere('nik','like','%'.$term.'%')
                   ->orWhere('nama','like','%'.$term.'%');
-//                  ->orWhere('id',$term);
             })->limit(50);
         }
         else if(isset($req['pin']))
@@ -2738,7 +2736,6 @@ class KaryawanController extends Controller
         if($tags)
         {
             foreach ($tags->get() as $tag) {
-                // dd($tag->divisi->kode);
                 $formatted_tags[] = ['id' => $tag->id, 
                 'text' => $tag->pin.' - '.$tag->nama, 
                 'divisi' => [

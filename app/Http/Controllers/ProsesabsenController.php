@@ -94,13 +94,18 @@ class ProsesabsenController extends Controller
                 {
                     $karyawan->where('id', $req['pin']);
                 }            
-                else if(isset($req['divisi']))
+                else if(isset($req['divisi']) && Auth::user()->tipe->nama != 'REKANAN')
                 {
                     $karyawan->where('divisi_id', $req['divisi']);
                 }
-                else if(isset($req['perusahaan']))
+                else if(isset($req['perusahaan']) && Auth::user()->tipe->nama != 'REKANAN')
                 {
                     $karyawan->where('perusahaan_id', $req['perusahaan']);
+                }
+
+                if(Auth::user()->tipe->nama == 'REKANAN')
+                {
+                    $karyawan->author();
                 }
 
                 $tArr = explode(" - ", $req['tanggal']);
@@ -113,7 +118,7 @@ class ProsesabsenController extends Controller
                 {
                     foreach($kar as $rKar)
                     {
-                        Log::info("Start proccess '.$cnt.' of '.$tot.', karyawan_id:".$rKar->id.", pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
+                        Log::info("Start proccess '.$cnt.' of '.$tot.', pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
                         
                         $this->prosesAbs($rKar, $tanggal);
                         $cnt++;

@@ -293,12 +293,14 @@
                             {{ Form::select('pin', [], null, ['id' => 'pin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
+                    @if(Auth::user()->type->nama != 'REKANAN')
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('divisi', 'Divisi') }}
                             {{ Form::select('divisi', [], null, ['id' => 'divisi', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
+                    @endif
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('tanggal', 'Tanggal') }}
@@ -313,12 +315,14 @@
                             
                         </div>
                     </div>
+                    @if(Auth::user()->type->nama != 'REKANAN')
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('perusahaan', 'Perusahaan') }}
                             {{ Form::select('perusahaan', [], null, ['id' => 'perusahaan', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
             <div class="card-footer">
