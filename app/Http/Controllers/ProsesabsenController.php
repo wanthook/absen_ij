@@ -94,16 +94,16 @@ class ProsesabsenController extends Controller
                 {
                     $karyawan->where('id', $req['pin']);
                 }            
-                else if(isset($req['divisi']) && Auth::user()->tipe->nama != 'REKANAN')
+                else if(isset($req['divisi']) && Auth::user()->type->nama != 'REKANAN')
                 {
                     $karyawan->where('divisi_id', $req['divisi']);
                 }
-                else if(isset($req['perusahaan']) && Auth::user()->tipe->nama != 'REKANAN')
+                else if(isset($req['perusahaan']) && Auth::user()->type->nama != 'REKANAN')
                 {
                     $karyawan->where('perusahaan_id', $req['perusahaan']);
                 }
 
-                if(Auth::user()->tipe->nama == 'REKANAN')
+                if(Auth::user()->type->nama == 'REKANAN')
                 {
                     $karyawan->author();
                 }
