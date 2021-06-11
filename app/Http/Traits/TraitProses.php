@@ -456,7 +456,7 @@ trait TraitProses
                                             ->orderBy('tanggal', 'DESC')
                                             ->first();
                                 $jKeluarId = ($actOut)?$actOut->id:null;
-
+                                // dd($actOut);
                                 if($jMasukId)
                                 {
                                     if(!$jKeluarId)
@@ -701,6 +701,7 @@ trait TraitProses
                         $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actOut->tanggal);
                         $jSubKeluar = $jKeluar->copy()->subSeconds((int)$jKeluar->format('s'));
                     }
+                    // dd($actOut->tanggal);
                     
                     if($jMasukId && $jKeluarId)
                     {
@@ -781,7 +782,7 @@ trait TraitProses
                     /*
                     * End absen manual
                     */
-
+                    // dd($flagNotInOut);
                     if($flagNotInOut)
                     {
                         if($jumlahActivityKerja < 5)
@@ -797,8 +798,6 @@ trait TraitProses
                                 $jMasukId = null;
                                 $jMasuk = null;
                                 $nMasuk = null;
-                                $jKeluar = null;
-                                $nKeluar = null;
                             }
                         }
                     }
@@ -1194,21 +1193,16 @@ trait TraitProses
                 
                 if(count($arrProses) > 0)
                 {
-                    // dd($arrProses);
-                    // DB::transaction(function () {
-
                     DB::table('prosesabsens')->where('karyawan_id', $karyawan->id)
                         ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
                         ->delete();
                     DB::table('prosesabsens')->insert($arrProses);
-                    // });
-                    // Prosesabsen::insert($arrProses);
                 }
             }
         }
         catch(Exception $e)
         {
-            // dd($e->getMessage());
+            dd($e->getMessage());
             Log::warning($e->getMessage());
         }
     }
