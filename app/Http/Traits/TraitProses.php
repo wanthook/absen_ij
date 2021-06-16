@@ -29,6 +29,7 @@ use App\Libur;
 use App\Prosesabsen;
 use App\ExceptionLog;
 use App\Activity;
+use App\ActivityManual;
 
 
 use Carbon\Carbon;
@@ -437,6 +438,7 @@ trait TraitProses
                                 $jumlahJamKerja = $out->diffInHours($in);
                                 
                                 $actIn = DB::table('activities')
+                                            ->whereNull('deleted_at')
                                             ->where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [
                                                 $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
@@ -448,6 +450,7 @@ trait TraitProses
                                 $jMasukId = ($actIn)?$actIn->id:null;
 
                                 $actOut = DB::table('activities')
+                                            ->whereNull('deleted_at')
                                             ->where('pin', $karyawan->key)
                                             ->whereBetween('tanggal', [
                                                 $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
@@ -462,6 +465,7 @@ trait TraitProses
                                     if(!$jKeluarId)
                                     {
                                         $actOut = DB::table('activities')
+                                                    ->whereNull('deleted_at')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereBetween('tanggal',[
                                                         $out->copy()->toDateTimeString(), 
@@ -478,6 +482,7 @@ trait TraitProses
                                         else
                                         {
                                             $actOut = DB::table('activities')
+                                                        ->whereNull('deleted_at')
                                                         ->where('pin', $karyawan->key)
                                                         ->whereBetween('tanggal',[
                                                             $out->copy()->subHours(6.5)->toDateTimeString(),
@@ -499,6 +504,7 @@ trait TraitProses
                                         if(!$shift3)
                                         {
                                             $actIn = DB::table('activities')
+                                                    ->whereNull('deleted_at')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereDate('tanggal', $in->copy()->toDateString())
                                                     ->orderBy('tanggal', 'ASC')
@@ -511,6 +517,7 @@ trait TraitProses
                                         else
                                         {
                                             $actIn = DB::table('activities')
+                                                    ->whereNull('deleted_at')
                                                     ->where('pin', $karyawan->key)
                                                     ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
                                                     ->orderBy('tanggal', 'ASC')
@@ -555,6 +562,7 @@ trait TraitProses
                             if($inBefore->greaterThan($outBefore))
                             {
                                 $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
                                         ->first();
@@ -565,6 +573,7 @@ trait TraitProses
                                 {
                                     $actIn = $tmpAct;
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
@@ -575,11 +584,13 @@ trait TraitProses
                                 else
                                 {
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
                                         ->first();
                                     
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
@@ -593,6 +604,7 @@ trait TraitProses
                             else
                             {
                                 $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'ASC')
                                         ->first();
@@ -601,6 +613,7 @@ trait TraitProses
                                 {
                                     $actIn = $tmpAct;
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                        ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
@@ -611,11 +624,13 @@ trait TraitProses
                                 else
                                 {
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                                ->whereNull('deleted_at')
                                                 ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'ASC')
                                                 ->first();
                                     
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                                ->whereNull('deleted_at')
                                                 ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                                 ->orderBy('tanggal', 'DESC')
                                                 ->first();
@@ -628,6 +643,7 @@ trait TraitProses
                         else
                         {
                             $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereNull('deleted_at')
                                     ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
@@ -639,6 +655,7 @@ trait TraitProses
                                 $actIn = $tmpAct;
 
                                 $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereNull('deleted_at')
                                     ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
                                     ->first();
@@ -649,6 +666,7 @@ trait TraitProses
                             else
                             {
                                 $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                ->whereNull('deleted_at')
                                     ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'DESC')
                                     ->first();
@@ -656,6 +674,7 @@ trait TraitProses
                                 if($actIn)
                                 {
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
@@ -666,11 +685,13 @@ trait TraitProses
                                 else
                                 {
                                     $actIn = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
 
                                     $actOut = DB::table('activities')->where('pin', $karyawan->key)
+                                    ->whereNull('deleted_at')
                                         ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                         ->orderBy('tanggal', 'DESC')
                                         ->first();
@@ -726,8 +747,10 @@ trait TraitProses
                     // $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
                     $actMan = DB::table('activity_manuals')
                     ->where('karyawan_id', $karyawan->id)
-                    ->where('tanggal', $key)
+                    ->whereNull('deleted_at')
+                    ->where('tanggal', $key)                    
                     ->first();
+
                     if($actMan)
                     {
                         if($actMan->mangkir == 'N')
