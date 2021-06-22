@@ -417,6 +417,7 @@ class MesinController extends Controller
     public function hapusAbsen(Request $request)
     {
         $timeProcess = microtime(true);
+        $arrHapus = [];
         try
         {
             $validation = Validator::make($request->all(), 
@@ -462,11 +463,11 @@ class MesinController extends Controller
                             
                         }
 
-                        echo json_encode(array(
-                            'status' => 1,
-                            'msg'   => 'Data berhasil dihapus',
-                            'time'  => intval(microtime(true) - $timeProcess)
-                        ));
+                        // echo json_encode(array(
+                        //     'status' => 1,
+                        //     'msg'   => 'Data berhasil dihapus',
+                        //     'time'  => intval(microtime(true) - $timeProcess)
+                        // ));
                     }
                     else
                     {
@@ -482,7 +483,7 @@ class MesinController extends Controller
                             $new_line = "\r\n";
 
                             fputs($con, "POST /iWsService HTTP/1.0".$new_line);
-                            fputs($con, "Host:".$ip.$new_line);
+                            fputs($con, "Host:".$mesin->ip.$new_line);
                             fputs($con, "Content-Type: text/xml".$new_line);
                             fputs($con, "Content-Length: ".strlen($soap_req).$new_line.$new_line);
                             fputs($con, $soap_req.$new_line);
@@ -491,11 +492,11 @@ class MesinController extends Controller
                             {
                             
                             }
-                            echo json_encode(array(
-                                'status' => 1,
-                                'msg'   => 'Data berhasil dihapus',
-                                'time'  => intval(microtime(true) - $timeProcess)
-                            ));
+                            // echo json_encode(array(
+                            //     'status' => 1,
+                            //     'msg'   => 'Data berhasil dihapus',
+                            //     'time'  => intval(microtime(true) - $timeProcess)
+                            // ));
 
                         }
                     }
@@ -508,8 +509,8 @@ class MesinController extends Controller
                 
             }
             echo json_encode(array(
-                'status' => 0,
-                'msg'   => 'Mesin gagal dihapus',
+                'status' => 1,
+                'msg'   => 'Mesin berhasil dihapus',
                 'time'  => intval(microtime(true) - $timeProcess)
             ));
 //            $request->session()->forget('tarik');
@@ -657,6 +658,7 @@ class MesinController extends Controller
                     {
                         return $this->pingIp($datas->ip);
                     }
+                    return 1;
                     
                 })
                 ->editColumn('id', '{{$id}}')
@@ -745,6 +747,8 @@ class MesinController extends Controller
                 {
                     return $this->pingIp($datas->ip);
                 }
+
+                return 1;
 
             })
             ->editColumn('id', '{{$id}}')
