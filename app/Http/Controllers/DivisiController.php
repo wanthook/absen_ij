@@ -314,7 +314,22 @@ class DivisiController extends Controller
                 $q->orWhere('deskripsi', $req['search']);
             });
         }
-        $datas->orderBy('id','desc');
+        if($req['order'])
+        {
+            foreach($req['order'] as $kOrder => $vOrder)
+            {
+                if($vOrder['column'] == 1)
+                {
+                    $datas->orderBy('kode',$vOrder['dir']);
+                }
+                else if($vOrder['column'] == 2)
+                {
+                    $datas->orderBy('deskripsi',$vOrder['dir']);
+                }
+
+            }
+        }
+        // $datas->orderBy('id','desc');
         
         return  Datatables::of($datas)
                 ->addColumn('action',function($datas)
