@@ -286,7 +286,7 @@
                         {
                             return '';
                         }
-                    }},
+                    }, orderable: false},
                     { data    : function(datas)
                     {
                         if(datas.costcenter)
@@ -297,7 +297,7 @@
                         {
                             return '';
                         }
-                    }},
+                    }, orderable: false},
                     { data    : function(datas)
                     {
                         if(datas.type)
@@ -308,9 +308,9 @@
                         {
                             return '';
                         }
-                    }},
-                    { data    : "created_by.name", name : "created_by" },
-                    { data    : "created_at", name : "created_at" }              
+                    }, orderable: false},
+                    { data    : "created_by.name", name : "created_by", orderable: false },
+                    { data    : "created_at", name : "created_at", orderable: false }              
 
                 ],
                 "drawCallback": function( settings, json ) 
