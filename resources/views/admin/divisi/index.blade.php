@@ -81,6 +81,60 @@
                 }
             });
             
+            $('#cost_center_id').select2({
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selcostcenter')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
+            $('#type_id').select2({
+                placeholder: "",
+                allowClear: true,
+                minimumInputLength: 0,
+                delay: 250,
+                ajax: {
+                    url: "{{route('selcostcentertype')}}",
+                    dataType    : 'json',
+                    type : 'post',
+                    data: function (params) 
+                    {
+                        var query = {
+                            q: params.term
+                        }
+                        
+                        return query;
+                    },
+                    processResults: function (data) 
+                    {
+                        return {
+                            results: data.items
+                        };
+                    },
+                    cache: true
+                }
+            });
+            
             $('#form_data').submit( function(e)
             {
                 e.preventDefault();
@@ -195,6 +249,7 @@
             $('#modal-form').on('hidden.bs.modal', function (e) 
             {
                 document.getElementById("form_data").reset(); 
+                $('#parent_id').val(null).trigger('change');
                 dTable.ajax.reload();
             });
             
@@ -221,6 +276,39 @@
                     { data    : "action", orderable: false, searchable: false},
                     { data    : "kode", name : "kode" },
                     { data    : "deskripsi", name : "deskripsi" },
+                    { data    : function(datas)
+                    {
+                        if(datas.parents)
+                        {
+                            return datas.parents.kode+' - '+datas.parents.deskripsi;
+                        }
+                        else
+                        {
+                            return '';
+                        }
+                    }},
+                    { data    : function(datas)
+                    {
+                        if(datas.costcenter)
+                        {
+                            return datas.costcenter.kode+' - '+datas.costcenter.deskripsi;
+                        }
+                        else
+                        {
+                            return '';
+                        }
+                    }},
+                    { data    : function(datas)
+                    {
+                        if(datas.type)
+                        {
+                            return datas.type.nama;
+                        }
+                        else
+                        {
+                            return '';
+                        }
+                    }},
                     { data    : "created_by.name", name : "created_by" },
                     { data    : "created_at", name : "created_at" }              
 
@@ -273,8 +361,39 @@
                         $('#id').val(datas.id);
                         $('#kode').val(datas.kode);
                         $('#deskripsi').val(datas.deskripsi);
-//                        console.log($('#id').val());
-//                        $('#parent_id').val(datas.parent_id).
+
+                        if(datas.parents)
+                        {
+                            var val = {
+                                id: datas.parents.id,
+                                text: datas.parents.kode+' - '+datas.parents.deskripsi
+                            };
+
+                            var newOption = new Option(val.text, val.id, false, false);
+                            $('#parent_id').append(newOption).trigger('change');
+                        }
+
+                        if(datas.costcenter)
+                        {
+                            var val = {
+                                id: datas.costcenter.id,
+                                text: datas.costcenter.kode+' - '+datas.costcenter.deskripsi
+                            };
+
+                            var newOption = new Option(val.text, val.id, false, false);
+                            $('#cost_center_id').append(newOption).trigger('change');
+                        }
+
+                        if(datas.type)
+                        {
+                            var val = {
+                                id: datas.type.id,
+                                text: datas.type.nama+' - '+datas.parents.deskripsi
+                            };
+
+                            var newOption = new Option(val.text, val.id, false, false);
+                            $('#type_id').append(newOption).trigger('change');
+                        }
                     });
                     
                     
@@ -352,6 +471,14 @@
                     <label for="kode">Parent Divisi</label>
                     <select name="parent_id" id="parent_id" class="form-control select2" style="width:100%"></select>
                 </div>
+                <div class="form-group">
+                    <label for="kode">Cost Center</label>
+                    <select name="cost_center_id" id="cost_center_id" class="form-control select2" style="width:100%"></select>
+                </div>
+                <div class="form-group">
+                    <label for="kode">Tipe Cost Center</label>
+                    <select name="type_id" id="type_id" class="form-control select2" style="width:100%"></select>
+                </div>
         </div>
         <div class="modal-footer justify-content-between">
             <button type="button" id="cmdModalClose" class="btn btn-outline-light" data-dismiss="modal">Keluar</button>
@@ -405,6 +532,9 @@
                         <th>Aksi</th>
                         <th>Kode Divisi</th>
                         <th>Nama Divisi</th>
+                        <th>Parents</th>
+                        <th>Cost Center</th>
+                        <th>Type</th>
                         <th>Dibuat Oleh</th>
                         <th>Tanggal Buat</th>
                     </tr>

@@ -364,4 +364,22 @@ class MasterOptionController extends Controller
         }
         echo json_encode(array('items' => $formatted_tags));
     }
+    
+    public function select2costcentertype(Request $request)
+    {
+        $tags = null;
+        
+        $term = trim($request->input('q'));
+        $tags = MasterOption::where(function($q) use($term)
+        {
+            $q->where('nama','like','%'.$term.'%')
+              ->orWhere('deskripsi','like','%'.$term.'%')
+              ->orWhere('id',$term);
+        })->where('kode','COSTCENTER')->limit(100)->get();
+        $formatted_tags = [];
+        foreach ($tags as $tag) {
+            $formatted_tags[] = ['id' => $tag->id, 'text' => $tag->nama];
+        }
+        echo json_encode(array('items' => $formatted_tags));
+    }
 }

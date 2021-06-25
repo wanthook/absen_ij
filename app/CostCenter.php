@@ -2,26 +2,19 @@
 
 namespace App;
 
-use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Divisi extends Model
+class CostCenter extends Model
 {
     use SoftDeletes;
-    use NodeTrait;
     
-    protected $table = 'divisis';
+    protected $table = 'cost_center';
     
     protected $fillable = [
-        'deskripsi',   
         'kode',
-        'parent_id', 
-        '_lft',
-        '_rgt',
-        'cost_center_id',
-        'type_id',
+        'deskripsi',   
         'deleted_at',
         'created_by', 
         'created_at',
@@ -35,26 +28,6 @@ class Divisi extends Model
      * @var array
      */
     protected $dates = ['deleted_at'];
-    
-    public function karyawan()
-    {
-        return $this->hasMany('App\Karyawan', 'divisi_id')->where('active_status', 1)->where('off_status', 'N');
-    }
-
-    public function parents()
-    {
-        return $this->belongsTo('App\Divisi', 'parent_id');
-    }
-
-    public function costcenter()
-    {
-        return $this->belongsTo('App\CostCenter', 'cost_center_id');
-    }
-
-    public function type()
-    {
-        return $this->belongsTo('App\MasterOption', 'type_id')->where('kode', 'COSTCENTER');
-    }
     
     public function getCreatedAtAttribute($value)
     {

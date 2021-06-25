@@ -119,6 +119,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <body>
 @if(isset($var))
     @foreach($var as $vVal)    
+    @php
+        $txtDivisi = "";
+        if(isset($vVal['karyawan']->divisi))
+        {
+            $txtDivisi = $vVal['karyawan']->divisi->kode.' - '.$vVal['karyawan']->divisi->deskripsi;
+        }
+    @endphp
     <page size="A4" layout="landscape">
         <div class="j1">Laporan Kehadiran Karyawan</div>
         <div class="j2">Periode : {{$vVal['periodeStart']}} s/d {{$vVal['periodeEnd']}}</div>
@@ -131,7 +138,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <tr>
                 <td>Unit Kerja</td>
                 <td>:</td>
-                <td>{{$vVal['karyawan']->divisi->kode.' - '.$vVal['karyawan']->divisi->deskripsi}}</td>
+                <td>{{$txtDivisi}}</td>
             </tr>
             <tr>
                 <td>NIK</td>

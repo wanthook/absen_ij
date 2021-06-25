@@ -89,12 +89,20 @@ class DivisiController extends Controller
                         'kode' => $req['kode'],
                         'deskripsi' => $req['deskripsi'],
                         'updated_by'   => Auth::user()->id
-                    ];   
-                    
-                    if(isset($req['perent_id']))
+                    ]; 
+                    if(isset($req['parent_id']))
                     {
                         $arrUpd['parent_id'] = $req['parent_id'];
                     }
+                    if(isset($req['cost_center_id']))
+                    {
+                        $arrUpd['cost_center_id'] = $req['cost_center_id'];
+                    }
+                    if(isset($req['type_id']))
+                    {
+                        $arrUpd['type_id'] = $req['type_id'];
+                    }
+
                     Divisi::find($req['id'])->fill($arrUpd)->save();
                     echo json_encode(array(
                         'status' => 1,
@@ -137,9 +145,7 @@ class DivisiController extends Controller
                 $req = $request->all();
                 
                 $fileVar = $req['formUpload'];
-                
-//                $fileVar->move(storage_path('tmp'),'tempFileUploadAlasanKaryawan');
-                
+                                
                 $sheetData = [];
                 
                 if($fileVar->getClientMimeType() == 'text/csv')
@@ -298,7 +304,7 @@ class DivisiController extends Controller
     {
         $req    = $request->all();
         
-        $datas   = Divisi::with(['createdBy']);  
+        $datas   = Divisi::with('createdBy', 'parents', 'costcenter', 'type');  
         
         if(!empty($req['search']))
         {

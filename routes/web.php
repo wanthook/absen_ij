@@ -31,6 +31,8 @@ Route::group(['middleware' => 'auth'],function()
             Route::get('karyawan', ['as' => 'mkaryawan', 'uses' => 'KaryawanController@index']);
             Route::get('form-karyawan', ['as' => 'mkaryawanf', 'uses' => 'KaryawanController@create']);
             Route::get('edit-karyawan/{id}', ['as' => 'mkaryawane', 'uses' => 'KaryawanController@edit']);
+
+            Route::get('cost_center', ['as' => 'mcostcenter', 'uses' => 'CostCenterController@index']);
         });
 
         Route::group(['prefix' => 'jadwal-kerja'], function()
@@ -248,7 +250,12 @@ Route::group(['middleware' => 'auth'],function()
             Route::post('logmesinkaryawanedit', ['as' => 'editlogmesinkaryawan', 'uses' => 'MesinController@editActivity']);
             Route::post('logmesinkaryawandt', ['as' => 'dtlogmesinkaryawan', 'uses' => 'MesinController@dtActivity']);
             
-        
+            Route::post('costcenterdt', ['as' => 'dtcostcenter', 'uses' => 'CostCenterController@dt']);
+            Route::post('costcentersave', ['as' => 'savecostcenter', 'uses' => 'CostCenterController@store']);
+            Route::post('costcenterdel', ['as' => 'delcostcenter', 'uses' => 'CostCenterController@destroy']);
+            Route::post('costcentersel', ['as' => 'selcostcenter', 'uses' => 'CostCenterController@select2']);
+
+            Route::post('costcentertypeselect', ['as' => 'selcostcentertype', 'uses' => 'MasterOptionController@select2costcentertype']);
             
             
         });
