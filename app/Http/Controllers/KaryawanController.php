@@ -1063,7 +1063,10 @@ class KaryawanController extends Controller
                         $karId = $karyawan->first()->id;
                         $kar = Karyawan::find($karId);
                         $par = $kar->log_off()->wherePivot('tanggal', trim($sD[$arrKey->tanggal]));
-                        $alasan = Alasan::where('kode', trim($sD[$arrKey->kode_alasan]))->where('show', 'N')->first();
+                        $alasan = Alasan::where('kode', trim($sD[$arrKey->kode_alasan]))->where(function($q){
+                            $q->where('show', 'N')
+                              ->orWhere('kode', 'RM');
+                        })->first();
                         if($par)
                         {
                             $par->detach();
