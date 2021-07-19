@@ -67,7 +67,23 @@ $(function(e)
                                 </tr>
                                 <tr>
                                     <td><label>File Dokumen</label></td>
-                                    <td><a class="btn btn-success btn-sm" href="{{route('downloadrequestalasan',$var->file_dokumen)}}"><i class="fa fa-file-pdf"></i>{{$var->file_dokumen}}</a></td>
+                                    <td>
+                                    @php
+                                        if(isset($var->file_dokumen) && !empty($var->file_dokumen))
+                                        {
+                                            @endphp
+                                            <a class="btn btn-success btn-sm" href="{{route('downloadrequestalasan',$var->file_dokumen)}}"><i class="fa fa-file-pdf"></i>{{$var->file_dokumen}}</a>
+                                            @php
+                                        }
+                                        else
+                                        {
+                                            @endphp
+                                            <a class="btn btn-success btn-sm" href="#"><i class="fa fa-file-pdf"></i></a>
+                                            @php
+                                        }
+                                    @endphp
+                                    
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><label>Tanggal Request</label></td>
@@ -119,7 +135,7 @@ $(function(e)
                                     </thead>
                                     <tbody>
                                         @php
-                                            $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->where('request_alasan_id', $var->id)->get();
+                                            $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->whereNull('status')->where('request_alasan_id', $var->id)->get();
                                             foreach($dataKar as $rKar)
                                             {
                                                                                             

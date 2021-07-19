@@ -916,7 +916,7 @@ class RequestAlasanController extends Controller
             $datas->where('created_by', Auth::user()->id)->whereNull('request_alasan_id');
         }
         
-        $datas->orderBy('created_at','desc');
+        $datas->whereNull('status')->orderBy('created_at','desc');
         
         return  Datatables::of($datas)               
                 ->editColumn('id', '{{$id}}')
