@@ -135,8 +135,12 @@ $(function(e)
                                     </thead>
                                     <tbody>
                                         @php
-                                            $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->whereNull('status')->where('request_alasan_id', $var->id)->get();
-                                            foreach($dataKar as $rKar)
+                                            $dataKar = \App\RequestAlasanDetail::with('karyawan', 'alasan')->where('request_alasan_id', $var->id);
+                                            if($var->status != 'approve')
+                                            {
+                                                $dataKar->whereNull('status');
+                                            }
+                                            foreach($dataKar->get() as $rKar)
                                             {
                                                                                             
                                                 $arr = [

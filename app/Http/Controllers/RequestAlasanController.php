@@ -662,7 +662,7 @@ class RequestAlasanController extends Controller
                     'approved_by' => Auth::user()->id,
                     'approved_at' => Carbon::now()]);
 
-                $dec = RequestAlasanDetail::where('request_alasan_id', $req['id'])->whereNotIn('id', $req['d']);
+                $dec = RequestAlasanDetail::where('request_alasan_id', $req['id'])->whereNotIn('id', $req['d'])->whereNull('status');;
 
                 if($dec)
                 {
