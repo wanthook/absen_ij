@@ -2742,8 +2742,8 @@ class KaryawanController extends Controller
                 $formatted_tags[] = ['id' => $tag->id, 
                 'text' => $tag->pin.' - '.$tag->nama, 
                 'divisi' => [
-                    'kode' => $tag->divisi->kode, 
-                    'nama' => $tag->divisi->deskripsi
+                    'kode' => (isset($tag->divisi->kode)?$tag->divisi->kode:''), 
+                    'nama' => (isset($tag->divisi->deskripsi)?$tag->divisi->deskripsi:'')
                     ]
                 ];
             }

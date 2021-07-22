@@ -45,6 +45,7 @@ use Log;
 trait TraitProses 
 {
     private $rangeAbs = 4 * 60;
+    private $showLog = false;
     public function cekProses($karId, $tanggal)
     {
         $proc = Prosesabsen::where('karyawan_id', $karId)->where('tanggal', $tanggal)->count();
@@ -78,8 +79,12 @@ trait TraitProses
     {
         try
         {
-            // $karyawan = Karyawan::find($karId);
-            // $karyawan = $karId;
+            if($this->showLog)
+            {
+                $twaktu = microtime(true);
+                Log::info("Mulai ".$karyawan->pin);
+            }
+
             $tmk = null;
             $active = null;
             $off = null;
@@ -97,38 +102,31 @@ trait TraitProses
 
             $jadwal = $this->jadwals($tanggal, $karyawan);
 
-            $jadwalArr = array();
-
-            // Prosesabsen::where('karyawan_id', $karyawan->id)
-            //         ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
-            //         ->delete();
-            
-            if(!$jadwal)
+            if($this->showLog)
             {
-                // ExceptionLog::create(['file_target' => 'ProsesabsenController.php', 'message_log' => json_encode(['karyawan_id' => $karyawan->id, 
-                //     'message' => 'JADWAL KOSONG']), 'created_by' => Auth::user()->id, 'created_at' => Carbon::now()]);
-                return false;
+                Log::info("Persiapan selesai ".(microtime(true)-$twaktu));
             }
 
-            $jadwalArr = $this->jadwals($tanggal, $karyawan);
-            $jadwalManual = $this->jadwalManual($tanggal, $karyawan);
-            // dd($jadwalManual);
-            if($jadwalArr)
+            if(!$jadwal)
+            {
+                return false;
+            }
+            else
             {
                 $arrProses = [];
 
-                foreach($jadwalArr as $key => $val)
-                {
-                    if($jadwalManual[$key])
-                    {
-                        $jadwalArr[$key] = $jadwalManual[$key];
-                    }
-                }
-                // dd($jadwalArr);
-                // unset($jadwalManual);
+                /*
+                grab all Alasan id
+                */
+                $als = $this->getAlasanData();
 
-                foreach($jadwalArr as $key => $val)
+
+                foreach($jadwal as $key => $val)
                 {  
+                    if($this->showLog)
+                    {
+                        $tStart = microtime(true);
+                    }
 
                     $alasanId = null;
 
@@ -190,7 +188,8 @@ trait TraitProses
                     {
                         if($tmk->diffInDays($key, false) < 0)
                         {
-                            $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                            // $alasanId[] = Alasan::where('kode','IN')->first()->id;
+                            $alasanId[] = $als['IN']->id;
                             $isInOut = 'IN';
                             $keterangan[] = 'IN';
                             goto proses_simpan;
@@ -201,7 +200,8 @@ trait TraitProses
                     {
                         if($active->diffInDays($key, false)>=0)
                         {
-                            $alasanId[] = Alasan::where('kode','OUT')->first()->id;                        
+                            // $alasanId[] = Alasan::where('kode','OUT')->first()->id; 
+                            $alasanId[] = $als['OUT']->id;                 
                             $isInOut = 'OUT';
                             $keterangan[] = 'OUT';
                         }
@@ -222,7 +222,7 @@ trait TraitProses
 
                     if(isset($val->pendek))
                     {
-                        if($val->pendek == "1")
+                        if($val->pendek == '1')
                         {
                             $pendek = 1;
                         }
@@ -245,8 +245,8 @@ trait TraitProses
                             */                       
                             if($val->jam_masuk && $val->jam_keluar)
                             {
-                                $in = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_masuk.":00");
-                                $out = Carbon::createFromFormat("Y-m-d H:i:s", $key." ".$val->jam_keluar.":00");
+                                $in = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_masuk.":00");
+                                $out = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_keluar.":00");
                                 
                                 /*
                                 * cek jadwal shift3
@@ -437,42 +437,27 @@ trait TraitProses
 
                                 $jumlahJamKerja = $out->diffInHours($in);
                                 
-                                $actIn = DB::table('activities')
-                                            ->whereNull('deleted_at')
-                                            ->where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [
-                                                $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(),
-                                                $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()
-                                            ])
-                                            ->orderBy('tanggal', 'ASC')
-                                            ->first();
+                                $actIn = $this->getActivities($karyawan->key, 
+                                            $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(), 
+                                            $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                
 
                                 $jMasukId = ($actIn)?$actIn->id:null;
 
-                                $actOut = DB::table('activities')
-                                            ->whereNull('deleted_at')
-                                            ->where('pin', $karyawan->key)
-                                            ->whereBetween('tanggal', [
-                                                $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString()
-                                            ])
-                                            ->orderBy('tanggal', 'DESC')
-                                            ->first();
+                                $actOut = $this->getActivities($karyawan->key, 
+                                    $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
+                                    $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString());
+                                
                                 $jKeluarId = ($actOut)?$actOut->id:null;
-                                // dd($actOut);
+                                
                                 if($jMasukId)
                                 {
                                     if(!$jKeluarId)
                                     {
-                                        $actOut = DB::table('activities')
-                                                    ->whereNull('deleted_at')
-                                                    ->where('pin', $karyawan->key)
-                                                    ->whereBetween('tanggal',[
-                                                        $out->copy()->toDateTimeString(), 
-                                                        $out->copy()->addHours(14)->toDateTimeString()
-                                                    ])
-                                                    ->orderBy('tanggal', 'DESC')
-                                                    ->first();
+                                        $actOut = $this->getActivities($karyawan->key, 
+                                            $out->copy()->toDateTimeString(), 
+                                            $out->copy()->addHours(14)->toDateTimeString());
+                                        
                                         if($actOut)
                                         {
                                             $flagNotInOut = "out";
@@ -481,16 +466,10 @@ trait TraitProses
                                         }
                                         else
                                         {
-                                            $actOut = DB::table('activities')
-                                                        ->whereNull('deleted_at')
-                                                        ->where('pin', $karyawan->key)
-                                                        ->whereBetween('tanggal',[
-                                                            $out->copy()->subHours(6.5)->toDateTimeString(),
-                                                            $out->copy()->toDateTimeString()
-                                                            
-                                                        ])
-                                                        ->orderBy('tanggal', 'DESC')
-                                                        ->first();
+                                            $actOut = $this->getActivities($karyawan->key, 
+                                                $out->copy()->subHours(6.5)->toDateTimeString(), 
+                                                $out->copy()->toDateTimeString());
+                                            
                                             $flagNotInOut = "out";
                                         
                                             $jKeluarId = ($actOut)?$actOut->id:null;
@@ -503,12 +482,9 @@ trait TraitProses
                                     {
                                         if(!$shift3)
                                         {
-                                            $actIn = DB::table('activities')
-                                                    ->whereNull('deleted_at')
-                                                    ->where('pin', $karyawan->key)
-                                                    ->whereDate('tanggal', $in->copy()->toDateString())
-                                                    ->orderBy('tanggal', 'ASC')
-                                                    ->first();
+                                            $actIn = $this->getActivities($karyawan->key, 
+                                                                $in->copy()->toDateString(),
+                                                                null,false);
 
                                             $flagNotInOut = "in";
 
@@ -516,12 +492,9 @@ trait TraitProses
                                         }
                                         else
                                         {
-                                            $actIn = DB::table('activities')
-                                                    ->whereNull('deleted_at')
-                                                    ->where('pin', $karyawan->key)
-                                                    ->whereBetween('tanggal', [$in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), $in->copy()->addDay()->toDateString().' 09:00:00'])
-                                                    ->orderBy('tanggal', 'ASC')
-                                                    ->first();
+                                            $actIn = $this->getActivities($karyawan->key, 
+                                                    $in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
+                                                    $in->copy()->addDay()->toDateString().' 09:00:00');
 
                                             $flagNotInOut = "in";
 
@@ -540,11 +513,11 @@ trait TraitProses
                     }
                     else
                     {
-                        $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 07:00:00");
-                        $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 14:00:00");
-                        $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 23:00:00");
+                        $inS1 = Carbon::createFromFormat('Y-m-d H:i:s', $key." 07:00:00");
+                        $inS2 = Carbon::createFromFormat('Y-m-d H:i:s', $key." 14:00:00");
+                        $inS3 = Carbon::createFromFormat('Y-m-d H:i:s', $key." 23:00:00");
 
-                        $outS1 = Carbon::createFromFormat("Y-m-d H:i:s", $key." 15:00:00");
+                        $outS1 = Carbon::createFromFormat('Y-m-d H:i:s', $key." 15:00:00");
                         $outS2 = $inS3;
                         $outS3 = $inS1->copy()->addDay();
 
@@ -556,45 +529,37 @@ trait TraitProses
 
                         if($jadwalBefore)
                         {
-                            $inBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
-                            $outBefore = Carbon::createFromFormat("Y-m-d H:i:s", $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
+                            $inBefore = Carbon::createFromFormat('Y-m-d H:i:s', $tglBefore->toDateString()." ".$jadwalBefore->jam_masuk.":00");
+                            $outBefore = Carbon::createFromFormat('Y-m-d H:i:s', $tglBefore->toDateString()." ".$jadwalBefore->jam_keluar.":00");
 
                             if($inBefore->greaterThan($outBefore))
                             {
-                                $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'ASC')
-                                        ->first();
+                                $tmpAct = $this->getActivities($karyawan->key, 
+                                            $inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                            $inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
                                 /*
                                 * apakah shift2
                                 */
                                 if($tmpAct)
                                 {
                                     $actIn = $tmpAct;
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                                $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                    
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
                                 else
                                 {
-                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'ASC')
-                                        ->first();
+                                    $actIn = $this->getActivities($karyawan->key, 
+                                                $inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                                        
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                $outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
                                     
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
                                     $shift3 = 1;
 
                                     $jMasukId = ($actIn)?$actIn->id:null;
@@ -603,38 +568,31 @@ trait TraitProses
                             }
                             else
                             {
-                                $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'ASC')
-                                        ->first();
+                                $tmpAct = $this->getActivities($karyawan->key, 
+                                            $inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                            $inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                
                                 //Jika Sf1
                                 if($tmpAct)
                                 {
                                     $actIn = $tmpAct;
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                        ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                $outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                    
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
                                 else
                                 {
-                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
-                                                ->whereNull('deleted_at')
-                                                ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                                ->orderBy('tanggal', 'ASC')
-                                                ->first();
+                                    $actIn = $this->getActivities($karyawan->key, 
+                                                $inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                                        
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
                                     
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                                ->whereNull('deleted_at')
-                                                ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                                ->orderBy('tanggal', 'DESC')
-                                                ->first();
-
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
@@ -642,60 +600,48 @@ trait TraitProses
                         }
                         else
                         {
-                            $tmpAct = DB::table('activities')->where('pin', $karyawan->key)
-                                    ->whereNull('deleted_at')
-                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'ASC')
-                                    ->first();
+                            $tmpAct = $this->getActivities($karyawan->key, 
+                                        $inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                        $inS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                            
                             /*
                             * shift 1
                             */
                             if($tmpAct)
                             {
                                 $actIn = $tmpAct;
-
-                                $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                    ->whereNull('deleted_at')
-                                    ->whereBetween('tanggal', [$outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-
+                                $actOut = $this->getActivities($karyawan->key, 
+                                            $outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                            $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                
                                 $jMasukId = ($actIn)?$actIn->id:null;
                                 $jKeluarId = ($actOut)?$actOut->id:null;
                             }
                             else
                             {
-                                $actIn = DB::table('activities')->where('pin', $karyawan->key)
-                                ->whereNull('deleted_at')
-                                    ->whereBetween('tanggal', [$inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                    ->orderBy('tanggal', 'DESC')
-                                    ->first();
-
+                                $actIn = $this->getActivities($karyawan->key, 
+                                            $inS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                            $inS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                
                                 if($actIn)
                                 {
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                    ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                    
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
                                 else
                                 {
-                                    $actIn = DB::table('activities')->where('pin', $karyawan->key)
-                                    ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
-                                    $actOut = DB::table('activities')->where('pin', $karyawan->key)
-                                    ->whereNull('deleted_at')
-                                        ->whereBetween('tanggal', [$outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
-                                        ->orderBy('tanggal', 'DESC')
-                                        ->first();
-
+                                    $actIn = $this->getActivities($karyawan->key, 
+                                                $inS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $inS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                    
+                                    $actOut = $this->getActivities($karyawan->key, 
+                                                $outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
+                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                    
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
                                 }
@@ -704,8 +650,8 @@ trait TraitProses
                         // dd($actIn);
                         if($actIn && $actOut)
                         {
-                            $aIn = Carbon::createFromFormat("Y-m-d H:i:s", $actIn->tanggal);
-                            $aOut = Carbon::createFromFormat("Y-m-d H:i:s", $actOut->tanggal);
+                            $aIn = Carbon::createFromFormat('Y-m-d H:i:s', $actIn->tanggal);
+                            $aOut = Carbon::createFromFormat('Y-m-d H:i:s', $actOut->tanggal);
                             $jumlahJamKerja = $aOut->diffInHours($aIn);
                         }
                     }
@@ -759,9 +705,9 @@ trait TraitProses
                             $isMangkir = null;
                             $flagNotInOut = null;
                             
-                            $jMasuk = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_masuk);
+                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actMan->tanggal.' '.$actMan->jam_masuk);
                             $jMasukId = $actMan->id;
-                            $jKeluar = Carbon::createFromFormat("Y-m-d H:i:s", $actMan->tanggal.' '.$actMan->jam_keluar);
+                            $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actMan->tanggal.' '.$actMan->jam_keluar);
                             $jKeluarId = $actMan->id;
                             
                             $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
@@ -828,14 +774,6 @@ trait TraitProses
                     /*
                     * Hitung GP
                     */
-                    // if(config('global.perusahaan_short') == 'AIC')
-                    // {
-                    //     $nilaiGp = $this->gpAic($nMasuk, $nKeluar, $jadMasuk, $jadKeluar);
-                    // }
-                    // else
-                    // {
-                    //     $nilaiGp = $this->gpOld($nMasuk, $nKeluar);
-                    // }         
                     $nilaiGp = $this->gpGlobal($nMasuk, $nKeluar);   
                     if($nilaiGp < 1) $nilaiGp = null;    
                     /*
@@ -1112,7 +1050,8 @@ trait TraitProses
                                 if(!$isLn)
                                 {
                                     $isMangkir = 1;
-                                    $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                                    // $alasanId[] = Alasan::where('kode', 'M')->first()->id;
+                                    $alasanId[] = $als['M']->id;
                                 }
                             }
                         }
@@ -1122,7 +1061,8 @@ trait TraitProses
                         if(!$isLibur)
                         {
                             $isTa = 1;
-                            $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
+                            // $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
+                            $alasanId[] = $als['TA']->id;
                         }
                     }
 
@@ -1165,7 +1105,8 @@ trait TraitProses
                         }
                         $jumlahJamKerja -= ($nilaiGp/60);
                         
-                        $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
+                        // $alasanId[] = Alasan::where('kode', 'GP')->first()->id;
+                        $alasanId[] = $als['GP']->id;
                     }
 
                     if($alasanId)
@@ -1212,6 +1153,12 @@ trait TraitProses
                         'absen_manual' => $isAbsenManual,
                         'created_by' => Auth::user()->id
                     ];
+
+                    if($this->showLog)
+                    {
+                        $tTime = (microtime(true) - $tStart); 
+                        Log::info($key.": ".$tTime);
+                    }
                 }
                 
                 if(count($arrProses) > 0)
@@ -1225,8 +1172,8 @@ trait TraitProses
         }
         catch(Exception $e)
         {
-            dd($e->getMessage());
-            Log::warning($e->getMessage());
+            // dd($e->getMessage());
+            Log::info($e->getMessage());
         }
     }
     
@@ -1241,22 +1188,43 @@ trait TraitProses
         foreach($tanggal as $tgl)
         {
             $jad = null;
-            $kJad = $kar->jadwalsTanggal($tgl->toDateString())->first();
-            
-            if($kJad)
+
+            $mJad = $kar->jadwalManualTanggal($tgl->toDateString())->first();
+            if($mJad)
             {
-                if($kJad->tipe == 'D')
+                $jad = $mJad;
+            }
+            else
+            {
+
+                $kJad = $kar->jadwalsTanggal($tgl->toDateString())->first();
+                
+                if($kJad)
                 {
-                    $jad = Jadwal::find($kJad->id)->jadwalKerjaDay($tgl->format("N"))->first();
-                }
-                else
-                {
-                    $jad = Jadwal::find($kJad->id)->jadwalKerjaShift($tgl->toDateString())->first();
+                    if($kJad->tipe == 'D')
+                    {
+                        $jad = Jadwal::find($kJad->id)->jadwalKerjaDay($tgl->format("N"))->first();
+                    }
+                    else
+                    {
+                        $jad = Jadwal::find($kJad->id)->jadwalKerjaShift($tgl->toDateString())->first();
+                    }
                 }
             }
             $arr[$tgl->toDateString()] = $jad;            
         }
         
+        return $arr;
+    }
+    
+    private function jadwalManual($tanggal, $karyawan)
+    {
+        $arr = array();
+        foreach($tanggal as $tgl)
+        {
+            $jad = $karyawan->jadwalManualTanggal($tgl->toDateString())->first();
+            $arr[$tgl->toDateString()] = $jad;
+        }
         return $arr;
     }
     
@@ -1300,14 +1268,14 @@ trait TraitProses
         $karyawan = Karyawan::find($karyawanId);
         
         $in = null;
-        $inS1 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 07:00:00");
-        $inS2 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 14:00:00");
-        $inS3 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 23:00:00");
+        $inS1 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 07:00:00");
+        $inS2 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 14:00:00");
+        $inS3 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 23:00:00");
 
         $out = null;
-        $outS1 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 14:00:00");
-        $outS2 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." 23:00:00");
-        $outS3 = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->copy()->addDay()->toDateString()." 07:00:00");
+        $outS1 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 14:00:00");
+        $outS2 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 23:00:00");
+        $outS3 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->copy()->addDay()->toDateString()." 07:00:00");
         
         if($karyawan)
         {
@@ -1315,8 +1283,8 @@ trait TraitProses
             
             if($jadwal)
             {
-                $in = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
-                $out = Carbon::createFromFormat("Y-m-d H:i:s", $tanggal->toDateString()." ".$jadwal->jam_keluar.":00");
+                $in = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
+                $out = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_keluar.":00");
                 
                 if($sf == 1)
                 {
@@ -1616,20 +1584,7 @@ trait TraitProses
             $arr[$tgl->toDateString()] = $jad;
         }
         return $arr;
-    }
-    
-    private function jadwalManual($tanggal, $karyawan)
-    {
-        $arr = array();
-        foreach($tanggal as $tgl)
-        {
-            $jad = $karyawan->jadwalManualTanggal($tgl->toDateString())->first();
-            $arr[$tgl->toDateString()] = $jad;
-        }
-        return $arr;
-    }
-    
-    
+    }   
     
     private function HitungLibNas($jam,$jJam=7)
     {
@@ -1766,5 +1721,48 @@ trait TraitProses
         $scr -= fmod($scr,0.5);
         
         return $scr;
+    }
+
+    private function getActivities($karyawanPin,$tanggalAwal,$tanggalAkhir, $between=true)
+    {
+        if(!empty($karyawanPin))
+        {
+            if($between)
+            {
+                if(!empty($tanggalAwal) && !empty($tanggalAkhir))
+                {
+                    return DB::table('activities')->where('pin', $karyawanPin)
+                        ->whereNull('deleted_at')
+                            ->whereBetween('tanggal', 
+                                [$tanggalAwal,$tanggalAkhir])
+                            ->orderBy('tanggal', 'DESC')
+                            ->first();
+                }
+            }
+            else
+            {
+                if(!empty($tanggalAwal))
+                {
+                    return DB::table('activities')->where('pin', $karyawanPin)
+                        ->whereNull('deleted_at')
+                            ->whereDate('tanggal', $tanggalAwal)
+                            ->orderBy('tanggal', 'DESC')
+                            ->first();
+                }
+            }
+            
+        }
+
+        return false;
+    }
+
+    private function getAlasanData()
+    {
+        $ret = [];
+        foreach(Alasan::get() as $val)
+        {
+            $ret[$val->kode] = $val;
+        }
+        return $ret;
     }
 }

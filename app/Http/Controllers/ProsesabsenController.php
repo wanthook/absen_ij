@@ -114,16 +114,24 @@ class ProsesabsenController extends Controller
                 $tStart = microtime(true); 
                 $tot = $karyawan->count();
                 $cnt = 1;
-                $karyawan->chunk(100, function($kar) use($tanggal, $cnt, $tot)
+
+                foreach($karyawan->get() as $rKar)
                 {
-                    foreach($kar as $rKar)
-                    {
-                        Log::info("Start proccess '.$cnt.' of '.$tot.', pin:".$rKar->pin.", eksekutor ".Auth::user()->name);
+                    Log::info('Start proccess '.$cnt.' of '.$tot.', pin:'.$rKar->pin.', eksekutor '.Auth::user()->name);
                         
-                        $this->prosesAbs($rKar, $tanggal);
-                        $cnt++;
-                    }
-                });
+                    $this->prosesAbs($rKar, $tanggal);
+                    $cnt++;
+                }
+                // $karyawan->chunk(100, function($kar) use($tanggal, $cnt, $tot)
+                // {
+                //     foreach($kar as $rKar)
+                //     {
+                //         Log::info('Start proccess '.$cnt.' of '.$tot.', pin:'.$rKar->pin.', eksekutor '.Auth::user()->name);
+                        
+                //         $this->prosesAbs($rKar, $tanggal);
+                //         $cnt++;
+                //     }
+                // });
 
                 $tTime = (microtime(true) - $tStart) / 60; 
                 Log::info("End proccess time: ".$tTime);
