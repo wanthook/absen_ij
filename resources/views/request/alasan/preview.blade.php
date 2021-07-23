@@ -147,7 +147,7 @@ $(function(e)
                                                 $rKar->tanggal.(($rKar->tanggal_akhir)?' - '.$rKar->tanggal_akhir:''),
                                                 $rKar->karyawan->pin,
                                                 $rKar->karyawan->nama,
-                                                $rKar->karyawan->divisi->kode.' - '.$rKar->karyawan->divisi->deskripsi,
+                                                (isset($rKar->karyawan->divisi->kode)?$rKar->karyawan->divisi->kode.' - '.$rKar->karyawan->divisi->deskripsi:''),
                                                 $rKar->alasan->kode.' - '.$rKar->alasan->deskripsi,
                                                 $rKar->waktu,
                                                 $rKar->catatan,
