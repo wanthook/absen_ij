@@ -922,7 +922,9 @@ class RequestAlasanController extends Controller
                 ->editColumn('id', '{{$id}}')
                 ->addColumn('divisi', function($q)
                 {
-                    return $q->karyawan->divisi->kode.' - '.$q->karyawan->divisi->deskripsi;
+                    if(isset($q->karyawan->divisi))
+                        return $q->karyawan->divisi->kode.' - '.$q->karyawan->divisi->deskripsi;
+                    return '';
                 })
                 ->addColumn('alasan', function($q)
                 {
