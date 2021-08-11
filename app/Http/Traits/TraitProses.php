@@ -120,9 +120,13 @@ trait TraitProses
                 */
                 $als = $this->getAlasanData();
 
+                $actMan = $this->getActivityManual($karyawan->id, reset($tanggal)->toDateString(), end($tanggal)->toDateString());
 
+                $liburNasional = $this->getLiburNasional(reset($tanggal)->toDateString(),end($tanggal)->toDateString());
+                // dd($jadwal['2021-07-07']);
                 foreach($jadwal as $key => $val)
                 {  
+                    // echo $key;
                     if($this->showLog)
                     {
                         $tStart = microtime(true);
@@ -131,9 +135,6 @@ trait TraitProses
                     $alasanId = null;
 
                     $jadwalBefore = null;
-
-                    $jadMasuk = null;
-                    $jadKeluar = null;
 
                     $jMasuk = null;
                     $jSubMasuk = null;
@@ -172,7 +173,6 @@ trait TraitProses
 
                     $isSpo      = false;
                     $isLiburNasional = false; //set tanggal libur nasional
-                    $isLn       = false;
                     $isLnOff    = false;
 
                     $flagNotInOut = null;
@@ -227,7 +227,6 @@ trait TraitProses
                             $pendek = 1;
                         }
                     }
-
                     
                     /*
                     * Start If
@@ -245,15 +244,15 @@ trait TraitProses
                             */                       
                             if($val->jam_masuk && $val->jam_keluar)
                             {
-                                $in = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_masuk.":00");
-                                $out = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_keluar.":00");
+                                $jadwalMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_masuk.":00");
+                                $jadwalKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $key." ".$val->jam_keluar.":00");
                                 
                                 /*
                                 * cek jadwal shift3
                                 */
-                                if($in->greaterThan($out))
+                                if($jadwalMasuk->greaterThan($jadwalKeluar))
                                 {
-                                    $out->addDay();
+                                    $jadwalKeluar->addDay();
                                     $shift3 = 1;
                                 }
                             }
@@ -298,23 +297,24 @@ trait TraitProses
                     /*
                     * Ambil libur nasional
                     */
-                    $lN = Libur::where('tanggal', $key)->first();
-                    if($lN)
+                    if($liburNasional)
                     {
-                        $isLiburNasional = true;
-                        $isLn = true;
+                        if(isset($liburNasional[$key]))
+                        {
+                            // dd($liburNasional);
+                            $isLiburNasional = true;
+                        }
                     }
                     /*
                     * End
                     */
-
 
                     /*
                     * Start If
                     * 
                     * Jika Ya, ada libur nasional
                     */
-                    if($lN)
+                    if($isLiburNasional)
                     {
                         /*
                         * Start If
@@ -336,7 +336,7 @@ trait TraitProses
                                     /*
                                     * Tag LN ada
                                     */
-                                    $isLn = true;
+                                    // $isLiburNasional = true;
                                     /*
                                     * Start If
                                     * 
@@ -398,7 +398,7 @@ trait TraitProses
 
                                 if($iLn)
                                 {
-                                    $isLn = true;
+                                    $isLiburNasional = true;
                                     $isLibur = 1;
                                     // $keterangan[] = "Libur Nasional";
                                 }
@@ -430,23 +430,19 @@ trait TraitProses
                         if($kodeJadwal)
                         {
                             if($kodeJadwal != 'L')
-                            {                        
-
-                                $jadMasuk = $in;
-                                $jadKeluar = $out;
-
-                                $jumlahJamKerja = $out->diffInHours($in);
+                            {  
+                                $jumlahJamKerja = $jadwalKeluar->diffInHours($jadwalMasuk);
                                 
                                 $actIn = $this->getActivities($karyawan->key, 
-                                            $in->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(), 
-                                            $in->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                            $jadwalMasuk->copy()->subMinutes($this->rangeAbs + $addRangeStart)->toDateTimeString(), 
+                                            $jadwalMasuk->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                            
                                 
-
                                 $jMasukId = ($actIn)?$actIn->id:null;
 
                                 $actOut = $this->getActivities($karyawan->key, 
-                                    $out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
-                                    $out->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString());
+                                    $jadwalKeluar->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
+                                    $jadwalKeluar->copy()->addMinutes($this->rangeAbs + $addRangeEnd)->toDateTimeString(), false);
                                 
                                 $jKeluarId = ($actOut)?$actOut->id:null;
                                 
@@ -455,8 +451,8 @@ trait TraitProses
                                     if(!$jKeluarId)
                                     {
                                         $actOut = $this->getActivities($karyawan->key, 
-                                            $out->copy()->toDateTimeString(), 
-                                            $out->copy()->addHours(14)->toDateTimeString());
+                                            $jadwalKeluar->copy()->toDateTimeString(), 
+                                            $jadwalKeluar->copy()->addHours(14)->toDateTimeString(), false);
                                         
                                         if($actOut)
                                         {
@@ -467,8 +463,8 @@ trait TraitProses
                                         else
                                         {
                                             $actOut = $this->getActivities($karyawan->key, 
-                                                $out->copy()->subHours(6.5)->toDateTimeString(), 
-                                                $out->copy()->toDateTimeString());
+                                                $jadwalKeluar->copy()->subHours(6.5)->toDateTimeString(), 
+                                                $jadwalKeluar->copy()->toDateTimeString(), false);
                                             
                                             $flagNotInOut = "out";
                                         
@@ -483,8 +479,8 @@ trait TraitProses
                                         if(!$shift3)
                                         {
                                             $actIn = $this->getActivities($karyawan->key, 
-                                                                $in->copy()->toDateString(),
-                                                                null,false);
+                                                                $jadwalMasuk->copy()->toDateString(),
+                                                                null, true, false);
 
                                             $flagNotInOut = "in";
 
@@ -493,8 +489,8 @@ trait TraitProses
                                         else
                                         {
                                             $actIn = $this->getActivities($karyawan->key, 
-                                                    $in->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
-                                                    $in->copy()->addDay()->toDateString().' 09:00:00');
+                                                    $jadwalMasuk->copy()->subMinutes($this->rangeAbs)->toDateTimeString(), 
+                                                    $jadwalMasuk->copy()->addDay()->toDateString().' 09:00:00');
 
                                             $flagNotInOut = "in";
 
@@ -545,7 +541,7 @@ trait TraitProses
                                     $actIn = $tmpAct;
                                     $actOut = $this->getActivities($karyawan->key, 
                                                                 $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
@@ -558,7 +554,7 @@ trait TraitProses
                                                                         
                                     $actOut = $this->getActivities($karyawan->key, 
                                                 $outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $shift3 = 1;
 
@@ -578,7 +574,7 @@ trait TraitProses
                                     $actIn = $tmpAct;
                                     $actOut = $this->getActivities($karyawan->key, 
                                                 $outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
@@ -591,7 +587,7 @@ trait TraitProses
                                                                         
                                     $actOut = $this->getActivities($karyawan->key, 
                                                 $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
@@ -612,7 +608,7 @@ trait TraitProses
                                 $actIn = $tmpAct;
                                 $actOut = $this->getActivities($karyawan->key, 
                                             $outS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                            $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                            $outS1->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                 
                                 $jMasukId = ($actIn)?$actIn->id:null;
                                 $jKeluarId = ($actOut)?$actOut->id:null;
@@ -627,7 +623,7 @@ trait TraitProses
                                 {
                                     $actOut = $this->getActivities($karyawan->key, 
                                                 $outS2->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                $outS2->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
@@ -640,7 +636,7 @@ trait TraitProses
                                     
                                     $actOut = $this->getActivities($karyawan->key, 
                                                 $outS3->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),
-                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString());
+                                                $outS3->copy()->addMinutes($this->rangeAbs)->toDateTimeString(), false);
                                     
                                     $jMasukId = ($actIn)?$actIn->id:null;
                                     $jKeluarId = ($actOut)?$actOut->id:null;
@@ -672,15 +668,15 @@ trait TraitProses
                     
                     if($jMasukId && $jKeluarId)
                     {
-                        if(!$isLn && !$isLnOff && !$isSpo)
+                        if(!$isLiburNasional && !$isLnOff && !$isSpo)
                         {
                             if($jSubMasuk)
                             {
-                                $nMasuk = $jadMasuk->diffInMinutes($jSubMasuk, false);
+                                $nMasuk = $jadwalMasuk->diffInMinutes($jSubMasuk, false);
                             }
                             if($jSubKeluar)
                             {
-                                $nKeluar = $jSubKeluar->diffInMinutes($jadKeluar, false);
+                                $nKeluar = $jSubKeluar->diffInMinutes($jadwalKeluar, false);
                             }
                         }
 
@@ -697,18 +693,18 @@ trait TraitProses
                     ->where('tanggal', $key)                    
                     ->first();
 
-                    if($actMan)
+                    if(isset($actMan[$val]))
                     {
-                        if($actMan->mangkir == 'N')
+                        if($actMan[$val]['mangkir'] == 'N')
                         {
                             $isTa = null;
                             $isMangkir = null;
                             $flagNotInOut = null;
                             
-                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actMan->tanggal.' '.$actMan->jam_masuk);
-                            $jMasukId = $actMan->id;
-                            $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actMan->tanggal.' '.$actMan->jam_keluar);
-                            $jKeluarId = $actMan->id;
+                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actMan[$val]['tanggal'].' '.$actMan[$val]['jam_masuk']);
+                            $jMasukId = $actMan[$val]['id'];
+                            $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actMan[$val]['tanggal'].' '.$actMan[$val]['jam_keluar']);
+                            $jKeluarId = $actMan[$val]['id'];
                             
                             $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
 
@@ -716,19 +712,19 @@ trait TraitProses
                             if($jMasuk->greaterThan($jKeluar))
                             {
                                 $jKeluar->addDay();
-                                if(!$jadMasuk && !$jadKeluar)
+                                if(!$jadwalMasuk && !$jadwalKeluar)
                                 {                            
                                     $shift3 = 1;
                                 }
                             }
 
-                            if($jMasuk && $jadMasuk)
+                            if($jMasuk && $jadwalMasuk)
                             {
-                                $nMasuk = $jadMasuk->diffInMinutes($jMasuk, false);
+                                $nMasuk = $jadwalMasuk->diffInMinutes($jMasuk, false);
                             }
-                            if($jKeluar && $jadKeluar)
+                            if($jKeluar && $jadwalKeluar)
                             {
-                                $nKeluar = $jKeluar->diffInMinutes($jadKeluar, false);
+                                $nKeluar = $jKeluar->diffInMinutes($jadwalKeluar, false);
                             }
                         }
                         else
@@ -794,7 +790,7 @@ trait TraitProses
                         if($kodeJadwal)
                         {
     //                        dd($val->kode);
-                            if(substr($kodeJadwal,0,1) == "J" && !$isLn)
+                            if(substr($kodeJadwal,0,1) == "J" && !$isLiburNasional)
                             {
                                 if(isset($jumlahActivityKerja))
                                 {
@@ -821,7 +817,7 @@ trait TraitProses
                                 //3.5 hitung lembur kalau gak telat sama gak gp
                                 
                             }
-                            else if(substr($kodeJadwal,0,1) == "S" && !$isLn)
+                            else if(substr($kodeJadwal,0,1) == "S" && !$isLiburNasional)
                             {
                                 if(isset($jumlahActivityKerja))
                                 {
@@ -839,7 +835,7 @@ trait TraitProses
                                     }
                                 }
                             }
-                            else if(substr($kodeJadwal,0,1) == "P" && !$isLn)
+                            else if(substr($kodeJadwal,0,1) == "P" && !$isLiburNasional)
                             {
                                 if(isset($jumlahActivityKerja))
                                 {
@@ -1047,7 +1043,7 @@ trait TraitProses
                             $today = Carbon::now();
                             if($today->greaterThanOrEqualTo($curDate))
                             {
-                                if(!$isLn)
+                                if(!$isLiburNasional)
                                 {
                                     $isMangkir = 1;
                                     // $alasanId[] = Alasan::where('kode', 'M')->first()->id;
@@ -1063,6 +1059,7 @@ trait TraitProses
                             $isTa = 1;
                             // $alasanId[] = Alasan::where('kode', 'TA')->first()->id;
                             $alasanId[] = $als['TA']->id;
+
                         }
                     }
 
@@ -1135,7 +1132,6 @@ trait TraitProses
                         'n_masuk' => (!empty($nMasuk))?$nMasuk:null,
                         'n_keluar' => (!empty($nKeluar))?$nKeluar:null,
                         'libur' => $isLibur,
-                        // 'libur_nasional' => (($isLn)?1:null),
                         'libur_nasional' => (($isLiburNasional)?1:null),
                         'pendek' => $pendek,
                         'mangkir' => $isMangkir,
@@ -1160,9 +1156,10 @@ trait TraitProses
                         Log::info($key.": ".$tTime);
                     }
                 }
-                
+
                 if(count($arrProses) > 0)
                 {
+                    // dd($dtt);
                     DB::table('prosesabsens')->where('karyawan_id', $karyawan->id)
                         ->whereBetween('tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])
                         ->delete();
@@ -1172,7 +1169,7 @@ trait TraitProses
         }
         catch(Exception $e)
         {
-            // dd($e->getMessage());
+            // echo $e->getMessage().' on line '.$e->getLine();
             Log::info($e->getMessage());
         }
     }
@@ -1267,12 +1264,12 @@ trait TraitProses
     {
         $karyawan = Karyawan::find($karyawanId);
         
-        $in = null;
+        $jadwalMasuk = null;
         $inS1 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 07:00:00");
         $inS2 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 14:00:00");
         $inS3 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 23:00:00");
 
-        $out = null;
+        $jadwalKeluar = null;
         $outS1 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 14:00:00");
         $outS2 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." 23:00:00");
         $outS3 = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->copy()->addDay()->toDateString()." 07:00:00");
@@ -1283,16 +1280,16 @@ trait TraitProses
             
             if($jadwal)
             {
-                $in = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
-                $out = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_keluar.":00");
+                $jadwalMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_masuk.":00");
+                $jadwalKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $tanggal->toDateString()." ".$jadwal->jam_keluar.":00");
                 
                 if($sf == 1)
                 {
-                    if($in->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)) ||
-                       $out->between($outS1->copy()->subMinutes($this->rangeAbs), $outS1->copy()->addMinute($this->rangeAbs)))
+                    if($jadwalMasuk->between($inS1->copy()->subMinutes($this->rangeAbs), $inS1->copy()->addMinute($this->rangeAbs)) ||
+                       $jadwalKeluar->between($outS1->copy()->subMinutes($this->rangeAbs), $outS1->copy()->addMinute($this->rangeAbs)))
                     {
-                        $in = $inS1;
-                        $out = $outS1;
+                        $jadwalMasuk = $inS1;
+                        $jadwalKeluar = $outS1;
                         goto proses;
                     }
                     else
@@ -1302,11 +1299,11 @@ trait TraitProses
                 }
                 else if($sf == 2)
                 {
-                    if($in->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)) ||
-                       $out->between($outS2->copy()->subMinutes($this->rangeAbs), $outS2->copy()->addMinute($this->rangeAbs)))
+                    if($jadwalMasuk->between($inS2->copy()->subMinutes($this->rangeAbs), $inS2->copy()->addMinute($this->rangeAbs)) ||
+                       $jadwalKeluar->between($outS2->copy()->subMinutes($this->rangeAbs), $outS2->copy()->addMinute($this->rangeAbs)))
                     {
-                        $in = $inS2;
-                        $out = $outS2;
+                        $jadwalMasuk = $inS2;
+                        $jadwalKeluar = $outS2;
                         goto proses;
                     }
                     else
@@ -1316,11 +1313,11 @@ trait TraitProses
                 }
                 else if($sf == 3)
                 {
-                    if($in->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)) ||
-                       $out->between($outS3->copy()->subMinutes($this->rangeAbs), $outS3->copy()->addMinute($this->rangeAbs)))
+                    if($jadwalMasuk->between($inS3->copy()->subMinutes($this->rangeAbs), $inS3->copy()->addMinute($this->rangeAbs)) ||
+                       $jadwalKeluar->between($outS3->copy()->subMinutes($this->rangeAbs), $outS3->copy()->addMinute($this->rangeAbs)))
                     {
-                        $in = $inS3;
-                        $out = $outS3;
+                        $jadwalMasuk = $inS3;
+                        $jadwalKeluar = $outS3;
                         goto proses;
                     }
                     else
@@ -1331,11 +1328,11 @@ trait TraitProses
                 
                 proses:
                 $actIn = Activity::with('mesin')->where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$in->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->whereBetween('tanggal', [$inS1->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$jadwalMasuk->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'ASC')
                                     ->first();
                 $actOut = Activity::with('mesin')->where('pin', $karyawan->key)
-                                    ->whereBetween('tanggal', [$out->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$out->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
+                                    ->whereBetween('tanggal', [$jadwalKeluar->copy()->subMinutes($this->rangeAbs)->toDateTimeString(),$jadwalKeluar->copy()->addMinutes($this->rangeAbs)->toDateTimeString()])
                                     ->orderBy('tanggal', 'asc')
                                     ->first();
                                     
@@ -1723,8 +1720,12 @@ trait TraitProses
         return $scr;
     }
 
-    private function getActivities($karyawanPin,$tanggalAwal,$tanggalAkhir, $between=true)
+    private function getActivities($karyawanPin,$tanggalAwal,$tanggalAkhir, $in=true, $between=true)
     {
+        $order = 'ASC';
+        if(!$in)
+            $order = 'DESC';
+
         if(!empty($karyawanPin))
         {
             if($between)
@@ -1735,7 +1736,7 @@ trait TraitProses
                         ->whereNull('deleted_at')
                             ->whereBetween('tanggal', 
                                 [$tanggalAwal,$tanggalAkhir])
-                            ->orderBy('tanggal', 'DESC')
+                            ->orderBy('tanggal', $order)
                             ->first();
                 }
             }
@@ -1746,7 +1747,7 @@ trait TraitProses
                     return DB::table('activities')->where('pin', $karyawanPin)
                         ->whereNull('deleted_at')
                             ->whereDate('tanggal', $tanggalAwal)
-                            ->orderBy('tanggal', 'DESC')
+                            ->orderBy('tanggal', $order)
                             ->first();
                 }
             }
@@ -1754,6 +1755,79 @@ trait TraitProses
         }
 
         return false;
+    }
+
+    private function getActivityManual($karyawanId, $tanggalAwal, $tanggalAkhir)
+    {
+        $actMan = DB::table('activity_manuals')
+                    ->where('karyawan_id', $karyawanId)
+                    ->whereNull('deleted_at')
+                    ->whereBetween('tanggal', 
+                                [$tanggalAwal,$tanggalAkhir])             
+                    ->get();
+        
+        if(!$actMan) return false;
+        $ret = array();
+        foreach($actMan as $val)
+        {
+            $ret[$val->tanggal] = [
+                'jam_masuk' => $val->jam_masuk, 
+                'jam_keluar' => $val->jam_keluar, 
+                'mangkir' => $val->mangkir,
+                'id' => $val->id];
+        }
+
+        return $ret;
+    }
+
+    private function getAlasanKaryawan($karyawanId, $tanggal)
+    {
+        if(!$karyawanId && !$tanggal) return false;
+
+        $ret = [];
+
+        $alasanSingle = DB::table('alasan_karyawan')
+                            ->select('alasan_karyawan.tanggal','alasan_karyawan.waktu','alasans.kode','alasans.deskripsi','alasans.libur','alasans.show')
+                            ->join('alasans', 'alasan_karyawan.alasan_id', '=', 'alasans.id')
+                            ->where('alasan_karyawan.karyawan_id', $karyawanId)
+                            ->whereBetween('alasan_karyawan.tanggal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()])->get();
+        $alasanRange = DB::table('alasan_karyawan_range')
+                            ->select('alasan_karyawan_range.tanggal_awal', 'alasan_karyawan_range.tanggal_akhir', 'alasan_karyawan_range.waktu', 'alasans.kode', 'alasans.deskripsi', 'alasans.libur', 'alasans.show')
+                            ->join('alasans', 'alasan_karyawan_range.alasan_id', '=', 'alasans.id')
+                            ->where('alasan_karyawan_range.karyawan_id', $karyawanId)
+                            ->where(function($q) use($tanggal)
+                            {
+                                $q->whereBetween('alasan_karyawan_range.tanggal_awal', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
+                                $q->orWhereBetween('alasan_karyawan_range.tanggal_akhir', [reset($tanggal)->toDateString(), end($tanggal)->toDateString()]);
+                            })->get();
+        if($alasanSingle)
+        {
+            foreach($alasanSingle as $aS)
+            {
+                $ret[$as->tanggal][] = $as;
+            }
+        }
+        if($alasanRange)
+        {
+            foreach($alasanRange as $aR)
+            {
+                $dStart = Carbon::createFromFormat('Y-m-d', $aR->tanggal_awal);
+                $dEnd = Carbon::createFromFormat('Y-m-d', $aR->tanggal_akhir);
+                foreach($tanggal as $dVal)
+                {
+                    if($dVal->greaterThan($dEnd)) break;
+
+                    if($dVal->between($dStart, $dEnd))
+                    {
+                        $ret[$as->tanggal][] = $as;
+                    }
+
+                    
+                }
+            }
+        }
+        
+
     }
 
     private function getAlasanData()
@@ -1764,5 +1838,23 @@ trait TraitProses
             $ret[$val->kode] = $val;
         }
         return $ret;
+    }
+
+    private function getLiburNasional($tanggalAwal, $tanggalAkhir)
+    {
+        $ret = [];
+        $ln = Libur::whereBetween('tanggal',[$tanggalAwal, $tanggalAkhir])->get();
+
+        if($ln)
+        {
+            foreach($ln as $val)
+            {
+                $ret[$val->tanggal] = ['tanggal' => $val->tanggal,
+                                       'keterangan' => $val->keterangan];
+            }
+
+            return $ret;
+        }
+        return false;
     }
 }
