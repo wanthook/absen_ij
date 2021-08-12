@@ -687,25 +687,26 @@ trait TraitProses
                     * start absen manual
                     */
                     // $actMan = $karyawan->absenManual()->where('activity_manuals.tanggal', $key)->first();
-                    $actMan = DB::table('activity_manuals')
-                    ->where('karyawan_id', $karyawan->id)
-                    ->whereNull('deleted_at')
-                    ->where('tanggal', $key)                    
-                    ->first();
+                    // $actMan = DB::table('activity_manuals')
+                    // ->where('karyawan_id', $karyawan->id)
+                    // ->whereNull('deleted_at')
+                    // ->where('tanggal', $key)                    
+                    // ->first();
 
-                    if(isset($actMan[$val]))
+                    if(isset($actMan[$key]))
                     {
-                        if($actMan[$val]['mangkir'] == 'N')
+                        // dd($actMan);
+                        if($actMan[$key]['mangkir'] == 'N')
                         {
                             $isTa = null;
                             $isMangkir = null;
                             $flagNotInOut = null;
                             
-                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $actMan[$val]['tanggal'].' '.$actMan[$val]['jam_masuk']);
-                            $jMasukId = $actMan[$val]['id'];
-                            $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $actMan[$val]['tanggal'].' '.$actMan[$val]['jam_keluar']);
-                            $jKeluarId = $actMan[$val]['id'];
-                            
+                            $jMasuk = Carbon::createFromFormat('Y-m-d H:i:s', $key.' '.$actMan[$key]['jam_masuk']);
+                            $jMasukId = $actMan[$key]['id'];
+                            $jKeluar = Carbon::createFromFormat('Y-m-d H:i:s', $key.' '.$actMan[$key]['jam_keluar']);
+                            $jKeluarId = $actMan[$key]['id'];
+                            // dd($jMasuk);
                             $jumlahActivityKerja = $jKeluar->diffInMinutes($jMasuk);
 
                             
