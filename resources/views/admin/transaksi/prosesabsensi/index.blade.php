@@ -1,7 +1,7 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Proses Absensi</p>
+<!-- <p>Proses Absensi</p> -->
 @endsection
 
 
@@ -284,8 +284,13 @@
 {{ Form::open(['route' => ['prosesabsen'], 'id' => 'form_data']) }}
 {{ Form::hidden('id',null, ['id' => 'id']) }}
 <div class="row">
-    <div class="col-6">
+    <div class="col-7 mx-auto">
         <div class="card card-primary card-outline card-tabs">
+            <div class="card-header">
+                <div class="card-title">
+                    <p>Proses Absensi</p>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6">
@@ -331,7 +336,10 @@
             </div>
         </div>
     </div>
-    <div class="col-6">
+</div>
+<div class="row">
+
+    <div class="col-7 mx-auto">
         <div class="card card-primary card-outline card-tabs">
             <div class="card-header">
                 <h3 class="card-title">Log Proses</h3>

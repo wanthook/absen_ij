@@ -1,7 +1,7 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Laporan Absen Detail</p>
+<!-- <p>Laporan Absen Detail</p> -->
 @endsection
 
 
@@ -191,8 +191,13 @@
 {{ Form::open(['route' => ['detaillaporan'], 'id' => 'form_data', 'target' => '_blank']) }}
 {{ Form::hidden('id',null, ['id' => 'id']) }}
 <div class="row">
-    <div class="col-6">
+    <div class="col-7 mx-auto">
         <div class="card card-primary card-outline card-tabs">
+            <div class="card-header">
+                <div class="card-title">
+                    <p>Laporan Absen Detail</p>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-6">

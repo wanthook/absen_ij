@@ -1,7 +1,7 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Transaksi Alasan Karyawan</p>
+<!-- <p>Transaksi Alasan Karyawan</p> -->
 @endsection
 
 
@@ -13,7 +13,7 @@
 @section('add_css')
     <!-- Datatables -->
     <!--<link rel="stylesheet" href="{{asset('plugins/easyui/themes/default/easyui.css')}}">-->
-    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/black/easyui.css')}}">
+    <link rel="stylesheet" href="{{asset('plugins/easyui/themes/default/easyui.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/icon.css')}}">
     <link rel="stylesheet" href="{{asset('plugins/easyui/themes/color.css')}}">
    
@@ -951,189 +951,191 @@
 @section('content')
 
 <div class="row">  
-    <div class="col-12">
-        <div class="easyui-tabs" data-options="tabWidth:112" style="width:100%;height:600px">
-            <div title="Harian" style="padding:10px">
-                <table id="dg" title="Transaksi Alasan Harian" style="width:100%;height:500px">
-                    <thead>
-                        <tr>
-                            <th data-options="
-                                field:'sPin', idField:'sPin', width:50, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">PIN</th>
-                            <th data-options="
-                                field:'sKarNama', idField:'sKarNama', width:70, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
-                                    }                                    
-                                }
-                                ">Nama</th>
-                            <th data-options="
-                                field:'sAlasanKode', width:30, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Kode Alasan</th>
-                            <th data-options="
-                                field:'sAlasanNama', width:70, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
+    <div class="col-8 mx-auto">
+        <div class="easyui-panel" title="Transaksi Alasan Karyawan">
+            <div class="easyui-tabs" data-options="tabWidth:112" style="width:100%;height:600px">
+                <div title="Harian">
+                    <table id="dg" style="width:100%;height:550px">
+                        <thead>
+                            <tr>
+                                <th data-options="
+                                    field:'sPin', idField:'sPin', width:50, 
+                                    editor:{
+                                        type:'textbox'
                                     }
-                                }
-                                ">Alasan</th>
-                            <th data-options="
-                                field:'sWaktu', width:50,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Waktu</th>
-                            <th data-options="
-                                field:'sKeterangan', width:150, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Keterangan</th>
-                            <th data-options="
-                                field:'sKar', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                            <th data-options="
-                                field:'sAlasan', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                            <th data-options="
-                                field: 'sAlasanOld',
-                                formatter:function(value,row){
-                                    return row.sAlasanOld;
-                                }" hidden="true">                       
-                            </th>
-                            <th data-options="
-                                field:'sFlag', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                        </tr>
-                    </thead>
-                </table>
-                <div id="toolbar">
-                    <input type="date" id="sTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow',0)">Tambah</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapus">Hapus</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSave">Simpan</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Batal</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton c1" plain="true" style="width:100px" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>Upload</a>
+                                    ">PIN</th>
+                                <th data-options="
+                                    field:'sKarNama', idField:'sKarNama', width:70, 
+                                    editor:{
+                                        type:'textbox', 
+                                        options:{
+                                            readonly:true
+                                        }                                    
+                                    }
+                                    ">Nama</th>
+                                <th data-options="
+                                    field:'sAlasanKode', width:30, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Kode Alasan</th>
+                                <th data-options="
+                                    field:'sAlasanNama', width:70, 
+                                    editor:{
+                                        type:'textbox', 
+                                        options:{
+                                            readonly:true
+                                        }
+                                    }
+                                    ">Alasan</th>
+                                <th data-options="
+                                    field:'sWaktu', width:50,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Waktu</th>
+                                <th data-options="
+                                    field:'sKeterangan', width:150, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Keterangan</th>
+                                <th data-options="
+                                    field:'sKar', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>
+                                <th data-options="
+                                    field:'sAlasan', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>
+                                <th data-options="
+                                    field: 'sAlasanOld',
+                                    formatter:function(value,row){
+                                        return row.sAlasanOld;
+                                    }" hidden="true">                       
+                                </th>
+                                <th data-options="
+                                    field:'sFlag', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div id="toolbar">
+                        <input type="date" id="sTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dg').edatagrid('addRow',0)">Tambah</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapus">Hapus</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSave">Simpan</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dg').edatagrid('cancelRow')">Batal</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton c1" plain="true" style="width:100px" alt="Upload" data-toggle="modal" data-target="#modal-form-upload"><i class="fa fa-upload"></i>Upload</a>
 
+                    </div>
                 </div>
-            </div>
-            <div title="Range" style="padding:10px">
-                <table id="dgRange" title="Transaksi Alasan Range" style="width:100%;height:500px">
-                    <thead>
-                        <tr>
-                            <th data-options="
-                                field:'sTanggalAwal', width:50,
-                                editor:{
-                                    type: 'datebox'
-                                }
-                            ">Tanggal Awal</th>
-
-                            <th data-options="
-                                field:'sTanggalAkhir', width:50,
-                                editor:{
-                                    type: 'datebox'
-                                }
-                            ">Tanggal Akhir</th>
-                            <th data-options="
-                                field:'sRangePin', idField:'sRangePin', width:50, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">PIN</th>
-                            <th data-options="
-                                field:'sRangeKarNama', idField:'sRangeKarNama', width:80, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
-                                    }                                    
-                                }
-                                ">Nama</th>
-                            <th data-options="
-                                field:'sRangeAlasanKode', width:30, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Kode Alasan</th>
-                            <th data-options="
-                                field:'sRangeAlasanNama', width:70, 
-                                editor:{
-                                    type:'textbox', 
-                                    options:{
-                                        readonly:true
+                <div title="Range">
+                    <table id="dgRange" style="width:100%;height:550px">
+                        <thead>
+                            <tr>
+                                <th data-options="
+                                    field:'sTanggalAwal', width:50,
+                                    editor:{
+                                        type: 'datebox'
                                     }
-                                }
-                                ">Alasan</th>
-                            <th data-options="
-                                field:'sRangeWaktu', width:50, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Waktu</th>
+                                ">Tanggal Awal</th>
 
-                            <th data-options="
-                                field:'sRangeKeterangan', width:150, 
-                                editor:{
-                                    type:'textbox'
-                                }
-                                ">Keterangan</th>
-                            <th data-options="
-                                field:'sRangeKar', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
-                            <th data-options="
-                                field:'sRangeAlasan', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>
+                                <th data-options="
+                                    field:'sTanggalAkhir', width:50,
+                                    editor:{
+                                        type: 'datebox'
+                                    }
+                                ">Tanggal Akhir</th>
+                                <th data-options="
+                                    field:'sRangePin', idField:'sRangePin', width:50, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">PIN</th>
+                                <th data-options="
+                                    field:'sRangeKarNama', idField:'sRangeKarNama', width:80, 
+                                    editor:{
+                                        type:'textbox', 
+                                        options:{
+                                            readonly:true
+                                        }                                    
+                                    }
+                                    ">Nama</th>
+                                <th data-options="
+                                    field:'sRangeAlasanKode', width:30, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Kode Alasan</th>
+                                <th data-options="
+                                    field:'sRangeAlasanNama', width:70, 
+                                    editor:{
+                                        type:'textbox', 
+                                        options:{
+                                            readonly:true
+                                        }
+                                    }
+                                    ">Alasan</th>
+                                <th data-options="
+                                    field:'sRangeWaktu', width:50, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Waktu</th>
 
-                            <th data-options="
-                                field: 'sRangeAlasanOld',
-                                formatter:function(value,row){
-                                    return row.sAlasanOld;
-                                }" hidden="true">     
-                            <th data-options="
-                                field:'sRangeFlag', width:50, hidden:true,
-                                editor:{
-                                    type:'textbox'
-                                }
-                                "></th>                  
-                            </th>
-                        </tr>
-                    </thead>
-                </table>
-                <div id="toolbarRange">
-<!--                    <input id="sTanggalRange" class="easyui-datebox" label="Tanggal : " labelPosition="left" data-options="formatter:myformatter, 
-                           parser:myparser, 
-                           onChange:onSelectTanggal, options : { setValue : myformatter(new Date())}" style="width: 30%">-->
-                    <input type="date" id="sRangeTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dgRange').edatagrid('addRow',0)">Tambah</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapusRange">Hapus</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSaveRange">Simpan</a>
-                    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgRange').edatagrid('cancelRow')">Batal</a>
+                                <th data-options="
+                                    field:'sRangeKeterangan', width:150, 
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    ">Keterangan</th>
+                                <th data-options="
+                                    field:'sRangeKar', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>
+                                <th data-options="
+                                    field:'sRangeAlasan', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>
 
+                                <th data-options="
+                                    field: 'sRangeAlasanOld',
+                                    formatter:function(value,row){
+                                        return row.sAlasanOld;
+                                    }" hidden="true">     
+                                <th data-options="
+                                    field:'sRangeFlag', width:50, hidden:true,
+                                    editor:{
+                                        type:'textbox'
+                                    }
+                                    "></th>                  
+                                </th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div id="toolbarRange">
+    <!--                    <input id="sTanggalRange" class="easyui-datebox" label="Tanggal : " labelPosition="left" data-options="formatter:myformatter, 
+                            parser:myparser, 
+                            onChange:onSelectTanggal, options : { setValue : myformatter(new Date())}" style="width: 30%">-->
+                        <input type="date" id="sRangeTanggal" value="{{\Carbon\Carbon::now()->toDateString()}}">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:$('#dgRange').edatagrid('addRow',0)">Tambah</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" id="cmdHapusRange">Hapus</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" id="cmdSaveRange">Simpan</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="javascript:$('#dgRange').edatagrid('cancelRow')">Batal</a>
+
+                    </div>
                 </div>
             </div>
         </div>

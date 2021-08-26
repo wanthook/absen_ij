@@ -1,7 +1,7 @@
 @extends('adminlte3.app')
 
 @section('title_page')
-<p>Laporan Karyawan Aktif</p>
+<!-- <p>Laporan Karyawan Aktif</p> -->
 @endsection
 
 
@@ -159,16 +159,15 @@
 {{ Form::open(['route' => ['karyawanaktiflaporan'], 'id' => 'form_data', 'target' => '_blank']) }}
 {{ Form::hidden('id',null, ['id' => 'id']) }}
 <div class="row">
-    <div class="col-6">
+    <div class="col-7 mx-auto">
         <div class="card card-primary card-outline card-tabs">
+            <div class="card-header">
+                <div class="card-title">
+                    <p>Laporan Karyawan Aktif</p>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="row">
-<!--                    <div class="col-6">
-                        <div class="form-group">
-                            {{ Form::label('pin', 'Karyawan') }}
-                            {{ Form::select('pin', [], null, ['id' => 'pin', 'class' => 'form-control select2', 'style'=> 'width: 100%;']) }}
-                        </div>
-                    </div>-->
                     <div class="col-6">
                         <div class="form-group">
                             {{ Form::label('divisi', 'Divisi') }}
