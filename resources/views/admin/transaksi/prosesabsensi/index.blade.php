@@ -280,10 +280,11 @@
 @endsection
 
 @section('content')
+
 {{ Form::open(['route' => ['prosesabsen'], 'id' => 'form_data']) }}
 {{ Form::hidden('id',null, ['id' => 'id']) }}
 <div class="row">
-    <div class="col-12">
+    <div class="col-6">
         <div class="card card-primary card-outline card-tabs">
             <div class="card-body">
                 <div class="row">
@@ -330,10 +331,7 @@
             </div>
         </div>
     </div>
-</div>
-{{ Form::close() }}
-<div class="row">
-    <div class="col-12">
+    <div class="col-6">
         <div class="card card-primary card-outline card-tabs">
             <div class="card-header">
                 <h3 class="card-title">Log Proses</h3>
@@ -348,4 +346,5 @@
         </div>
     </div>
 </div>
+{{ Form::close() }}
 @endsection
