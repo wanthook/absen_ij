@@ -956,21 +956,30 @@ class RequestAlasanController extends Controller
 //            dd($users);
             foreach($users as $kS)
             {
-                Mail::send('request.alasan.mail', $data, function ($m) use($data, $reqAlasan, $users,$kS,$mailSend)
+                try
                 {
-                    $m->to($kS->email);
-                    $m->from('admin@indahjaya.co.id');
-                    $m->subject($data['subject']);
-                    $mailSend .= $kS->email." ";
-                });
-                \App\EmailLog::insert(array(
-                    'app_id' => $reqAlasan->id,
-                    'app_path' => 'RequestAlasan',
-                    'email' => $kS->email,
-                    'created_by' => Auth::user()->id,
-                    'created_at' => Carbon::now()
-                ));
-                
+                    Mail::send('request.alasan.mail', $data, function ($m) use($data, $reqAlasan, $users,$kS,$mailSend)
+                    {
+                        $m->to($kS->email);
+                        $m->from('admin@indahjaya.co.id');
+                        $m->subject($data['subject']);
+                        $mailSend .= $kS->email." ";
+                    });
+                    \App\EmailLog::insert(array(
+                        'app_id' => $reqAlasan->id,
+                        'app_path' => 'RequestAlasan',
+                        'email' => $kS->email,
+                        'created_by' => Auth::user()->id,
+                        'created_at' => Carbon::now()
+                    ));
+                }
+                catch(\Swift_TransportException $e)
+                {
+                    if($e->getMessage())
+                    {
+                        dd($e->getMessage());
+                    }
+                }
             }
         }
         
