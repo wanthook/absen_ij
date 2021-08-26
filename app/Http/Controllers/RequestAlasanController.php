@@ -446,7 +446,7 @@ class RequestAlasanController extends Controller
             $req = $request->only(['id']);
             try 
             {
-                $this->send_email($req['id']);
+                // $this->send_email($req['id']);
                 RequestAlasan::find($req['id'])->fill(['status' => 'send', 'updated_by' => Auth::user()->id])->save();
 
                 echo json_encode(array(
@@ -958,11 +958,10 @@ class RequestAlasanController extends Controller
             {
                 try
                 {
-                    Mail::send('request.alasan.mail', $data, function ($m) use($data, $reqAlasan, $users,$kS,$mailSend)
+                    Mail::send('request.alasan.mail', $data, function ($m) use($data, $kS,$mailSend)
                     {
-                        $m->to($kS->email);
-                        $m->from('admin@indahjaya.co.id');
-                        $m->subject($data['subject']);
+                        $m->from(env('MAIL_USERNAME'), 'Admin');
+                        $m->to($kS->email)->subject($data['subject']);
                         $mailSend .= $kS->email." ";
                     });
                     \App\EmailLog::insert(array(
