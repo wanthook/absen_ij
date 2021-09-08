@@ -172,7 +172,7 @@ class LaporanController
             $req = $request->all();
 
             $ret = $this->lDet($req);
-            
+            // dd($ret);
             $send = [];
             $curDate = Carbon::now();
 
@@ -201,7 +201,6 @@ class LaporanController
                         {
                             $tmpDet = [];
                             $tmpDet['tanggal'] = $kabs;
-
                             if(!isset($vabs->inout))
                             {
 
@@ -3439,7 +3438,11 @@ class LaporanController
             $rowStart = 4;
             $colStat = 1;
             $headTbl1 = array('NO', 'NAMA', 'PIN', 'TANGGAL', 'NAMA', 'GAJI', 'POT. ABSEN','', 'GAJI POKOK', 'UPAH LEMBUR', '', 'SHIFT 3', '', 'TUNJANGAN','','','','', 'GETPAS', '', 'KOREKSI', '', 'PENDAPATAN', 'POTONGAN', '', '', '', '', '', '', 'TOTAL', 'TOTAL');
-            $headTbl2 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'JML', 'Rp', 'DIBAYAR', 'JML', 'Rp', 'JML', 'Rp', 'JABATAN', 'PRESTASI', 'HAID', 'HADIR', 'LAIN2', 'JAM', 'Rp', 'KOR(+)', 'KOR(-)', 'BRUTO', 'BPJS-TK', 'BPJS-KES', 'BPJS-PEN', 'PPH21', 'COST SRKT', 'TOKO', 'LAIN2', 'AKHIR', 'BAYAR');
+            $headTbl2 = [];
+            if(config('global.perusahaan_short') == 'SII')
+                $headTbl2 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'JML', 'Rp', 'DIBAYAR', 'JML', 'Rp', 'JML', 'Rp', 'JABATAN', 'KHUSUS', 'HAID', 'HADIR', 'LAIN2', 'JAM', 'Rp', 'KOR(+)', 'KOR(-)', 'BRUTO', 'BPJS-TK', 'BPJS-KES', 'BPJS-PEN', 'PPH21', 'COST SRKT', 'TOKO', 'LAIN2', 'AKHIR', 'BAYAR');
+            else
+                $headTbl2 = array('','DIVISI', '', 'MASUK','KARYAWAN', 'POKOK', 'JML', 'Rp', 'DIBAYAR', 'JML', 'Rp', 'JML', 'Rp', 'JABATAN', 'PRESTASI', 'HAID', 'HADIR', 'LAIN2', 'JAM', 'Rp', 'KOR(+)', 'KOR(-)', 'BRUTO', 'BPJS-TK', 'BPJS-KES', 'BPJS-PEN', 'PPH21', 'COST SRKT', 'TOKO', 'LAIN2', 'AKHIR', 'BAYAR');
             $empty = 0;
             foreach($headTbl1 as $rHead)
             {

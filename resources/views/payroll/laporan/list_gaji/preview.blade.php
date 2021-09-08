@@ -181,7 +181,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <th>JML</th>
                 <th>Rp.</th>
                 <th>JABATAN</th>
+                @if(config('global.perusahaan_short') == 'SII')
+                <th>KHUSUS</th>
+                @else
                 <th>PRESTASI</th>
+                @endif
                 <th>HAID</th>
                 <th>HADIR</th>
                 <th>LAIN2</th>
