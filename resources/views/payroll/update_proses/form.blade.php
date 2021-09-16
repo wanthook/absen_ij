@@ -507,7 +507,7 @@
             {
                 if(e.params.data)
                 {
-                    pinPress(e.params.data.pin)
+                    pinPress(e.params.data.id)
                 }
             })
 
@@ -550,7 +550,7 @@
                 url         : '{{route("prosessalarydata")}}',
                 dataType    : 'json',
                 type        : 'POST',
-                data        : {periode:$('#periode').val(), pin:$('#pin').val()},
+                data        : {periode:$('#periode').val(), pin:pin},
                 beforeSend  : function(xhr)
                 {
                     toastOverlay.fire({
@@ -785,12 +785,12 @@
             var tunjS3 = s3 * 7500
             var lemburRp = 0
             @if(config('global.perusahaan_short') == 'Indah Jaya')
-                lemburRp = parseInt((lembur / 173 * (gaji_pokok + tunjangan_jabatan + tunjangan_prestasi)))
+                lemburRp = parseInt((lembur / 173 * (gaji_pokok + tunjangan_jabatan + tunjangan_prestasi)));
             @else
-                lemburRp = parseInt((lembur / 173 * (gaji_pokok + tunjangan_jabatan)))
+                lemburRp = parseInt((lembur / 173 * (gaji_pokok + tunjangan_jabatan)));
             @endif
 
-            var gaji_pokok_dibayar = parseInt(gaji_pokok - potonganAbsen)
+            var gaji_pokok_dibayar = parseInt(gaji_pokok - potonganAbsen);
             
             var brutto = parseInt(gaji_pokok_dibayar + lemburRp + tunjS3 + tunjangan_jabatan + tunjangan_prestasi + tunjangan_haid + tunjangan_hadir + gp_rp + koreksi_plus - koreksi_minus)
             var jumlahPotongan = bpjs_tk + bpjs_kes + bpjs_pen + pph21 + cost_serikat_rp + toko + lainlain;

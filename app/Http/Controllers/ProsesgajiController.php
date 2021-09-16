@@ -267,8 +267,12 @@ class ProsesgajiController extends Controller
 
                     if($karyawan)
                     {
-                        $proses = Prosesgaji::with('karyawan', 'editlistlast')->where('periode_awal', $tglAwal->toDateString())->where('periode_akhir', $tglAkhir->toDateString())->first();
-
+                        $proses = Prosesgaji::with('karyawan', 'editlistlast')
+                        ->where('karyawan_id', $req['pin'])
+                        ->where('periode_awal', $tglAwal->toDateString())
+                        ->where('periode_akhir', $tglAkhir->toDateString())
+                        ->first();
+                        // dd($proses);
                         echo json_encode(array(
                             'status' => 1,
                             'msg'   => $proses
